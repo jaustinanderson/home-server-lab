@@ -1,207 +1,207 @@
 # Project Roadmap
 
-This roadmap defines the planned development path for the Raspberry Pi home-server lab.
+This roadmap defines the phased development path for the two-machine Home Server Lab. Current completion and operational facts are tracked in [`../STATUS.md`](../STATUS.md); architectural rationale is tracked in [`../DECISIONS.md`](../DECISIONS.md).
 
-The purpose of this project is to build practical infrastructure skills while creating a foundation for future AI, data, and clinical lab-informatics projects.
+The lab exists to build practical infrastructure skills and support future public-data, synthetic-data, AI, and laboratory-informatics projects.
 
-## Phase 1: Foundation
+## Phase 1: Foundation and Secure Access — Complete
 
-Goal: Get the server stable, reachable, documented, and safe to work on.
+Goal: establish a stable, reachable, documented, and independently verified base.
 
-Tasks:
+Completed:
 
-* Create GitHub repository
-* Add professional README
-* Add setup documentation
-* Document SSH access
-* Document network setup
-* Add security checklist
-* Add backup plan
-* Confirm operating system
-* Confirm hostname
-* Confirm SSH command
-* Run system updates
+- Ubuntu Server installed and verified on compute-node and pi-server
+- SSH keys deployed from the Chromebook to both machines
+- Password-based SSH disabled and independently tested
+- Conflicting SSH configuration fragments removed
+- Tailscale installed and verified across all three devices
+- Remote SSH tested without public port forwarding
+- Reboot recovery and Tailscale startup verified
+- Security and backup boundaries documented
+- Canonical `STATUS.md` and `DECISIONS.md` established
+- Legacy Pi-only documentation reconciled with the two-machine architecture
 
-Status:
+## Phase 2: Repository-on-Host Workflow — Next
 
-```text
-In progress
-```
-
-## Phase 2: Core Linux Administration
-
-Goal: Build confidence with normal server administration.
+Goal: manage the infrastructure repository from the lab machines instead of relying only on browser uploads.
 
 Tasks:
 
-* Learn basic Linux navigation
-* Practice package management
-* Document useful commands
-* Configure users and permissions
-* Review service status commands
-* Learn log inspection basics
-* Document reboot and shutdown procedures
-* Create troubleshooting notes
+- Clone `home-server-lab` onto the appropriate machine or machines
+- Configure GitHub authentication for push access
+- Confirm branch, commit, push, and pull-request workflow
+- Keep operational secrets out of the public repository
+- Document the standard change workflow
+- Confirm rollback and recovery procedures for configuration changes
 
-Planned documentation:
+Success evidence:
 
-* `docs/linux-command-notes.md`
-* `docs/troubleshooting-log.md`
+- A branch created from a lab machine
+- A sanitized documentation or configuration change committed and pushed
+- A pull request reviewed and merged
 
-## Phase 3: Docker Setup
+## Phase 3: Core Linux Administration
 
-Goal: Install Docker and begin running services in a reproducible way.
-
-Tasks:
-
-* Install Docker
-* Install Docker Compose
-* Confirm Docker service status
-* Run a test container
-* Create `docker/compose-files/`
-* Add example Compose files
-* Document container start/stop/update commands
-* Learn Docker volumes and networks
-
-Planned documentation:
-
-* `docs/docker-notes.md`
-* `docker/compose-files/example.compose.yml`
-
-## Phase 4: Monitoring and Maintenance
-
-Goal: Track whether the server and services are healthy.
-
-Potential services:
-
-* Uptime Kuma
-* Netdata
-* Portainer
-* Basic disk-usage monitoring
-* Basic temperature monitoring
+Goal: make routine server administration repeatable and evidence-driven.
 
 Tasks:
 
-* Pick first monitoring tool
-* Deploy with Docker Compose
-* Document access method
-* Document ports in a public-safe way
-* Add restart procedure
-* Add update procedure
+- Establish a patching cadence
+- Practice package and service management
+- Document users, groups, ownership, and permissions
+- Add log-inspection and troubleshooting notes
+- Document storage and filesystem checks
+- Use the system-information script on both machines
+- Add public-safe evidence of verification
 
-## Phase 5: Secure Remote Access
+Planned artifacts:
 
-Goal: Access the server safely without exposing services directly to the public internet.
+- `docs/linux-command-notes.md`
+- `docs/troubleshooting-log.md`
+- Sanitized system baselines
+
+## Phase 4: Docker and Service Lifecycle
+
+Goal: deploy the first service reproducibly with Docker Compose.
+
+Tasks:
+
+- Install Docker Engine and Compose where needed
+- Confirm service and user permissions
+- Run a minimal test container
+- Choose the first useful service
+- Add a Compose file with explicit volumes, networks, health checks, and restart behavior
+- Document start, stop, update, backup, and recovery procedures
+- Avoid committing secrets
+
+Candidate first services:
+
+- Uptime Kuma
+- Portainer
+- A lightweight dashboard
+- PostgreSQL, if selected as the first data service
+
+## Phase 5: Monitoring and Maintenance
+
+Goal: detect failures and understand resource health.
+
+Tasks:
+
+- Track uptime and service availability
+- Track disk usage and temperature
+- Document alerting behavior
+- Record update and restart procedures
+- Add routine maintenance checklists
+- Test recovery after reboot or service failure
 
 Potential tools:
 
-* Tailscale
-* WireGuard
-* Cloudflare Tunnel, if appropriate later
+- Uptime Kuma
+- Netdata
+- Native systemd and journal tooling
+- Simple scripted checks
 
-Preferred direction:
+## Phase 6: Storage, Backup, and Restore
 
-* Avoid public port forwarding
-* Use private access methods
-* Use strong authentication
-* Document the security tradeoffs
-
-Planned documentation:
-
-* `docs/remote-access-notes.md`
-
-## Phase 6: Storage and Backups
-
-Goal: Make data storage and recovery more reliable.
+Goal: make data placement and recovery intentional.
 
 Tasks:
 
-* Decide primary storage device
-* Decide backup target
-* Document backup frequency
-* Test restore process
-* Create backup checklist
-* Document what should and should not be backed up
-* Keep secrets separate from public documentation
+- Define hot, working, archive, and backup storage roles
+- Decide what belongs on compute-node versus pi-server
+- Define backup frequency and retention
+- Separate code, datasets, databases, configuration, and secrets
+- Run a documented restore test
+- Record recovery time and gaps
+- Evaluate future NAS integration without treating storage as backup by default
 
-Planned documentation:
+Planned artifact:
 
-* `docs/backup-restore-test.md`
+- `docs/backup-restore-test.md`
 
-## Phase 7: Self-Hosted Tools
+## Phase 7: PostgreSQL and Provenance Foundation
 
-Goal: Add useful services that support learning, productivity, and future portfolio projects.
-
-Possible services:
-
-* File sharing
-* Syncthing
-* Gitea
-* PostgreSQL
-* SQLite practice projects
-* Homepage dashboard
-* Documentation wiki
-* Automation tools
-
-Selection criteria:
-
-* Useful for real workflows
-* Reasonable maintenance burden
-* Safe to document publicly
-* Good learning value
-* Relevant to future AI or lab-informatics work
-
-## Phase 8: AI and Data Project Foundation
-
-Goal: Prepare the server to support future data and AI experiments.
-
-Possible future projects:
-
-* Synthetic cytogenetics data organization
-* Metaphase image file management
-* Mock lab workflow dashboards
-* Python data pipelines
-* Local development databases
-* Lightweight model-serving experiments
-* Retrieval-augmented generation experiments using public-safe data
-
-Important rule:
-
-This project must not use real patient data, employer-confidential data, internal SOPs, clinical system screenshots, real accession numbers, MRNs, or identifiable lab information.
-
-## Phase 9: Portfolio Integration
-
-Goal: Make this repository useful to hiring managers, collaborators, and future technical mentors.
+Goal: establish the first durable data service for Track A.
 
 Tasks:
 
-* Keep README clear and current
-* Add architecture diagrams
-* Add screenshots only when public-safe
-* Add setup summaries
-* Add project lessons learned
-* Link related repositories
-* Pin the repo on GitHub profile
-* Eventually link from personal portfolio site
+- Decide whether PostgreSQL runs on compute-node or pi-server
+- Deploy it through a reproducible configuration
+- Define database backup and restore procedures
+- Create a dataset provenance-manifest schema
+- Record source, license, checksum, acquisition date, transformations, and intended use
+- Validate constraints and migration behavior
 
-## Future Repository Connections
+This phase is the beginning of the cytogenetics data-pipeline track, not merely a database installation exercise.
 
-This home-server repo may eventually connect to:
+## Phase 8: Public Dataset Ingestion
 
-* `metaphase-data-pipeline`
-* `cytogenetics-python-notebooks`
-* `clinical-ai-lab-informatics`
-* `portfolio-site`
+Goal: ingest one public cytogenetics or related biomedical dataset end to end.
+
+Tasks:
+
+- Confirm license and redistribution rules
+- Download through a reproducible process
+- Verify checksums
+- Populate the provenance manifest
+- Store raw data immutably
+- Create a working derivative through a documented transformation
+- Produce validation and QC output
+- Demonstrate recovery from source plus manifest
+
+No patient data, employer data, or internal clinical material is permitted.
+
+## Phase 9: Project Tracks
+
+### Track A: Cytogenetics image and data pipeline
+
+Potential work:
+
+- Public or synthetic metaphase/karyogram organization
+- Metadata and provenance models
+- Image quality-control experiments
+- Search and retrieval
+- Reproducible preprocessing
+- Lightweight local inference experiments where hardware permits
+
+### Track B: Laboratory workflow automation
+
+Potential work:
+
+- Synthetic workload or point-tracking model
+- Data import and validation
+- Rule-based scoring
+- Audit history
+- Exception handling
+- Reports and dashboards
+
+Track B is likely the smaller first product because it does not require GPU resources or large image datasets.
+
+## Phase 10: Portfolio Integration
+
+Goal: make the project legible and credible to employers and collaborators.
+
+Tasks:
+
+- Keep `STATUS.md` and README current
+- Maintain an architectural decision record
+- Add diagrams based on the real architecture
+- Include verification evidence, not unsupported claims
+- Write a concise case study and retrospective
+- Link related portfolio projects
+- Keep all public material sanitized
 
 ## Success Criteria
 
-This project is successful if it demonstrates:
+The Home Server Lab is successful when it demonstrates:
 
-* Practical Linux competence
-* Clear technical documentation
-* Security awareness
-* GitHub fluency
-* Docker/container knowledge
-* Backup and recovery thinking
-* Ability to build infrastructure for real projects
-* A credible career shift toward clinical AI and lab informatics
+- Practical Linux administration
+- Secure remote-access design
+- Independent verification of security controls
+- Infrastructure-as-code and version-control discipline
+- Docker and service lifecycle management
+- Backup and restore competence
+- Data provenance and reproducibility
+- Evidence-based troubleshooting
+- Public-safe technical communication
+- A credible foundation for clinical AI and laboratory informatics projects
