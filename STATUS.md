@@ -8,7 +8,7 @@
 > patient data, or employer-internal details. Current DHCP addresses are derivable on each box
 > with `ip -br a`; Tailscale addresses with `tailscale status`.
 
-**Last updated:** 2026-07-01
+**Last updated:** 2026-07-10
 
 ---
 
@@ -65,20 +65,22 @@ clinical-lab AI. Two long-term tracks:
 - **Source-of-truth docs live on GitHub**: `STATUS.md` + `DECISIONS.md` committed to `home-server-lab`
   root (via github.com web upload; no push auth needed). ChatGPT re-synced to them and confirmed the
   specific corrections it made.
+- **Public documentation reconciled with the real architecture**: README, setup log, and SSH notes now
+  describe the two-machine lab, completed SSH hardening, and Tailscale access instead of the older Pi-only plan.
+- **Shell quality gate added**: GitHub Actions runs ShellCheck against repository shell scripts on pushes
+  and pull requests.
 
 ## In progress 🔧
-- Nothing mid-flight. **Foundation + remote access + collaboration system are complete and verified.**
-  Everything from here builds *on* this base. (Pick the next item from "Next up".)
+- Nothing mid-flight. **Foundation + remote access + collaboration system + first documentation reconciliation
+  are complete and verified.** Everything from here builds *on* this base. (Pick the next item from "Next up".)
 
 ## Next up (rough order)
 1. Fix `.local` resolution inside Chromebook Penguin (`sudo apt install avahi-daemon avahi-utils`) — small
    quality-of-life win so friendly names work from the terminal. (Tailscale already gives a working
    alternative via tailnet addresses.)
-2. **Reconcile docs:** the older `home-server-lab` docs/description are **Pi-only** and treat SSH keys as a
-   future "plan" — update to reflect the real two-machine setup + completed key auth / hardening / Tailscale.
-   Good candidate for a first **Codex PR** experiment (per DECISIONS D15, Phase 2).
-3. Clone the `home-server-lab` repo onto the machine(s); set up GitHub push auth
+2. Clone the `home-server-lab` repo onto the machine(s); set up GitHub push auth
    (Personal Access Token or a GitHub SSH key — not done yet). Needed to commit from a machine vs. the web.
+3. Select and deploy the first Dockerized service with a reproducible Compose file and runbook.
 4. PostgreSQL + dataset **provenance-manifest** schema (the real beginning of Track A).
 5. Ingest one public cytogenetics dataset end-to-end.
 6. Branch into Track A and Track B.
@@ -104,5 +106,8 @@ clinical-lab AI. Two long-term tracks:
   **both** machines refuse password logins via live external test. (Lesson recorded as DECISIONS D14.)
 - **2026-07-01 — Austin + Claude** — Installed **Tailscale** on both servers + the Chromebook and verified
   remote access (SSH to compute-node by tailnet address from the Chromebook, no password). Rebooted
-  compute-node: pending kernel update applied (now 7.0.0-27) and Tailscale confirmed to auto-start and
+  compute-node: pending kernel update applied (now on 7.0.0-27) and Tailscale confirmed to auto-start and
   survive the reboot. Foundation, remote access, and the shared source-of-truth system are all complete.
+- **2026-07-10 — Austin + ChatGPT** — Reconciled the README, setup log, and SSH notes with the verified
+  two-machine architecture; removed stale Pi-only and future-tense SSH claims; added a ShellCheck GitHub
+  Actions quality gate for public shell scripts.
