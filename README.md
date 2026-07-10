@@ -1,66 +1,62 @@
 # Home Server Lab
 
-A documented Raspberry Pi home-server build for Linux, Docker, automation, data projects, and self-hosted AI/lab-informatics workflows.
+![Shell checks](https://github.com/jaustinanderson/home-server-lab/actions/workflows/shellcheck.yml/badge.svg)
 
-This repository tracks the setup, configuration, decisions, and lessons learned while building a small home server environment. The goal is to create a reliable technical foundation for future projects in clinical AI, cytogenetics data workflows, lab informatics, and secure self-hosted tools.
+A public-safe, two-machine home-lab project for Linux administration, secure remote access, infrastructure-as-code, Docker, data engineering, and future clinical-AI experimentation.
 
-## Project Purpose
+This repository documents the real architecture, decisions, validation steps, and lessons learned while building a small self-hosted environment. It is part of my transition from clinical cytogenetics into clinical AI, laboratory informatics, data systems, and practical software engineering.
 
-This project is part of my broader career transition from clinical cytogenetics into clinical AI, laboratory informatics, data workflows, and practical automation.
+> **Canonical project state:** read [`STATUS.md`](STATUS.md) first. Architectural decisions and their rationale are recorded in [`DECISIONS.md`](DECISIONS.md). Older documents under `docs/` provide useful background, but `STATUS.md` is the source of truth when details disagree.
 
-The home server is being used as a real learning environment for:
+## Current Architecture
 
-* Linux administration
-* SSH workflows
-* Raspberry Pi infrastructure
-* Docker and containerized services
-* Secure self-hosted tools
-* Backup and recovery planning
-* Public-safe technical documentation
-* Future AI, data, and lab-informatics projects
+| Machine | Hardware | Role | Operating system |
+|---|---|---|---|
+| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute | Ubuntu Server 26.04 |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, backup, and lightweight services | Ubuntu Server 26.04 |
+| **Chromebook** | Acer Chromebook Plus 514 | SSH control surface through the Linux terminal | ChromeOS |
 
-## Project Goals
+Network addresses, MAC addresses, credentials, private keys, and other operational secrets are intentionally excluded from this public repository.
 
-* Build a stable Raspberry Pi home server
-* Practice Linux administration and SSH workflows
-* Learn Docker and containerized services
-* Create reproducible setup documentation
-* Develop good backup and security habits
-* Host future portfolio projects and internal tools
-* Support future AI, data, and lab-informatics experiments
-* Document the build in a way that is useful to future employers, collaborators, and technical mentors
+## Verified Foundation
 
-## Current Hardware
+The infrastructure foundation is complete and independently verified:
 
-* Raspberry Pi 5
-* microSD or SSD boot/storage setup
-* Chromebook used as the primary setup/admin machine
-* Home network access
+- Ubuntu Server installed and verified on both servers
+- SSH key authentication working from the Chromebook to both servers
+- Password-based SSH disabled and tested from an external client
+- Tailscale installed on all three devices for private remote access
+- Remote SSH verified without public port forwarding
+- Tailscale startup and unattended recovery verified after reboot
+- mDNS hostnames working between the two servers
+- Public-safe project state and architectural decisions stored in GitHub
+- Security and backup boundaries documented
 
-More exact hardware details will be added as the build evolves.
+The next work builds on this stable base rather than repeating initial setup.
 
-## Current Setup Status
+## Project Tracks
 
-* GitHub account rebranded for professional portfolio use
-* `home-server-lab` repository created
-* Initial project README created
-* Documentation folder created
-* SSH notes started
-* Network notes started
-* Security checklist created
-* Backup plan created
-* Project roadmap created
-* Docker folder structure created
-* Scripts folder structure created
-* Diagrams folder structure created
-* First utility script added
+### Track A: Cytogenetics data and AI pipeline
+
+A future containerized workflow for organizing public or synthetic cytogenetic images and associated metadata. Planned work includes provenance manifests, relational data modeling, ingestion pipelines, quality-control documentation, and lightweight AI experiments.
+
+### Track B: Laboratory workflow automation
+
+A synthetic-data project modeling a manual laboratory workload or point-tracking process as a reproducible data workflow. This is the smaller and more operationally focused first application track.
+
+Neither track will use patient data, employer-confidential material, internal procedures, or proprietary clinical-system content.
 
 ## Repository Map
 
 ```text
 home-server-lab/
 ├── README.md
+├── STATUS.md                 # canonical current state
+├── DECISIONS.md              # architectural decision log
 ├── .gitignore
+├── .github/
+│   └── workflows/
+│       └── shellcheck.yml
 ├── docs/
 │   ├── setup-log.md
 │   ├── ssh-notes.md
@@ -80,126 +76,87 @@ home-server-lab/
 
 ## Documentation
 
-* [`docs/setup-log.md`](docs/setup-log.md) — Build log, setup history, and public-safe progress notes
-* [`docs/ssh-notes.md`](docs/ssh-notes.md) — SSH access notes, hostname strategy, and troubleshooting
-* [`docs/network-notes.md`](docs/network-notes.md) — Network setup, DHCP/hostname notes, and managed-network limitations
-* [`docs/security-checklist.md`](docs/security-checklist.md) — Public repo safety, SSH security, Docker security, and data privacy rules
-* [`docs/backup-plan.md`](docs/backup-plan.md) — Backup philosophy, restore planning, and safe backup boundaries
-* [`docs/project-roadmap.md`](docs/project-roadmap.md) — Development phases and future project direction
+- [`STATUS.md`](STATUS.md) — current machines, network model, completed verification, next work, and changelog
+- [`DECISIONS.md`](DECISIONS.md) — architectural choices, alternatives, rationale, and consequences
+- [`docs/setup-log.md`](docs/setup-log.md) — dated public-safe build history
+- [`docs/ssh-notes.md`](docs/ssh-notes.md) — current SSH model, verification, commands, and troubleshooting
+- [`docs/network-notes.md`](docs/network-notes.md) — managed-network constraints and private-access strategy
+- [`docs/security-checklist.md`](docs/security-checklist.md) — public-repository and server-security rules
+- [`docs/backup-plan.md`](docs/backup-plan.md) — backup philosophy, scope, and restore planning
+- [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
 
-## Project Folders
+## Current Utility Script
 
-* [`docker/compose-files/`](docker/compose-files/) — Future Docker Compose templates and service deployment notes
-* [`scripts/`](scripts/) — Public-safe utility scripts for server administration and automation
-* [`diagrams/`](diagrams/) — Architecture, network, Docker, backup, and future AI/lab-informatics diagrams
+[`scripts/system-info.sh`](scripts/system-info.sh) prints operating-system, kernel, memory, disk, CPU, temperature, network-interface, and Docker-status information.
 
-## Current Utility Scripts
+Run it locally on a lab machine:
 
-* [`scripts/system-info.sh`](scripts/system-info.sh) — Prints public-safe system information for the Raspberry Pi home-server lab
+```bash
+chmod +x scripts/system-info.sh
+./scripts/system-info.sh
+```
 
-## Planned Services
+Review output before publishing it. Hostnames and private network addresses may be appropriate for local troubleshooting but should be sanitized before being copied into public documentation.
 
-Possible future services include:
+## Continuous Checks
 
-* Docker
-* Portainer
-* Uptime Kuma
-* Pi-hole or AdGuard Home
-* Tailscale
-* Syncthing
-* Samba file sharing
-* GitHub project sync
-* Local databases for practice projects
-* Dashboards for lab-informatics portfolio work
+GitHub Actions runs ShellCheck against repository shell scripts on pushes and pull requests. This provides a lightweight quality gate while the repository is still infrastructure- and documentation-focused.
 
-## Security Principles
+## Security Model
 
-This is a public portfolio repository, so it must remain public-safe.
+This is a public portfolio repository. Do not commit:
 
-Do not commit:
+- Passwords, tokens, API keys, recovery codes, or `.env` files
+- SSH private keys
+- Public or private operational IP addresses
+- MAC addresses or device identifiers
+- Router, Wi-Fi, or Tailscale secrets
+- Patient data, accession numbers, MRNs, or clinical-system screenshots
+- Employer-confidential information or internal procedures
 
-* Passwords
-* SSH private keys
-* API keys
-* Tokens
-* `.env` files
-* Personal network secrets
-* Public IP addresses
-* Patient data
-* Employer-confidential data
-* Clinical system screenshots
-* Real accession numbers, MRNs, case IDs, or sample identifiers
+Use synthetic examples, placeholders, public datasets, generalized diagrams, and sanitized command output instead.
 
-Use instead:
+## Remote-Access Design
 
-* Synthetic examples
-* Public datasets
-* Mock data
-* Sanitized placeholders
-* General workflow diagrams
-* Public-safe documentation
+The lab is on an apartment-managed network without router administration or port forwarding. The design therefore uses:
+
+- SSH keys instead of passwords
+- Tailscale as the private mesh-VPN layer
+- No public service exposure
+- Friendly mDNS names where supported
+- Tailnet addresses as the stable remote-access fallback
+
+This design avoids depending on DHCP stability and does not require opening inbound internet ports.
+
+## Near-Term Roadmap
+
+1. Reconcile remaining legacy Pi-only documentation with the two-machine architecture
+2. Improve `.local` name resolution inside the Chromebook Linux environment
+3. Clone this repository onto the lab machines and configure authenticated Git workflows
+4. Choose the first Dockerized service and document its lifecycle
+5. Decide where PostgreSQL should run
+6. Define a provenance-manifest schema for public cytogenetics datasets
+7. Ingest one public dataset end to end
+8. Begin Track A and Track B implementation branches
+
+See [`STATUS.md`](STATUS.md) for the authoritative order and current completion state.
 
 ## Why This Project Matters
 
-This project is not just about running a Raspberry Pi.
+The project is a practical environment for developing skills that transfer directly into clinical AI and laboratory informatics work:
 
-It is a practical infrastructure lab for building the habits needed in clinical AI, laboratory informatics, and technical project work:
-
-* Clear documentation
-* Repeatable setup
-* Version control
-* Security awareness
-* Backup planning
-* Systems thinking
-* Troubleshooting discipline
-* Public-safe technical communication
-
-## Career Relevance
-
-My background is in clinical cytogenetics, including chromosome analysis, FISH workflows, metaphase imaging, and clinical laboratory operations.
-
-This repository helps connect that laboratory experience to technical skills in:
-
-* Linux
-* GitHub
-* Docker
-* Server administration
-* Automation
-* Data engineering fundamentals
-* AI-ready infrastructure
-* Lab-informatics project design
-
-## Current Status
-
-```text
-Foundation phase in progress.
-```
-
-## Next Technical Milestones
-
-* Pull this repository onto the Raspberry Pi
-* Make `scripts/system-info.sh` executable
-* Run the system information script
-* Add sanitized system notes to `docs/setup-log.md`
-* Confirm operating system version
-* Confirm hostname
-* Confirm final SSH access method
-* Install Docker
-* Add first Docker Compose example
-* Add first architecture diagram
-* Begin documenting actual service deployments
-
-## Future Repository Connections
-
-This home-server repository may eventually support or connect to:
-
-* `metaphase-data-pipeline`
-* `cytogenetics-python-notebooks`
-* `clinical-ai-lab-informatics`
-* `portfolio-site`
+- Linux and systems administration
+- Secure access and operational verification
+- Infrastructure-as-code and change control
+- Networking under real environmental constraints
+- Backup and recovery thinking
+- Docker and service lifecycle management
+- Data provenance and reproducibility
+- Public-safe technical communication
+- Evidence-based troubleshooting
 
 ## Project Philosophy
 
-Build slowly, document clearly, and keep everything public-safe.
+Build slowly, verify independently, document decisions, and keep public artifacts sanitized.
 
-The goal is not to create a flashy demo. The goal is to develop durable technical competence that can support real AI, data, and laboratory informatics projects.
+The goal is not merely to operate a Raspberry Pi or mini PC. The goal is to build durable engineering habits and infrastructure capable of supporting credible data, AI, and laboratory-informatics projects.
