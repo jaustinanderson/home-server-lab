@@ -1,126 +1,127 @@
 # Setup Log
 
-This file documents the setup process for my Raspberry Pi home-server lab.
+This file records the public-safe setup history for the Home Server Lab. It documents progress, troubleshooting, and verification without exposing credentials, private keys, network addresses, patient data, or employer-confidential information.
 
-The goal is to keep a clear, public-safe build record that shows technical progress, troubleshooting, and decision-making without exposing passwords, private keys, network secrets, patient data, or employer-confidential information.
+> For the canonical current state, read [`../STATUS.md`](../STATUS.md). Architectural choices and their rationale are recorded in [`../DECISIONS.md`](../DECISIONS.md).
 
 ## Project Context
 
-This home server is part of a broader technical portfolio focused on:
+The lab supports practical learning in:
 
-* Linux administration
-* SSH workflows
-* Docker and containerized services
-* Raspberry Pi infrastructure
-* Secure self-hosted tools
-* Data projects
-* Future clinical AI and lab-informatics workflows
+- Linux administration
+- SSH and secure remote access
+- Docker and containerized services
+- Data engineering and relational databases
+- Backup and recovery planning
+- Infrastructure-as-code
+- Future clinical-AI and laboratory-informatics projects
 
-## Hardware
+## Current Hardware
 
-* Raspberry Pi 5
-* microSD or SSD storage
-* Chromebook used as the primary admin/setup machine
-* Home network connection
+| Machine | Hardware | Role |
+|---|---|---|
+| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, backup, and lightweight services |
+| **Chromebook** | Acer Chromebook Plus 514 | SSH administration through the Linux terminal |
 
-More exact hardware details will be added as the build evolves.
+Both servers run Ubuntu Server 26.04. Exact network identifiers are intentionally omitted.
 
-## Operating System
+## Network and Access Model
 
-Planned or in-progress server operating system:
+The lab operates on an apartment-managed network without router administration, static DHCP reservations, or public port forwarding.
 
-* Ubuntu Server or Raspberry Pi OS
+The working access model is:
 
-Final OS details will be documented once confirmed.
+- SSH key authentication from the Chromebook
+- Password-based SSH disabled on both servers
+- Tailscale for private remote access and stable per-device addressing
+- mDNS hostnames between servers where supported
+- No services exposed directly to the public internet
 
-## Network Setup
+## Verified Foundation
 
-Initial network goals:
+The following foundation work is complete:
 
-* Connect the Raspberry Pi to the local network
-* Confirm local IP address assignment
-* Enable SSH access
-* Configure a stable hostname for easier access
-* Avoid relying permanently on a changing DHCP address
+- Operating systems installed and verified on both servers
+- SSH keys created on the Chromebook and installed on both servers
+- Passwordless SSH confirmed to both machines
+- Password authentication disabled and independently tested
+- Conflicting SSH configuration fragments removed
+- Tailscale installed on the compute node, Pi server, and Chromebook
+- Remote SSH verified through Tailscale
+- Tailscale startup verified after reboot
+- Compute node reboot recovery verified without local intervention
+- Canonical `STATUS.md` and `DECISIONS.md` established in GitHub
 
-Public-safe note: local IP addresses, Wi-Fi details, router information, and network-specific identifiers should be generalized or omitted in this public repository.
+## Current Next Steps
 
-## SSH Setup
+- Improve `.local` name resolution inside the Chromebook Linux environment
+- Reconcile older Pi-only documentation
+- Clone this repository onto the lab machines
+- Configure authenticated Git push workflows
+- Select and deploy the first Dockerized service
+- Decide where PostgreSQL should run
+- Create the first dataset-provenance schema
 
-Initial SSH goals:
+## Troubleshooting Lessons
 
-* Connect from Chromebook to the Raspberry Pi
-* Use a stable hostname when possible
-* Document repeatable SSH commands
-* Eventually configure SSH keys for safer authentication
+### SSH configuration precedence
 
-Example sanitized SSH command:
+Two different configuration fragments had re-enabled password authentication despite a later hardening file. The final state was verified using both:
 
 ```bash
-ssh ubuntu@pi-server.local
+sudo sshd -T
 ```
 
-## Current Status
+and an external password-only login attempt that correctly failed with:
 
-* Repository created
-* Professional GitHub profile configured
-* Home server documentation started
-* Setup log created
+```text
+Permission denied (publickey)
+```
 
-## Next Setup Tasks
+The lesson is that writing a hardening file is not enough; the running daemon configuration and an independent client test must both confirm the intended state.
 
-* Confirm operating system version
-* Confirm hostname
-* Confirm SSH access method
-* Document package updates
-* Install Git if needed
-* Install Docker
-* Create a backup plan
-* Create a security checklist
-* Add architecture diagram
+### Managed-network constraints
 
-## Troubleshooting Notes
+Because the apartment network does not provide router administration, the design avoids relying on DHCP reservations or port forwarding. Tailscale provides stable private connectivity without exposing inbound services.
 
-Use this section to document problems and fixes.
+### Chromebook name resolution
 
-### Issue: Local IP address may change
-
-Potential solution:
-
-* Use hostname-based access such as `pi-server.local`
-* Use router DHCP reservation if available
-* If on a managed apartment network, document limitations and use a practical workaround
-
-### Issue: Chromebook SSH setup
-
-Potential solution:
-
-* Save a reusable SSH connection
-* Prefer hostname-based SSH when reliable
-* Document the final working command
+The Chromebook Linux environment does not yet resolve `.local` names consistently. Tailnet addresses provide a working fallback until Avahi/mDNS support is improved inside the Linux container.
 
 ## Security Rules
 
-Do not commit:
+Never commit:
 
-* Passwords
-* SSH private keys
-* API keys
-* Tokens
-* Personal network details
-* Public IP addresses
-* Patient data
-* Employer-confidential information
-* Screenshots from clinical systems
-* Real LIS, Epic, or lab accession data
+- Passwords, API keys, tokens, recovery codes, or `.env` files
+- SSH private keys
+- Public or private operational IP addresses
+- MAC addresses or device identifiers
+- Router, Wi-Fi, or Tailscale secrets
+- Patient data, MRNs, accession numbers, or clinical-system screenshots
+- Employer-confidential information or internal procedures
 
-## Build Notes
-
-Add dated notes below as the project progresses.
+## Build History
 
 ### 2026-06-24
 
-* Created GitHub account branding for professional career shift
-* Created `home-server-lab` repository
-* Added initial README
-* Started structured documentation
+- Created the public repository and initial documentation structure
+- Established the Raspberry Pi server project foundation
+- Added security, backup, SSH, network, roadmap, script, Docker, and diagram placeholders
+
+### 2026-07-01
+
+- Expanded the architecture to a two-server lab with a compute node and Pi server
+- Confirmed Ubuntu Server 26.04 on both machines
+- Installed SSH keys and verified passwordless access
+- Removed conflicting SSH configuration fragments
+- Verified password authentication was disabled on both servers
+- Installed and verified Tailscale on all three devices
+- Verified remote SSH and automatic Tailscale recovery after reboot
+- Added `STATUS.md` as the canonical state document
+- Added `DECISIONS.md` as the architectural decision log
+
+### 2026-07-10
+
+- Reconciled the README and setup documentation with the verified two-machine architecture
+- Added a GitHub Actions ShellCheck workflow for repository shell scripts
