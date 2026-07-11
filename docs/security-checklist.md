@@ -1,190 +1,128 @@
 # Security Checklist
 
-This checklist documents security practices for the Raspberry Pi home-server lab.
+This checklist separates controls that are verified today from controls that
+must be completed before the lab hosts additional services. It applies to both
+`compute-node` and `pi-server` and to every public artifact in this repository.
 
-The goal is to build good security habits while keeping this public repository safe for professional portfolio use.
+> Current facts live in [`../STATUS.md`](../STATUS.md). Security decisions and
+> the SSH configuration-precedence lesson live in
+> [`../DECISIONS.md`](../DECISIONS.md).
 
-## Public Repository Rules
+## Verified controls
 
-Do not commit:
+- [x] SSH key authentication works from the Chromebook to both servers.
+- [x] Password-based SSH is disabled on both servers.
+- [x] The running daemon configuration was checked with `sshd -T`.
+- [x] An independent password-only client test was rejected.
+- [x] Conflicting cloud-init and legacy SSH fragments were removed.
+- [x] Tailscale provides private remote access without public port forwarding.
+- [x] Tailscale starts after reboot; unattended recovery was verified on
+  `compute-node`.
+- [x] The public repository excludes secrets, private keys, operational
+  addresses, and local data through documented rules and `.gitignore`.
+- [x] No patient data, employer-confidential material, or proprietary clinical
+  content is permitted on the lab.
 
-* Passwords
-* Private SSH keys
-* API keys
-* Authentication tokens
-* `.env` files
-* Router credentials
-* Wi-Fi passwords
-* Public IP addresses
-* Full MAC addresses
-* Personal network diagrams with identifying details
-* Screenshots showing private system details
-* Patient data
-* Employer-confidential data
-* LIS, Epic, or clinical system screenshots
-* Real accession numbers, MRNs, case IDs, or sample identifiers
+Verified does not mean permanent. Re-run the relevant checks after SSH, network,
+package, or operating-system changes.
 
-## SSH Security
+## Public repository gate
 
-Planned SSH security practices:
+Before every commit or pull request, confirm the change contains none of the
+following:
 
-* Use SSH key authentication when ready
-* Store private keys only on trusted devices
-* Never upload private keys to GitHub
-* Confirm key-based login works before disabling password login
-* Use strong passwords during early setup
-* Avoid exposing SSH directly to the public internet
-* Consider Tailscale for private remote access
+- Passwords, private keys, API keys, tokens, recovery codes, or `.env` files
+- Real DHCP, public, or Tailscale addresses
+- MAC addresses, device serials, Wi-Fi names, router details, or account IDs
+- Unsanitized terminal output, logs, exports, or screenshots
+- Patient data, real case identifiers, accession numbers, or MRNs
+- Employer-confidential material, internal procedures, or clinical-system
+  screenshots
 
-## System Updates
+Use placeholders, synthetic examples, public datasets, generalized diagrams,
+and sanitized evidence.
 
-Routine maintenance:
+## SSH verification after a change
+
+Keep an existing session open until a fresh key-based login succeeds.
+
+```bash
+sudo sshd -t
+sudo sshd -T | grep -E 'passwordauthentication|pubkeyauthentication'
+```
+
+Expected security-relevant output:
+
+```text
+passwordauthentication no
+pubkeyauthentication yes
+```
+
+From another client, verify that password-only authentication is rejected:
+
+```bash
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no <user>@<private-host>
+```
+
+Do not publish the private host or verbose connection output.
+
+## System maintenance
+
+Routine package review:
 
 ```bash
 sudo apt update
-sudo apt upgrade
+apt list --upgradable
 ```
 
-Optional cleanup:
+Apply approved updates deliberately, inspect service impact, and reboot when a
+kernel or other relevant update requires it. Record the patching cadence and
+last verified run in a future maintenance runbook; do not claim a cadence until
+it is actually followed.
 
-```bash
-sudo apt autoremove
-```
+## Firewall and service exposure
 
-Reboot when needed:
+No application service topology is deployed yet, so a final firewall policy is
+not claimed. Before the first Dockerized service:
 
-```bash
-sudo reboot
-```
+- Inventory listening ports with a local command such as `ss -lntup`.
+- Decide which devices need each service.
+- Bind services to the narrowest appropriate interface.
+- Prefer Tailscale or local-only access over public exposure.
+- Document UFW or other host-firewall rules and verify them independently.
+- Add public exposure only through a separately reviewed threat model and
+  decision record.
 
-## User Accounts
+## Docker gate
 
-Security goals:
+Before accepting a Compose file:
 
-* Use a non-root user for normal administration
-* Use `sudo` only when needed
-* Avoid shared accounts when possible
-* Use strong passwords
-* Remove unused accounts
-* Document account roles without exposing credentials
+- Use reputable images and pin versions deliberately.
+- Avoid root containers when the image supports a non-root user.
+- Keep secrets outside Compose and Git.
+- Define volumes, networks, health checks, and restart behavior.
+- Review every published port.
+- Document start, stop, update, rollback, backup, and removal procedures.
+- Validate the file in a disposable environment before relying on it.
 
-## Firewall
+## Backup and recovery gate
 
-Future firewall goals:
+The hardware roles are chosen, but an automated backup and tested restore are
+not yet verified. Before valuable data is stored:
 
-* Identify which services need network access
-* Block unnecessary inbound traffic
-* Avoid public port forwarding unless there is a clear reason
-* Prefer private network tools for remote access
-* Document open ports in a public-safe way
+- Define source, destination, schedule, retention, exclusions, and encryption.
+- Keep at least one copy outside the failure domain of the working machine.
+- Protect credentials separately from public documentation.
+- Run and document a restore test.
+- Treat a backup as incomplete until the restored data is verified.
 
-Potential tool:
+See [`backup-plan.md`](backup-plan.md).
 
-```bash
-sudo ufw status
-```
+## Remaining security work
 
-## Docker Security
-
-Docker security goals:
-
-* Use official or reputable images when possible
-* Pin image versions when stability matters
-* Avoid running containers as root when possible
-* Avoid storing secrets directly in `docker-compose.yml`
-* Keep `.env` files out of GitHub
-* Use `.gitignore` for local secrets
-* Review exposed ports before starting services
-* Keep containers updated intentionally
-
-## Secrets Management
-
-Never store secrets directly in public files.
-
-Unsafe examples:
-
-```text
-PASSWORD=my-password
-API_KEY=abc123
-TOKEN=secret-token
-```
-
-Safer public documentation:
-
-```text
-PASSWORD=<your-password-here>
-API_KEY=<your-api-key-here>
-TOKEN=<your-token-here>
-```
-
-## Data Privacy
-
-This project must remain public-safe.
-
-Do not use:
-
-* Real patient data
-* Employer data
-* Clinical screenshots
-* Internal SOPs
-* Real case identifiers
-* Real lab accession numbers
-* Any data that could identify a patient, coworker, employer system, or institution
-
-Use instead:
-
-* Synthetic examples
-* Public datasets
-* Mock data
-* Sanitized placeholders
-* General workflow diagrams
-
-## Backup Security
-
-Backup goals:
-
-* Keep at least one backup separate from the main server
-* Avoid storing unencrypted sensitive data
-* Test restore procedures
-* Document backup strategy without exposing private paths or credentials
-* Keep credentials separate from backup documentation
-
-## Remote Access
-
-Preferred remote access strategy:
-
-* Avoid exposing services directly to the public internet
-* Avoid router port forwarding unless absolutely necessary
-* Prefer private access tools such as Tailscale
-* Use strong authentication
-* Document remote access decisions carefully
-
-## GitHub Safety
-
-Before committing, check for:
-
-* Secrets
-* Personal data
-* Internal network details
-* Private screenshots
-* Employer or patient information
-* Accidentally included config files
-* Terminal output containing sensitive paths or keys
-
-Useful habit:
-
-```bash
-git status
-```
-
-Review file contents before committing.
-
-## Future Improvements
-
-* Add `.gitignore`
-* Add SSH key setup notes
-* Add firewall notes
-* Add Docker security notes
-* Add backup plan
-* Add service inventory
-* Add update schedule
+- [ ] Establish and record a repeatable patching cadence for both servers.
+- [ ] Inventory listening ports before the first service deployment.
+- [ ] Define and verify host-firewall rules for the actual service topology.
+- [ ] Implement a backup job and complete a restore test.
+- [ ] Decide whether genuinely sensitive operational notes need a private
+  repository or other private store.

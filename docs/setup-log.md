@@ -21,7 +21,7 @@ The lab supports practical learning in:
 | Machine | Hardware | Role |
 |---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute |
-| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, backup, and lightweight services |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, intended backup target, and lightweight services |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH administration through the Linux terminal |
 
 Both servers run Ubuntu Server 26.04. Exact network identifiers are intentionally omitted.
@@ -49,14 +49,13 @@ The following foundation work is complete:
 - Conflicting SSH configuration fragments removed
 - Tailscale installed on the compute node, Pi server, and Chromebook
 - Remote SSH verified through Tailscale
-- Tailscale startup verified after reboot
+- Tailscale startup verified after a `compute-node` reboot
 - Compute node reboot recovery verified without local intervention
 - Canonical `STATUS.md` and `DECISIONS.md` established in GitHub
 
 ## Current Next Steps
 
 - Improve `.local` name resolution inside the Chromebook Linux environment
-- Reconcile older Pi-only documentation
 - Clone this repository onto the lab machines
 - Configure authenticated Git push workflows
 - Select and deploy the first Dockerized service
@@ -125,3 +124,10 @@ Never commit:
 
 - Reconciled the README and setup documentation with the verified two-machine architecture
 - Added a GitHub Actions ShellCheck workflow for repository shell scripts
+
+### 2026-07-11
+
+- Reconciled the remaining network, security, backup, script, and diagram documentation
+- Added a public-safe diagram of the verified topology and planned backup flow
+- Removed stale Pi-only and already-completed next steps
+- Reduced sensitive detail in the default `system-info.sh` output

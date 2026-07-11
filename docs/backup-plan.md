@@ -1,223 +1,129 @@
 # Backup Plan
 
-This file documents the backup strategy for the Raspberry Pi home-server lab.
+This document defines the intended backup and restore model for the two-machine
+Home Server Lab. It distinguishes current hardware roles from controls that are
+not yet implemented.
 
-The goal is to build reliable backup habits early, before the server begins hosting important projects, data, scripts, notes, or self-hosted services.
+> **Current status:** `compute-node` is the working-storage machine and
+> `pi-server` is the intended archive and local-backup target. No automated
+> backup job, retention policy, off-site data backup, or completed restore test
+> is claimed yet. Do not place irreplaceable data on the lab until those controls
+> are implemented and verified.
 
-## Backup Philosophy
+## Backup principles
 
-A home server is only useful if its data can survive mistakes, failed storage, bad updates, accidental deletion, and hardware problems.
+- Protect irreplaceable data; re-download reproducible public datasets.
+- Keep important data in more than one failure domain.
+- Separate configuration, databases, datasets, annotations, logs, and secrets.
+- Automate only after the source, destination, exclusions, and recovery path are
+  understood.
+- Test restoration; a successful copy is not proof of recoverability.
+- Keep public documentation sanitized and credentials in a private mechanism.
 
-This project should follow a simple backup mindset:
+## Data classes
 
-* Important files should exist in more than one place
-* Backups should be tested, not just assumed
-* Configuration should be documented
-* Secrets should not be stored in public repositories
-* Recovery steps should be clear enough to follow under stress
+| Data class | Examples | Intended protection |
+|---|---|---|
+| Source and public documentation | Git-tracked code, Compose files, runbooks, diagrams | GitHub plus local clones |
+| Reproducible public data | Original public datasets with recorded source and checksum | Provenance manifest; re-download when practical |
+| Irreplaceable project data | Annotations, curated metadata, database state, experiment decisions | Local second copy plus encrypted off-site copy |
+| Service state | Database dumps, persistent-volume data, configuration | Service-specific backup and restore runbook |
+| Secrets | Tokens, private keys, private addresses, recovery material | Private secret store; never this repository |
+| Caches and rebuildable artifacts | Package caches, images that can be rebuilt, temporary exports | Exclude unless a concrete recovery need exists |
 
-## What Needs Backed Up
+Patient data, employer-confidential material, proprietary clinical-system
+content, and real clinical identifiers are prohibited on the lab entirely; a
+backup policy does not make them acceptable.
 
-Important categories:
+## Practical 3-2-1 target
 
-* Project documentation
-* Docker Compose files
-* Service configuration files
-* Scripts
-* Notes
-* Diagrams
-* Databases used for practice projects
-* Future AI/lab-informatics project data
-* Home-server configuration notes
+For irreplaceable project data, the intended model is:
 
-Do not back up unnecessary cache files, temporary files, or large rebuildable files unless there is a reason.
+1. **Working copy:** `compute-node`.
+2. **Local second copy:** `pi-server`, created by a documented and monitored
+   backup job.
+3. **Off-site copy:** an encrypted, access-controlled destination selected when
+   valuable private project data exists.
 
-## What Should Not Be Publicly Backed Up Here
+GitHub supplies an off-device copy of public source and documentation. It is not
+a substitute for database dumps, service data, private configuration, or a
+general off-site backup.
 
-This GitHub repository should not contain:
+Because both servers share the same location and network, copying from one to
+the other protects against a single-disk or single-machine failure but not
+theft, fire, account compromise, or a destructive command that reaches both.
 
-* Passwords
-* Private SSH keys
-* API keys
-* Tokens
-* `.env` files
-* Private network details
-* Patient data
-* Employer-confidential data
-* Clinical screenshots
-* Real accession numbers, MRNs, case IDs, or sample identifiers
+## Backup scope template
 
-## 3-2-1 Backup Rule
+Before implementing a job, document:
 
-A mature backup plan should aim for the 3-2-1 rule:
+| Field | Required decision |
+|---|---|
+| Source | Exact data or service being protected |
+| Destination | Storage target and failure domain |
+| Method | Tool and command or configuration |
+| Schedule | Frequency and acceptable data-loss window |
+| Retention | Number and age of copies kept |
+| Exclusions | Caches, public datasets, secrets, or temporary files omitted |
+| Integrity | Checksums, tool verification, or database consistency method |
+| Encryption | At rest and in transit, when required |
+| Monitoring | How a failed or stale backup is detected |
+| Restore owner | Who can recover the data and where credentials live |
 
-* **3 copies** of important data
-* **2 different types of storage**
-* **1 copy off-site or separate from the main machine**
+Do not place real paths, addresses, credentials, or private inventory in this
+public file.
 
-For this project, a practical version could be:
+## Service-specific requirements
 
-1. Main copy on the Raspberry Pi
-2. Local backup to external SSD or another storage device
-3. Off-device backup to GitHub, cloud storage, or another trusted location for public-safe files
+For a Dockerized service, protect the material needed to recreate and recover
+it:
 
-## GitHub as Documentation Backup
+- Versioned Compose and public-safe configuration
+- Image/version information
+- Persistent-volume or bind-mount data
+- Application-consistent database dumps where applicable
+- Required private configuration stored outside Git
+- Start, stop, update, rollback, and restore instructions
 
-GitHub is useful for backing up:
+Copying a live database file is not automatically application-consistent. Use
+the database's supported dump or backup mechanism and test the result.
 
-* Public-safe documentation
-* Scripts
-* Docker Compose templates
-* Architecture notes
-* Setup logs
-* Sanitized configuration examples
+## Restore test
 
-GitHub should not be used for:
+Every protected workload needs a disposable restore exercise:
 
-* Secrets
-* Private keys
-* `.env` files
-* Private service data
-* Personal records
-* Sensitive clinical data
+1. Choose a known backup point.
+2. Restore into a separate path, database, volume, or disposable host.
+3. Verify checksums or application-level records.
+4. Start the restored service without touching the live copy.
+5. Record duration, missing prerequisites, manual steps, and failures.
+6. Correct the runbook and repeat until the result is reproducible.
 
-## Local Backup Strategy
+Capture public-safe evidence only. A restore test should not expose private
+paths, tokens, addresses, or service data.
 
-Possible local backup targets:
+## Pre-commit and pre-share safety
 
-* External SSD
-* USB drive
-* NAS
-* Another computer
-* Encrypted backup drive
+Before committing backup documentation or copying output into a pull request,
+check for:
 
-Future documentation should include:
+- Credentials, keys, tokens, `.env` contents, or recovery material
+- Operational addresses, device identifiers, private paths, or account names
+- Private database contents or service exports
+- Patient data, real identifiers, employer information, or clinical screenshots
+- Archive files or backup directories accidentally added to Git
 
-* Backup location
-* Backup frequency
-* Backup command or tool
-* What is included
-* What is excluded
-* Restore procedure
+The repository `.gitignore` excludes common secret, backup, database, local
+data, and archive patterns. That is a safety net, not a content review.
 
-## Example Backup Folder Structure
+## Implementation order
 
-```text
-backups/
-├── configs/
-├── docker/
-├── scripts/
-├── service-data/
-└── restore-notes/
-```
-
-This is only an example. Do not commit actual private backup data into this public repository.
-
-## Docker Backup Considerations
-
-For Docker-based services, back up:
-
-* `docker-compose.yml`
-* Service configuration directories
-* Persistent volumes
-* Database dumps when applicable
-* Notes about exposed ports and dependencies
-
-Do not commit:
-
-* `.env` files
-* Secrets
-* Service passwords
-* Tokens
-* Private database contents
-
-## Example Docker Documentation Backup
-
-Safe to document publicly:
-
-```text
-docker/
-└── compose-files/
-    └── example-service.compose.yml
-```
-
-Unsafe to commit publicly:
-
-```text
-.env
-secrets.txt
-private-key.pem
-actual-database-backup.sql
-```
-
-## Restore Plan
-
-A backup is incomplete until restoration is possible.
-
-Future restore checklist:
-
-* Reinstall operating system if needed
-* Restore SSH access
-* Install required packages
-* Install Docker
-* Restore Compose files
-* Restore service configuration
-* Restore persistent data
-* Restart services
-* Confirm services work
-* Document issues encountered
-
-## Testing Backups
-
-Backups should be tested periodically.
-
-Testing questions:
-
-* Can the backup files be found?
-* Can they be opened?
-* Can the server be rebuilt from the notes?
-* Can Docker services be restarted from the saved Compose files?
-* Are any required secrets missing from the private backup location?
-* Are public docs free from sensitive data?
-
-## Backup Frequency
-
-Possible schedule:
-
-* Documentation: commit to GitHub whenever changed
-* Scripts: commit to GitHub whenever changed
-* Docker Compose files: commit after meaningful changes
-* Service configuration: back up after service changes
-* Service data: schedule depends on importance
-* Full server image: before major changes or upgrades
-
-## Pre-Backup Safety Check
-
-Before backing up or committing files, check for:
-
-* Passwords
-* Tokens
-* Private keys
-* `.env` files
-* Real IP addresses if not appropriate
-* Personal network details
-* Patient data
-* Employer-confidential information
-* Clinical system screenshots
-
-Useful command before committing from a local repo:
-
-```bash
-git status
-```
-
-## Future Improvements
-
-* Choose a local backup device
-* Decide whether to use external SSD, NAS, or cloud backup
-* Create `.gitignore`
-* Document backup commands
-* Document restore commands
-* Test restoring a simple service
-* Add encrypted backup notes
-* Add backup schedule
+1. Decide which first service or data class is valuable enough to protect.
+2. Define the backup scope with the template above.
+3. Select the tool and create a public-safe runbook.
+4. Implement the local `compute-node` to `pi-server` copy.
+5. Add failure monitoring and a retention policy.
+6. Complete and document a restore test.
+7. Add an encrypted off-site copy for irreplaceable private data.
+8. Review the design after the NAS is introduced; a NAS is storage, not
+   automatically a backup.

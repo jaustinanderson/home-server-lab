@@ -1,6 +1,6 @@
 # Scripts
 
-This folder will store public-safe scripts for the home-server lab.
+This folder stores public-safe scripts for the home-server lab.
 
 The goal is to build useful automation while keeping scripts readable, documented, and safe for a public portfolio repository.
 
@@ -40,12 +40,27 @@ API_KEY=<your-api-key-here>
 BACKUP_PATH=<your-backup-path-here>
 ```
 
+## Available Scripts
+
+| Script | Purpose | Safety note |
+|---|---|---|
+| [`system-info.sh`](system-info.sh) | Summarize OS, kernel, uptime, memory, root-filesystem use, CPU, temperature, network-link state, and Docker availability | Omits network addresses and unique CPU serials by default; review all output before sharing |
+
+Run the current utility from the repository root:
+
+```bash
+chmod +x scripts/system-info.sh
+./scripts/system-info.sh
+```
+
+GitHub Actions runs ShellCheck against every repository shell script on pushes
+and pull requests.
+
 ## Planned Scripts
 
 Possible future scripts:
 
 ```text
-system-info.sh
 update-server.sh
 backup-check.sh
 docker-status.sh
@@ -80,8 +95,8 @@ set -e
 
 ## Future Improvements
 
-* Add first real utility script
-* Add usage instructions for each script
-* Add shellcheck notes
-* Add permissions notes
-* Add script testing checklist
+* Add a non-mutating update-status check
+* Add a backup verification check after a backup workflow exists
+* Add service-health and storage-threshold checks after the first service is deployed
+* Add script-specific prerequisites, side effects, and rollback notes
+* Add a lightweight script testing checklist

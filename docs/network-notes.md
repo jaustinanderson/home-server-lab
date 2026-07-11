@@ -1,183 +1,124 @@
 # Network Notes
 
-This file documents network setup decisions for the Raspberry Pi home-server lab.
+This document records the verified, public-safe network model for the two-machine
+Home Server Lab. Operational addresses, device identifiers, Wi-Fi details, and
+account credentials are intentionally omitted.
 
-The goal is to maintain a clear, public-safe record of how the server is reached on the local network without exposing private network details, router information, passwords, public IP addresses, or other sensitive configuration.
+> [`../STATUS.md`](../STATUS.md) is the source of truth for current state.
+> [`../DECISIONS.md`](../DECISIONS.md) records why the lab uses DHCP, mDNS, and
+> Tailscale.
 
-## Network Goals
+## Current topology
 
-The home server should be reachable in a stable, repeatable way from the primary admin machine.
+| Device | Local role | Verified access |
+|---|---|---|
+| **Chromebook** | SSH control surface | Reaches both servers through the private Tailscale mesh |
+| **compute-node** | Working storage, data services, and future compute | Key-based SSH; local server-to-server connectivity; Tailscale |
+| **pi-server** | Archive, planned backup target, and lightweight services | Key-based SSH; local server-to-server connectivity; Tailscale |
 
-Primary goals:
+The apartment-managed network provides DHCP and device-to-device connectivity,
+but no router administration, static DHCP reservations, or public port
+forwarding. Nothing in the lab depends on opening an inbound internet port.
 
-* Connect the Raspberry Pi to the local network
-* Confirm that the server receives a local network address
-* Access the server over SSH
-* Prefer hostname-based access when possible
-* Avoid relying permanently on a changing DHCP address
-* Document public-safe troubleshooting steps
+See the rendered topology in
+[`../diagrams/home-lab-architecture.md`](../diagrams/home-lab-architecture.md).
 
-## Preferred Access Method
+## Addressing and name resolution
 
-The preferred access method is hostname-based SSH:
+- **DHCP remains enabled.** Local addresses may change and are not committed.
+- **mDNS/Avahi works between the two servers.** They can reach
+  `compute-node.local` and `pi-server.local` from one another.
+- **The Chromebook Linux container does not yet resolve `.local` names
+  reliably.** This is a quality-of-life item, not a connectivity blocker.
+- **Tailscale is the stable remote-access path.** Each device has a private
+  tailnet address that can be discovered locally with `tailscale status`.
 
-```bash
-ssh ubuntu@pi-server.local
-```
+Do not copy real DHCP or tailnet addresses into this public repository.
 
-This is easier to remember than a local IP address and is more portable if the server receives a different DHCP address later.
+## Preferred SSH model
 
-## Local IP Address Strategy
-
-A local IP address can be useful during setup, but it may change if the router assigns a new DHCP lease.
-
-Example sanitized local IP format:
-
-```text
-192.168.x.x
-```
-
-Do not commit actual public IP addresses or sensitive network identifiers.
-
-## DHCP Reservation
-
-A DHCP reservation tells the router to keep assigning the same local IP address to the Raspberry Pi.
-
-This is useful because:
-
-* SSH commands stay consistent
-* Bookmarks and saved connections remain valid
-* Services are easier to find
-* Troubleshooting is simpler
-
-However, DHCP reservation may not be available on managed apartment networks or shared network environments.
-
-## Managed Network Limitation
-
-If the home network is managed by an apartment, ISP, or building network provider, router-level DHCP reservation may not be available.
-
-Practical alternatives:
-
-* Use `pi-server.local` hostname access
-* Use Tailscale later for stable private networking
-* Keep a setup note showing how to check the current local IP
-* Avoid exposing services directly to the public internet
-
-## Hostname
-
-Preferred hostname:
-
-```text
-pi-server
-```
-
-Preferred local network address:
-
-```text
-pi-server.local
-```
-
-The hostname should be short, clear, and stable.
-
-## Useful Network Commands
-
-Check IP addresses on the server:
+Use the sanitized host aliases documented in
+[`ssh-notes.md`](ssh-notes.md):
 
 ```bash
-ip addr
+ssh compute-node
+ssh pi-server
 ```
 
-Show active network connections:
+The aliases can point to private Tailscale addresses until Chromebook `.local`
+resolution is reliable. SSH uses the configured Ed25519 key and
+`IdentitiesOnly yes`; password authentication is disabled on both servers.
+
+## Useful verification commands
+
+Run locally and sanitize output before sharing:
 
 ```bash
-nmcli connection show
-```
-
-Show hostname:
-
-```bash
-hostname
-```
-
-Show detailed hostname information:
-
-```bash
+ip -brief addr
 hostnamectl
+tailscale status
+systemctl status tailscaled --no-pager
+ping -c 4 compute-node.local
+ping -c 4 pi-server.local
 ```
 
-Test local network reachability from another machine:
-
-```bash
-ping pi-server.local
-```
-
-SSH using hostname:
-
-```bash
-ssh ubuntu@pi-server.local
-```
-
-SSH using a temporary local IP placeholder:
-
-```bash
-ssh ubuntu@192.168.x.x
-```
+Use `ip -brief addr` and `tailscale status` for troubleshooting only. Their
+output contains operational addresses and device information that should not be
+published unchanged.
 
 ## Troubleshooting
 
-### Hostname does not work
+### A `.local` hostname does not resolve from the Chromebook
 
-If this command fails:
+Use the verified Tailscale-backed SSH alias. Then inspect mDNS support inside
+the Chromebook Linux container. Installing or enabling Avahi there is the next
+planned quality-of-life task; it is not required for secure remote access.
+
+### A server-to-server `.local` hostname stops resolving
+
+On the affected server:
 
 ```bash
-ssh ubuntu@pi-server.local
+systemctl status avahi-daemon --no-pager
+getent hosts compute-node.local
+getent hosts pi-server.local
 ```
 
-Check:
+Confirm both machines are reachable over the local network and fall back to
+Tailscale while investigating.
 
-* The Raspberry Pi is powered on
-* The Raspberry Pi is connected to the same local network
-* The hostname is set correctly
-* mDNS/Avahi is installed and running if needed
-* The admin machine supports `.local` hostname resolution
+### A previous local address no longer works
 
-### Local IP changed
+That is expected under DHCP. Discover the current address locally or use the
+stable Tailscale path. Do not hard-code a changing local address into public
+documentation or automation.
 
-If the previous IP no longer works:
+### Remote SSH fails
 
-* Check the current IP from the router or network device list
-* Run `ip addr` directly on the server if local access is available
-* Use hostname access when possible
-* Configure DHCP reservation if router access is available
-* Consider Tailscale later for a more stable private network path
+Check, in order:
 
-### Managed apartment network
+1. Tailscale is connected on the Chromebook and target server.
+2. The SSH alias resolves to the intended private host.
+3. The configured username and identity file are correct.
+4. The SSH service is active on the target.
+5. `ssh -vvv <host-alias>` identifies where negotiation fails.
 
-If router configuration is unavailable:
+Do not weaken the verified key-only SSH configuration to work around a name or
+route problem.
 
-* Use hostname access locally
-* Avoid depending on router-level settings
-* Avoid public port forwarding
-* Use Tailscale or another private VPN-style tool later if remote access is needed
+## Security boundary
 
-## Security Notes
+- No public SSH exposure or router port forwarding
+- No operational addresses, MAC addresses, Wi-Fi names, or device IDs in Git
+- No screenshots copied without reviewing every visible field
+- No patient, employer, or proprietary clinical-system data on the lab
+- New public service exposure requires a separate threat model and decision
+  record
 
-Do not publicly document:
+## Next network work
 
-* Wi-Fi passwords
-* Router admin credentials
-* Public IP addresses
-* Full device MAC addresses
-* Private network diagrams with identifying details
-* ISP account information
-* Screenshots showing personal network names or device identifiers
-
-## Future Improvements
-
-* Confirm final hostname
-* Confirm preferred SSH command
-* Decide whether DHCP reservation is available
-* Add Tailscale notes if used
-* Create a simple network diagram
-* Document remote access strategy
-* Document firewall assumptions
+1. Improve `.local` resolution inside the Chromebook Linux environment.
+2. Document the standard Git/SSH authentication path for repository pushes.
+3. Inventory ports and firewall rules before deploying the first service.
+4. Update the architecture diagram when a service topology is actually
+   verified.

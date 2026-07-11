@@ -1,92 +1,35 @@
 # Diagrams
 
-This folder will store public-safe diagrams for the home-server lab.
+This folder contains public-safe diagrams of the Home Server Lab. Diagrams must
+match verified state in [`../STATUS.md`](../STATUS.md) and clearly label planned
+flows that are not yet implemented.
 
-The goal is to visually document the server architecture, network layout, Docker service structure, backup strategy, and future AI/lab-informatics project connections.
+## Current diagrams
 
-## Purpose
+- [`home-lab-architecture.md`](home-lab-architecture.md) — Chromebook control
+  surface, private Tailscale access, the two server roles, local connectivity,
+  and the planned backup direction
 
-Diagrams help explain:
+## Planned diagrams
 
-* Server architecture
-* Network relationships
-* Docker service layout
-* Backup flow
-* Data flow
-* Future project structure
-* Troubleshooting concepts
+Add these only when the corresponding systems exist:
 
-## Planned Diagrams
+- Docker service topology for the first deployed service
+- Backup and restore flow after the first successful restore test
+- PostgreSQL and dataset-provenance data flow
+- Track A and Track B application topology
 
-Possible future diagrams:
+## Standards
 
-```text
-home-server-architecture.md
-network-layout.md
-docker-services.md
-backup-flow.md
-future-ai-lab-informatics-stack.md
-```
+Every diagram must:
 
-## Diagram Standards
+- Be understandable without operational addresses or device identifiers
+- Distinguish verified components from proposals
+- Avoid public IPs, MAC addresses, Wi-Fi details, private service URLs, account
+  identifiers, credentials, and screenshots of live systems
+- Exclude patient data, employer material, real case identifiers, and
+  proprietary clinical-system content
+- Be updated in the same change that alters the documented architecture
 
-Diagrams should be:
-
-* Public-safe
-* Clear
-* Simple
-* Useful
-* Updated as the build changes
-* Free of private network details
-* Free of patient or employer-confidential information
-
-## Security Rules
-
-Do not include:
-
-* Public IP addresses
-* Full MAC addresses
-* Wi-Fi names or passwords
-* Router admin details
-* Private service URLs
-* Patient data
-* Employer data
-* Clinical screenshots
-* Real accession numbers, MRNs, case IDs, or sample identifiers
-
-Use placeholders instead:
-
-```text
-Raspberry Pi Server
-Admin Laptop / Chromebook
-Home Network
-Private Backup Device
-Docker Services
-Future Portfolio Projects
-```
-
-## Possible Architecture Concept
-
-```text
-Chromebook / Admin Machine
-        |
-        | SSH
-        v
-Raspberry Pi Home Server
-        |
-        | Docker
-        v
-Self-Hosted Services
-        |
-        | Future Use
-        v
-AI, Data, and Lab-Informatics Projects
-```
-
-## Future Improvements
-
-* Add first architecture diagram
-* Add Docker service diagram
-* Add backup flow diagram
-* Add public-safe network diagram
-* Add future clinical AI/lab-informatics stack diagram
+Prefer compact Mermaid diagrams in Markdown so GitHub renders them and the
+source remains reviewable in version control.
