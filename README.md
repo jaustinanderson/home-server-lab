@@ -13,7 +13,7 @@ This repository documents the real architecture, decisions, validation steps, an
 | Machine | Hardware | Role | Operating system |
 |---|---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute | Ubuntu Server 26.04 |
-| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, backup, and lightweight services | Ubuntu Server 26.04 |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, intended backup target, and lightweight services | Ubuntu Server 26.04 |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH control surface through the Linux terminal | ChromeOS |
 
 Network addresses, MAC addresses, credentials, private keys, and other operational secrets are intentionally excluded from this public repository.
@@ -27,7 +27,7 @@ The infrastructure foundation is complete and independently verified:
 - Password-based SSH disabled and tested from an external client
 - Tailscale installed on all three devices for private remote access
 - Remote SSH verified without public port forwarding
-- Tailscale startup and unattended recovery verified after reboot
+- Tailscale startup and unattended recovery verified after a `compute-node` reboot
 - mDNS hostnames working between the two servers
 - Public-safe project state and architectural decisions stored in GitHub
 - Security and backup boundaries documented
@@ -53,8 +53,13 @@ home-server-lab/
 ├── README.md
 ├── STATUS.md                 # canonical current state
 ├── DECISIONS.md              # architectural decision log
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── LICENSE
 ├── .gitignore
 ├── .github/
+│   ├── dependabot.yml
+│   ├── pull_request_template.md
 │   └── workflows/
 │       └── shellcheck.yml
 ├── docs/
@@ -71,7 +76,8 @@ home-server-lab/
 │   ├── README.md
 │   └── system-info.sh
 └── diagrams/
-    └── README.md
+    ├── README.md
+    └── home-lab-architecture.md
 ```
 
 ## Documentation
@@ -84,10 +90,14 @@ home-server-lab/
 - [`docs/security-checklist.md`](docs/security-checklist.md) — public-repository and server-security rules
 - [`docs/backup-plan.md`](docs/backup-plan.md) — backup philosophy, scope, and restore planning
 - [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
+- [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and planned backup flow
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — change workflow, validation expectations, and scope control
+- [`SECURITY.md`](SECURITY.md) — reporting and response guidance for security or data-safety problems
+- [`LICENSE`](LICENSE) — MIT License
 
 ## Current Utility Script
 
-[`scripts/system-info.sh`](scripts/system-info.sh) prints operating-system, kernel, memory, disk, CPU, temperature, network-interface, and Docker-status information.
+[`scripts/system-info.sh`](scripts/system-info.sh) prints operating-system, kernel, memory, disk, CPU, temperature, network-link, and Docker-status information. Its default output omits network addresses and unique CPU serials, but local paths and device context should still be reviewed before sharing.
 
 Run it locally on a lab machine:
 
@@ -96,7 +106,7 @@ chmod +x scripts/system-info.sh
 ./scripts/system-info.sh
 ```
 
-Review output before publishing it. Hostnames and private network addresses may be appropriate for local troubleshooting but should be sanitized before being copied into public documentation.
+Review output before publishing it. Public-safe defaults reduce accidental disclosure; they do not replace a human review of copied terminal output.
 
 ## Continuous Checks
 
@@ -130,14 +140,13 @@ This design avoids depending on DHCP stability and does not require opening inbo
 
 ## Near-Term Roadmap
 
-1. Reconcile remaining legacy Pi-only documentation with the two-machine architecture
-2. Improve `.local` name resolution inside the Chromebook Linux environment
-3. Clone this repository onto the lab machines and configure authenticated Git workflows
-4. Choose the first Dockerized service and document its lifecycle
-5. Decide where PostgreSQL should run
-6. Define a provenance-manifest schema for public cytogenetics datasets
-7. Ingest one public dataset end to end
-8. Begin Track A and Track B implementation branches
+1. Improve `.local` name resolution inside the Chromebook Linux environment
+2. Clone this repository onto the lab machines and configure authenticated Git workflows
+3. Choose the first Dockerized service and document its lifecycle
+4. Decide where PostgreSQL should run
+5. Define a provenance-manifest schema for public cytogenetics datasets
+6. Ingest one public dataset end to end
+7. Begin Track A and Track B implementation branches
 
 See [`STATUS.md`](STATUS.md) for the authoritative order and current completion state.
 

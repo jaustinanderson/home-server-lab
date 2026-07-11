@@ -84,3 +84,9 @@ CLI inside Penguin, GitHub MCP server, a formal coordination issue. Rationale: m
 beginner's understanding and to the hardware (Chromebook rules out Claude Desktop; Codex is the natural
 write path). This deliberately defers the all-at-once integration plan ChatGPT drafted. Austin arbitrates
 any Claude/ChatGPT divergence via this log.
+
+**D16 — Focused Codex pull requests are now the AI write path.** *(2026-07-11)*
+Phase 2 of D15 is active for repository maintenance: Codex works on a focused branch, runs proportionate
+checks, and opens a pull request for review rather than writing directly to `main`. Austin retains the
+merge decision. This does **not** mean the lab machines have GitHub push authentication; that separate
+host setup remains pending in `STATUS.md`.

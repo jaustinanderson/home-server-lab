@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 
 # Script: system-info.sh
-# Purpose: Print public-safe system information for the Raspberry Pi home-server lab.
-# Safety: This script does not print passwords, private keys, tokens, or secrets.
+# Purpose: Print a share-conscious system summary for either home-lab server.
+# Safety: Network addresses and unique CPU serials are omitted. Review all
+# output before publishing because device names, mount paths, or other local
+# context may still be sensitive.
 
 set -u
 
@@ -13,9 +15,7 @@ section() {
   echo "========================================"
 }
 
-section "System Identity"
-echo "Hostname: $(hostname)"
-echo "Current user: $(whoami)"
+section "Capture Time"
 echo "Date: $(date)"
 
 section "Operating System"
@@ -28,7 +28,7 @@ else
 fi
 
 section "Kernel"
-uname -a
+uname -srm
 
 section "Uptime"
 uptime
@@ -36,12 +36,12 @@ uptime
 section "Memory"
 free -h
 
-section "Disk Usage"
-df -h
+section "Root Filesystem Usage"
+df -h /
 
 section "CPU Info"
 if [ -f /proc/cpuinfo ]; then
-  grep -E "Model|Hardware|Revision|Serial|processor|model name" /proc/cpuinfo | head -n 20
+  grep -E "Model|Hardware|Revision|processor|model name" /proc/cpuinfo | head -n 20
 else
   echo "CPU info not found."
 fi
@@ -57,8 +57,8 @@ else
   echo "Temperature information not available."
 fi
 
-section "Network Interfaces"
-ip -brief addr 2>/dev/null || echo "ip command not available."
+section "Network Link State (addresses omitted)"
+ip -brief link 2>/dev/null || echo "ip command not available."
 
 section "Docker Status"
 if command -v docker >/dev/null 2>&1; then

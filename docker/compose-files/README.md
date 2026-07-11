@@ -21,7 +21,6 @@ Possible future services include:
 * Portainer
 * Uptime Kuma
 * Pi-hole or AdGuard Home
-* Tailscale
 * Syncthing
 * Homepage dashboard
 * PostgreSQL
@@ -64,3 +63,7 @@ tailscale-notes.md
 ## Notes
 
 Actual service configuration will be added gradually as the home server build progresses.
+
+Tailscale already runs at the host level on both servers. Do not duplicate or
+replace that verified access layer with a container unless a later decision
+record identifies a concrete need and migration plan.

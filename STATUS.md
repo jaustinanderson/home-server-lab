@@ -8,7 +8,7 @@
 > patient data, or employer-internal details. Current DHCP addresses are derivable on each box
 > with `ip -br a`; Tailscale addresses with `tailscale status`.
 
-**Last updated:** 2026-07-10
+**Last updated:** 2026-07-11
 
 ---
 
@@ -33,7 +33,7 @@ clinical-lab AI. Two long-term tracks:
 | Name | Hardware | Role | OS | User |
 |---|---|---|---|---|
 | **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot/working store + AI compute | Ubuntu Server 26.04 | `austin` |
-| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Bulk archive + backup (cold) | Ubuntu Server 26.04 | `ubuntu` |
+| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Bulk archive + intended backup target (cold) | Ubuntu Server 26.04 | `ubuntu` |
 | **Chromebook** | Acer Chromebook Plus 514 (Tailscale device "nissa") | Control surface (SSH only, via Penguin terminal) | ChromeOS | `jeradaustinanderson` |
 
 ## Network
@@ -65,8 +65,9 @@ clinical-lab AI. Two long-term tracks:
 - **Source-of-truth docs live on GitHub**: `STATUS.md` + `DECISIONS.md` committed to `home-server-lab`
   root (via github.com web upload; no push auth needed). ChatGPT re-synced to them and confirmed the
   specific corrections it made.
-- **Public documentation reconciled with the real architecture**: README, setup log, and SSH notes now
-  describe the two-machine lab, completed SSH hardening, and Tailscale access instead of the older Pi-only plan.
+- **Public documentation reconciled with the real architecture**: README, setup, network, security,
+  backup, script, and diagram documentation now describe the two-machine lab, completed SSH hardening,
+  verified Tailscale access, and the difference between implemented controls and planned work.
 - **Shell quality gate added**: GitHub Actions runs ShellCheck against repository shell scripts on pushes
   and pull requests.
 
@@ -111,3 +112,7 @@ clinical-lab AI. Two long-term tracks:
 - **2026-07-10 — Austin + ChatGPT** — Reconciled the README, setup log, and SSH notes with the verified
   two-machine architecture; removed stale Pi-only and future-tense SSH claims; added a ShellCheck GitHub
   Actions quality gate for public shell scripts.
+- **2026-07-11 — Austin + ChatGPT** — Completed the documentation reconciliation across network,
+  security, backup, scripts, and diagrams; added a current architecture diagram; aligned every next-step
+  list with this file; made `system-info.sh` safer to share by default; and recorded the focused Codex
+  pull-request workflow as decision D16.
