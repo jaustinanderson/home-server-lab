@@ -1,98 +1,78 @@
 # Project Status — Home Lab (compute-node + pi-server)
 
-> **Single source of truth.** Anyone working on this project — Austin, Claude, or ChatGPT —
-> reads and edits **this file**. Do **not** regenerate it from scratch; edit it in place and
-> add a dated line to the Changelog at the bottom. Keep it to ~one page.
->
-> **This file is public-safe** (it lives in a public GitHub repo). No real IPs, MACs, passwords,
-> patient data, or employer-internal details. Current DHCP addresses are derivable on each box
-> with `ip -br a`; Tailscale addresses with `tailscale status`.
+> **Single source of truth.** Austin, Claude, and ChatGPT read and edit this file *in place* — don't
+> regenerate it; append a dated line to the Changelog. Target ~one page.
+> **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
+> addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-11
+**Last updated:** 2026-07-13
 
 ---
 
 ## Who & what this is
 Austin (Jerad "Austin" Anderson), CG(ASCP) Cytogenetic Technologist, building a home lab toward
-clinical-lab AI. Two long-term tracks:
-
-- **Track A** — containerized data lake + AI pipeline for cytogenetic images (metaphases/karyograms).
-- **Track B** — lab-workflow automation tool (Epic/Excel exports → replace a manual point system),
-  built on synthetic data, GPU-free. The easier first win.
+clinical-lab AI. Two tracks: **Track A** — data lake + AI pipeline for cytogenetic images
+(metaphases/karyograms); **Track B** — synthetic-data lab-workflow tool (GPU-free). Per **D10, Track B is
+the first win.**
 
 ## Non-negotiable constraints
 - **No real patient data / PHI on this lab. Ever.** Public datasets + synthetic/fake data only.
-  Real clinical data stays on sanctioned institutional infrastructure.
-- **Free & open-source** stack only.
-- **One phase at a time.** Austin is learning as he goes — explain the *why*, not just the commands.
-  Austin executes and reports back (often via photos of terminal output).
-- **Infrastructure-as-code from day one.** Configs + a runbook live in git.
-- **Public repo + LinkedIn are sanitized derivatives of the truth** — scrub IPs, MACs, anything internal.
+- **Free & open-source** stack, installed cleanly (not snaps).
+- **One phase at a time** — explain the *why*. Austin reviews and approves repository changes; all changes
+  follow the applicable PR workflow in D16/D17.
+- **Infrastructure-as-code from day one**; configs + runbook in git. Public repo + LinkedIn are sanitized
+  derivatives of the truth.
 
 ## Machines
 | Name | Hardware | Role | OS | User |
 |---|---|---|---|---|
 | **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot/working store + AI compute | Ubuntu Server 26.04 | `austin` |
 | **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Bulk archive + intended backup target (cold) | Ubuntu Server 26.04 | `ubuntu` |
-| **Chromebook** | Acer Chromebook Plus 514 (Tailscale device "nissa") | Control surface (SSH only, via Penguin terminal) | ChromeOS | `jeradaustinanderson` |
+| **Chromebook** | Acer Chromebook Plus 514 (tailnet device "nissa") | Control surface (SSH only, via Penguin terminal) | ChromeOS | `jeradaustinanderson` |
 
 ## Network
-- Apartment-managed network, `/16`, DHCP (no router admin, no static leases, no port forwarding).
-- The two servers reach each other directly (~0.3 ms, 0% loss). A direct Cat6 link is an optional
-  future upgrade — not needed.
-- **mDNS/Avahi**: `pi-server.local` and `compute-node.local` resolve between the two servers.
-- The Chromebook's Penguin container can't resolve `.local` yet (uses raw addresses for now) — small fix pending.
-- **Tailscale (mesh VPN)** is the remote-access layer: all three devices are joined, each with a stable
-  per-device tailnet address reachable from anywhere, no port-forwarding, nothing exposed to the public
-  internet. This also sidesteps DHCP-IP churn. Addresses are derivable via `tailscale status`.
+- Apartment-managed `/16` DHCP — no router admin, no static leases, no port forwarding.
+- The two servers reach each other directly (~0.3 ms); mDNS `*.local` resolves *between the servers*.
+- **Tailscale mesh VPN** is the remote-access layer: all three devices joined, stable per-device tailnet
+  addresses, nothing exposed publicly, DHCP-churn-proof.
+- **Operational rule (2026-07-12):** connect to the servers **from the Penguin terminal over their Tailscale
+  addresses** — LAN IPs drift and the Chromebook's old saved SSH profiles were stale/mislabeled.
+  **compute-node's login user is `austin`; pi-server's is `ubuntu`.** (MagicDNS name resolution from *inside
+  Penguin* is untested — verify later; `.local` support in Penguin is optional convenience, not a gate.)
 
-## Done ✅
-- Ubuntu Server 26.04 installed + verified on both machines (no LVM, no LUKS — kept simple).
-- **SSH hardened AND independently verified on BOTH machines** (password auth off, keys only).
-  Verified via `sudo sshd -T` (running service reports `passwordauthentication no`) **and** an external
-  password-only login test that is correctly refused with `Permission denied (publickey)`.
-  - pi-server: removed a leftover `00-enable-password-login.conf` so `99-hardening.conf` takes effect.
-  - compute-node: removed `50-cloud-init.conf`, which had silently been re-enabling password auth
-    (it sorts before `99-hardening.conf` and SSH honors the first match). See DECISIONS D14.
-- SSH key pair created on the Chromebook (ed25519), installed on both servers — passwordless login works to both.
-- Chat-exposed password rotated (`passwd`).
-- **Tailscale installed + verified on all three devices** (compute-node, pi-server, Chromebook/"nissa").
-  Remote access proven: SSH to compute-node by its tailnet address from the Chromebook — no password, from
-  the Penguin terminal. Tailscale auto-starts on boot and survives a reboot.
-- **compute-node reboot-tested**: pending kernel update applied via `sudo reboot` (now on 7.0.0-27; the
-  `*** System restart required ***` banner cleared), and the box came back reachable over Tailscale
-  unattended — confirming it self-recovers after a reboot. (This also covers the earlier clean-headless-boot test.)
-- **Source-of-truth docs live on GitHub**: `STATUS.md` + `DECISIONS.md` committed to `home-server-lab`
-  root (via github.com web upload; no push auth needed). ChatGPT re-synced to them and confirmed the
-  specific corrections it made.
-- **Public documentation reconciled with the real architecture**: README, setup, network, security,
-  backup, script, and diagram documentation now describe the two-machine lab, completed SSH hardening,
-  verified Tailscale access, and the difference between implemented controls and planned work.
-- **Shell quality gate added**: GitHub Actions runs ShellCheck against repository shell scripts on pushes
-  and pull requests.
+## Phase progress
+- **Phase 1 — Foundation & Secure Access ✅** — Ubuntu Server 26.04 on both boxes; SSH keys-only, hardened
+  and **independently verified both ways** (`sshd -T` + a refused external password login; cloud-init override
+  removed, see D14); Tailscale on all three devices with verified remote access and reboot recovery;
+  source-of-truth + public documentation set established and reconciled; ShellCheck CI gate.
+- **Phase 2 — Repository-on-Host Workflow 🔧** — GitHub push authentication works from compute-node.
+  Completed evidence: repository cloned over SSH on `main`; dedicated passphrase-protected ed25519 key;
+  deterministic `IdentitiesOnly` configuration; GitHub host key checked against the published fingerprint;
+  `ssh -T` greeting; GitHub noreply git identity; and a test-branch push/delete proven from compute-node.
+  The key is deliberately **account-scoped** (not a repo deploy key) because compute-node may serve future
+  Austin-owned repositories; the passphrase, hardened key-only SSH configuration, preferred administrative
+  access through Tailscale, and per-machine revocability make this acceptable. **Remaining completion
+  evidence:** one real sanitized compute-node-originated change must go through branch → commit → push → PR →
+  review → merge under **D17**. This documentation reconciliation is a Codex-authored PR under **D16**, so it
+  records the progress but does not substitute for that machine-side proof.
 
-## In progress 🔧
-- Nothing mid-flight. **Foundation + remote access + collaboration system + first documentation reconciliation
-  are complete and verified.** Everything from here builds *on* this base. (Pick the next item from "Next up".)
+## Current phase
+**Phase 2 — Repository-on-Host Workflow.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
+authoritative phase sequence. Phase 3 begins only after the remaining machine-side PR evidence is complete.
 
-## Next up (rough order)
-1. Fix `.local` resolution inside Chromebook Penguin (`sudo apt install avahi-daemon avahi-utils`) — small
-   quality-of-life win so friendly names work from the terminal. (Tailscale already gives a working
-   alternative via tailnet addresses.)
-2. Clone the `home-server-lab` repo onto the machine(s); set up GitHub push auth
-   (Personal Access Token or a GitHub SSH key — not done yet). Needed to commit from a machine vs. the web.
-3. Select and deploy the first Dockerized service with a reproducible Compose file and runbook.
-4. PostgreSQL + dataset **provenance-manifest** schema (the real beginning of Track A).
-5. Ingest one public cytogenetics dataset end-to-end.
-6. Branch into Track A and Track B.
+**Immediate next action:** when Austin resumes, make one small public-safe documentation or configuration
+change from compute-node and carry it through the D17 pull-request workflow. On merge, mark Phase 2 complete
+and begin **Phase 3 — Core Linux Administration**. Docker remains Phase 4.
 
 ## Open items / maintenance
-- Where does PostgreSQL live — compute-node (compute proximity) or pi-server (next to the 2TB data)?
-  Decide when we get there.
-- Keep everything in one public repo (sanitized), or add a private repo for genuinely sensitive
-  operational detail later? (e.g. a private note of the tailnet addresses.)
-- Establish a routine to keep both boxes patched (`sudo apt update && sudo apt upgrade`); reboot when a
-  kernel update lands. compute-node was just updated; give pi-server the same pass on the next visit. Not urgent.
+- **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
+  (PostgreSQL) as the start of **Track A**. Phases 3–6 are track-agnostic, so this doesn't bite yet —
+  **resolve deliberately before Phase 7** (honor D10, or add a *new* dated decision that supersedes it). Do
+  not rewrite D10.
+- **Deferred convenience (none are gates):** guarded ssh-agent auto-load per session; MagicDNS-from-Penguin
+  test; optional `.local` resolution in Penguin.
+- Patching cadence for both boxes; pi-server due a kernel/reboot pass on the next visit.
+- One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
 
 ## Changelog
 *(Append new lines at the bottom. Format: `YYYY-MM-DD — who — what`.)*
@@ -116,3 +96,11 @@ clinical-lab AI. Two long-term tracks:
   security, backup, scripts, and diagrams; added a current architecture diagram; aligned every next-step
   list with this file; made `system-info.sh` safer to share by default; and recorded the focused Codex
   pull-request workflow as decision D16.
+- **2026-07-12 — Austin + Claude** — Established GitHub push authentication on compute-node (dedicated
+  passphrase-protected ed25519 account key, `IdentitiesOnly` config, verified host key + `ssh -T`, git
+  identity, SSH clone on `main`, and proven test-branch push/delete). A stale-connection detour reaffirmed
+  the Tailscale-from-Penguin rule and the `austin`/`ubuntu` usernames.
+- **2026-07-13 — Austin + ChatGPT** — Reconciled the verified Git-authentication work through a focused
+  Codex PR under D16; added **D17** for Austin-controlled machine-side changes; recorded the account-key
+  scope as deliberate; aligned STATUS with the existing roadmap; and left Phase 2 in progress pending one
+  real sanitized compute-node-originated PR. Deferred ssh-agent automation and Penguin name-resolution work.
