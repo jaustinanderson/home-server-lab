@@ -10,6 +10,22 @@ Home Server Lab is a public-safe infrastructure learning project. Contributions 
 
 When documents disagree, update them deliberately and preserve `STATUS.md` as the source of truth.
 
+## Session Start Gate
+
+Before making any change in a work session, reconcile against **live GitHub** — it is authoritative. Chat history, memory, and pasted summaries are only leads.
+
+1. Confirm the default branch, the current `main` HEAD, and the open pull requests and their refs with `git ls-remote` (git protocol — do not depend on the rate-limited REST API).
+2. Read the current canonical files (`STATUS.md`, `DECISIONS.md`, `docs/project-roadmap.md`, `CONTRIBUTING.md`, `README.md`) from `raw.githubusercontent.com`.
+3. Treat any GitHub response whose body is a rate-limit notice or other error as **unverified** — never parse an error body as data.
+4. When working from a lab machine, reconcile the local clone read-only before branching:
+   - `git fetch --prune origin`
+   - `git status --short --branch`
+   - `git branch -vv`
+   - `git log --oneline --decorate -5 origin/main`
+5. Report any difference between memory, the local clone, and live GitHub before proceeding.
+
+Do not begin work based solely on remembered state.
+
 ## Public-Safety Rules
 
 Do not add:
