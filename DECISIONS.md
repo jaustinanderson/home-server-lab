@@ -90,3 +90,10 @@ Phase 2 of D15 is active for repository maintenance: Codex works on a focused br
 checks, and opens a pull request for review rather than writing directly to `main`. Austin retains the
 merge decision. This does **not** mean the lab machines have GitHub push authentication; that separate
 host setup remains pending in `STATUS.md`.
+
+**D17 — Machine-side changes use an Austin-controlled pull-request workflow, never direct pushes to `main`.** *(2026-07-12)*
+With push authentication working on compute-node, Austin may directly make or apply changes from the lab
+machine. Every machine-originated change follows branch → review diff → commit → push → pull request →
+review → merge. Austin is responsible for verifying and approving the resulting diff. This complements D16:
+Codex remains the repository-integrated AI write path, while compute-node provides Austin's directly
+controlled machine-side path. Neither path writes directly to `main`.
