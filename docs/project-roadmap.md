@@ -59,9 +59,15 @@ Tasks:
 
 Planned artifacts:
 
+- `docs/patching-cadence.md` — **added**: the D18 patching policy and monthly runbook
+- `docs/troubleshooting-log.md` — **added**: first sanitized Phase 3 findings
 - `docs/linux-command-notes.md`
-- `docs/troubleshooting-log.md`
 - Sanitized system baselines
+
+Current evidence: compute-node's patching cadence is established and was exercised end to end (simulate →
+interactive `apt upgrade` → verification; 38 upgraded, 0 removed, no reboot required) and the automatic-update
+audit is recorded as **D18**. Remaining Phase 3 work — the pi-server audit and cadence, users/permissions,
+storage and log practice — continues.
 
 ## Phase 4: Docker and Service Lifecycle
 
