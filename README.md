@@ -31,6 +31,8 @@ The infrastructure foundation is complete and independently verified:
 - mDNS hostnames working between the two servers
 - Public-safe project state and architectural decisions stored in GitHub
 - Security and backup boundaries documented
+- Authenticated Git workflow from compute-node: SSH clone, dedicated key, and branch → commit → push → pull-request → review → merge proven end to end (D17)
+- A durable Session Start Gate requiring live-GitHub reconciliation before each work session
 
 The next work builds on this stable base rather than repeating initial setup.
 
@@ -140,13 +142,15 @@ This design avoids depending on DHCP stability and does not require opening inbo
 
 ## Near-Term Roadmap
 
-1. Improve `.local` name resolution inside the Chromebook Linux environment
-2. Clone this repository onto the lab machines and configure authenticated Git workflows
-3. Choose the first Dockerized service and document its lifecycle
-4. Decide where PostgreSQL should run
-5. Define a provenance-manifest schema for public cytogenetics datasets
-6. Ingest one public dataset end to end
-7. Begin Track A and Track B implementation branches
+Current focus is **Phase 3 — Core Linux Administration**:
+
+1. Establish a regular patching cadence across both machines
+2. Practice and document package and service administration
+3. Collect sanitized system baselines with the system-information script
+4. Document users, permissions, and storage/filesystem checks
+5. Add log-inspection and troubleshooting notes
+
+Docker and the first containerized service remain **Phase 4**; PostgreSQL, dataset ingestion, and the Track A/Track B branches follow in later phases.
 
 See [`STATUS.md`](STATUS.md) for the authoritative order and current completion state.
 
