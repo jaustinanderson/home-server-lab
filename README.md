@@ -70,6 +70,8 @@ home-server-lab/
 │   ├── network-notes.md
 │   ├── security-checklist.md
 │   ├── backup-plan.md
+│   ├── patching-cadence.md
+│   ├── troubleshooting-log.md
 │   └── project-roadmap.md
 ├── docker/
 │   └── compose-files/
@@ -91,6 +93,8 @@ home-server-lab/
 - [`docs/network-notes.md`](docs/network-notes.md) — managed-network constraints and private-access strategy
 - [`docs/security-checklist.md`](docs/security-checklist.md) — public-repository and server-security rules
 - [`docs/backup-plan.md`](docs/backup-plan.md) — backup philosophy, scope, and restore planning
+- [`docs/patching-cadence.md`](docs/patching-cadence.md) — update policy (D18): daily automatic security patching plus the monthly manual maintenance runbook
+- [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md) — dated, sanitized operational findings and lessons
 - [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
 - [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and planned backup flow
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — change workflow, validation expectations, and scope control
@@ -144,7 +148,7 @@ This design avoids depending on DHCP stability and does not require opening inbo
 
 Current focus is **Phase 3 — Core Linux Administration**:
 
-1. Establish a regular patching cadence across both machines
+1. Patching cadence **established on compute-node** (D18: daily security automation + a monthly manual window); next, audit pi-server's automatic-update state and bring it under the same cadence
 2. Practice and document package and service administration
 3. Collect sanitized system baselines with the system-information script
 4. Document users, permissions, and storage/filesystem checks

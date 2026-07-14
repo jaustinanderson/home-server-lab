@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-13
+**Last updated:** 2026-07-14
 
 ---
 
@@ -60,10 +60,10 @@ the first win.**
 **Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
 authoritative phase sequence. Docker remains Phase 4.
 
-**Immediate next action:** establish a patching cadence — on compute-node, review available updates
-(`apt list --upgradable`), apply them through a documented, reboot-aware process, and capture a sanitized
-before/after baseline as the first Phase 3 evidence. Each change continues to follow the D17 pull-request
-workflow from the machine.
+**Immediate next action:** run the same read-only automatic-update audit on **pi-server** (timers,
+unattended-upgrades origins, reboot/cleanup behavior, recent log). If its preflight is healthy, follow with
+its first controlled maintenance run under the **D18** cadence (simulate → interactive upgrade → verify;
+reboot only on reboot-required evidence). Each change continues to follow the D17 pull-request workflow.
 
 ## Open items / maintenance
 - **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
@@ -72,7 +72,8 @@ workflow from the machine.
   not rewrite D10.
 - **Deferred convenience (none are gates):** guarded ssh-agent auto-load per session; MagicDNS-from-Penguin
   test; optional `.local` resolution in Penguin.
-- Patching cadence for both boxes; pi-server due a kernel/reboot pass on the next visit.
+- Patching cadence **established for compute-node (D18)**; pi-server needs the same read-only audit, then
+  its first maintenance run (a kernel/reboot pass is likely there).
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
 
 ## Changelog
@@ -110,3 +111,10 @@ workflow from the machine.
   rate-limit/error bodies as unverified) via branch → commit → push → PR → independent review → squash-merge
   (**PR #6**). This completed **Phase 2 — Repository-on-Host Workflow** and began **Phase 3 — Core Linux
   Administration**. The gate immediately caught stale-clone drift before branching.
+- **2026-07-14 — Austin + Claude + ChatGPT** — First Phase 3 maintenance run on compute-node: simulated with
+  `apt -s upgrade`, then interactively applied **38 upgrades (0 removed, 0 newly installed)**; two updates
+  legitimately deferred by Ubuntu phasing; **no reboot required**; no new failed units; SSH verified healthy
+  via **socket activation** (`ssh.socket` + port 22). A read-only audit showed daily **security-only**
+  unattended upgrades already running healthily with auto-reboot off; recorded the combined policy as
+  **D18**, added the runbook (`docs/patching-cadence.md`) and first lessons (`docs/troubleshooting-log.md`),
+  and strengthened the Session Start Gate with an intended-host check. Next: the same audit on pi-server.

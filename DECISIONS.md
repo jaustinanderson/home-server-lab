@@ -97,3 +97,17 @@ machine. Every machine-originated change follows branch → review diff → comm
 review → merge. Austin is responsible for verifying and approving the resulting diff. This complements D16:
 Codex remains the repository-integrated AI write path, while compute-node provides Austin's directly
 controlled machine-side path. Neither path writes directly to `main`.
+**D18 — Patching policy: daily security-only unattended upgrades stay stock; everything else patches through a monthly manual window.** *(2026-07-14)*
+A read-only audit confirmed compute-node's stock automatic-update configuration is healthy: the daily APT
+timers run, unattended-upgrades installs **security updates only** (`resolute-updates` is not an allowed
+origin), **automatic reboot is off**, and no automatic cleanup is configured. That configuration **remains
+enabled and unchanged**. All other available updates are applied in **one monthly manual maintenance window**:
+refresh metadata, simulate with `apt -s upgrade`, review the full transaction — it may install new
+dependencies but must propose **zero removals** — then run an **interactive `sudo apt upgrade`**, never `-y`.
+`apt full-upgrade` is allowed only after a separate simulation reviewed by Austin, Claude, and ChatGPT,
+because it may remove packages. Reboots are deliberate and never automatic; for routine patching, reboot only
+when `/var/run/reboot-required` exists, followed by recovery verification. Machine order: **compute-node
+first as the canary**, complete verification, then pi-server — which requires the same read-only
+automatic-update audit before its first maintenance run. The mechanisms are complementary, not disjoint: the
+manual window considers all configured sources and may also apply a pending security update. Runbook:
+`docs/patching-cadence.md`.
