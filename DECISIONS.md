@@ -97,6 +97,7 @@ machine. Every machine-originated change follows branch → review diff → comm
 review → merge. Austin is responsible for verifying and approving the resulting diff. This complements D16:
 Codex remains the repository-integrated AI write path, while compute-node provides Austin's directly
 controlled machine-side path. Neither path writes directly to `main`.
+
 **D18 — Patching policy: daily security-only unattended upgrades stay stock; everything else patches through a monthly manual window.** *(2026-07-14)*
 A read-only audit confirmed compute-node's stock automatic-update configuration is healthy: the daily APT
 timers run, unattended-upgrades installs **security updates only** (`resolute-updates` is not an allowed
