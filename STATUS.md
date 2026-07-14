@@ -60,10 +60,10 @@ the first win.**
 **Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
 authoritative phase sequence. Docker remains Phase 4.
 
-**Immediate next action:** run the same read-only automatic-update audit on **pi-server** (timers,
-unattended-upgrades origins, reboot/cleanup behavior, recent log). If its preflight is healthy, follow with
-its first controlled maintenance run under the **D18** cadence (simulate → interactive upgrade → verify;
-reboot only on reboot-required evidence). Each change continues to follow the D17 pull-request workflow.
+**Immediate next action:** begin the Phase 3 users/groups/ownership/permissions work with a read-only
+inventory on both machines. Explain the effective access model (login user, group membership, sudo, service
+accounts, and selected path ownership/modes), record only sanitized conclusions, then choose one low-risk
+permission exercise. Each repository change continues to follow the applicable D16/D17 pull-request workflow.
 
 ## Open items / maintenance
 - **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
@@ -72,8 +72,8 @@ reboot only on reboot-required evidence). Each change continues to follow the D1
   not rewrite D10.
 - **Deferred convenience (none are gates):** guarded ssh-agent auto-load per session; MagicDNS-from-Penguin
   test; optional `.local` resolution in Penguin.
-- Patching cadence **established for compute-node (D18)**; pi-server needs the same read-only audit, then
-  its first maintenance run (a kernel/reboot pass is likely there).
+- Patching cadence **established and exercised on both machines (D18)**. The compute-node canary required no
+  reboot; pi-server completed a deliberate staged kernel reboot with post-boot lifeline and boot-slot checks.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
 
 ## Changelog
@@ -118,3 +118,10 @@ reboot only on reboot-required evidence). Each change continues to follow the D1
   unattended upgrades already running healthily with auto-reboot off; recorded the combined policy as
   **D18**, added the runbook (`docs/patching-cadence.md`) and first lessons (`docs/troubleshooting-log.md`),
   and strengthened the Session Start Gate with an intended-host check. Next: the same audit on pi-server.
+- **2026-07-14 — Austin + Claude + ChatGPT** — Completed pi-server's read-only automatic-update audit and
+  first D18 maintenance run. Its stock daily security-only configuration matched compute-node (healthy
+  timers, no automatic reboot or cleanup). The reviewed transaction applied **38 upgrades (0 removed, 0
+  newly installed)** and left two legitimate phased deferrals. A pending kernel required a deliberate
+  Raspberry Pi staged-asset reboot with `piboot-try`; the new kernel booted, both retained boot slots reported
+  `good`, the reboot flag cleared, and Tailscale, SSH, zero failed units, and a second fresh connection were
+  verified. Patching is now established on both machines; next: users/groups/ownership/permissions practice.

@@ -14,8 +14,8 @@ Operating policy and monthly runbook for OS updates on the lab machines. Recorde
 - The two mechanisms are **complementary, not disjoint**: the manual `apt upgrade` considers all configured
   sources and may also apply a security update the daily run has not yet reached.
 - **Machine order:** compute-node first (canary) → complete verification → then pi-server.
-- **pi-server prerequisite:** run the same read-only automatic-update audit there before its first
-  maintenance run; its configuration is unverified until then.
+- **Verified on both machines:** the read-only audit and first manual window are complete on compute-node
+  and pi-server. Both retain the same stock automatic-update policy.
 
 ## Monthly window runbook
 
@@ -29,10 +29,11 @@ Operating policy and monthly runbook for OS updates on the lab machines. Recorde
 ### 1. Preflight (read-only)
 - Package health: `sudo dpkg --audit` (expect no output) and `apt-mark showhold` (expect none)
 - Failed units: `systemctl --failed` — compare against the known baseline before adding change
-- Lifelines: `systemctl is-active tailscaled`; SSH is **socket-activated**, so check `systemctl is-active
-  ssh.socket` and confirm port 22 is listening with `sudo ss -tlnp | grep ':22 '` — do not judge SSH by
-  `ssh.service` alone
-- Capacity: `df -h /` (and `/boot` if it is a separate filesystem) and `free -h`
+- Lifelines: `systemctl is-active tailscaled`; inspect both `ssh.socket` and `ssh.service` because activation
+  state may differ by host or during an upgrade; confirm the ground truth with
+  `sudo ss -tlnp | grep ':22 '` and a fresh connection — do not judge SSH by `ssh.service` alone
+- Capacity: `df -h /` and `free -h`; also check the boot filesystem when separate (`/boot/firmware` on
+  pi-server)
 - Kernel and reboot state: `uname -r`; check whether `/var/run/reboot-required` already exists
 
 ### 2. Refresh and simulate
@@ -56,20 +57,34 @@ anything else.
 - `sudo dpkg --audit` → clean
 - `apt list --upgradable` → only expected leftovers (for example phased deferrals)
 - `systemctl --failed` → no new failures versus the baseline
-- `systemctl is-active tailscaled`; repeat the `ssh.socket` + port-22 check from preflight
+- `systemctl is-active tailscaled`; repeat both SSH-unit checks plus the port-22 check from preflight
 - `uname -r` → the running kernel does not change until a reboot
 - Check `/var/run/reboot-required` — its presence is the **only** trigger for a routine-patching reboot
 
 ### 5. Reboot rule
 Reboots are **deliberate and never automatic**. For routine patching, reboot only when
 `/var/run/reboot-required` exists, in a window where the machine is reachable. After the reboot, verify:
-kernel version, `ssh.socket` and port 22, `tailscaled`, failed units versus baseline, and that the
-reboot-required flag cleared. The local console is the last-resort access path.
+kernel version, both SSH units and port 22, `tailscaled`, failed units versus baseline, a second fresh SSH
+connection, and that the reboot-required flag cleared. The local console is the last-resort access path.
+
+On pi-server, a kernel/firmware update may stage A/B boot assets in `/boot/firmware/new`. If the login banner
+reports untested assets, require physical recovery access, run `piboot-try --test`, and use
+`sudo piboot-try --reboot` instead of a plain reboot. After reconnecting, verify the expected kernel and the
+boot-slot state files. A successful promotion removes the pending `new` slot and leaves the retained
+`current` and `old` slots marked `good`; with no pending slot, a later `piboot-try --test` exits nonzero
+because there is nothing left to test.
 
 ### 6. Document
 Record the run — counts, deferrals, reboot decision, anomalies — as a dated `STATUS.md` changelog entry,
 and add any new lesson to [`docs/troubleshooting-log.md`](troubleshooting-log.md). Sanitized summaries
 only; never raw terminal output.
+
+## Verified first runs (2026-07-14)
+- **compute-node (canary):** 38 upgrades, 0 newly installed, 0 removed, two phased deferrals; no reboot
+  required; lifelines and failed-unit baseline verified.
+- **pi-server:** 38 upgrades, 0 newly installed, 0 removed, two phased deferrals; the pending kernel was
+  activated through a successful `piboot-try` staged reboot; boot slots, lifelines, failed units, package
+  health, reboot flag, and a second fresh SSH connection were verified afterward.
 
 ## `apt full-upgrade` requires separate review
 `full-upgrade` may **remove** installed packages to resolve dependencies, so it is not part of the routine

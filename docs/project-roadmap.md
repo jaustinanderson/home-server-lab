@@ -64,10 +64,11 @@ Planned artifacts:
 - `docs/linux-command-notes.md`
 - Sanitized system baselines
 
-Current evidence: compute-node's patching cadence is established and was exercised end to end (simulate →
-interactive `apt upgrade` → verification; 38 upgraded, 0 removed, no reboot required) and the automatic-update
-audit is recorded as **D18**. Remaining Phase 3 work — the pi-server audit and cadence, users/permissions,
-storage and log practice — continues.
+Current evidence: the **D18** patching cadence is established and exercised on both machines. The compute-node
+canary completed 38 upgrades with 0 removed and needed no reboot. pi-server completed the same reviewed
+transaction counts, then passed a deliberate staged kernel reboot, boot-slot validation, lifeline checks,
+and a second fresh SSH connection. Both machines left two legitimate phased deferrals. Remaining Phase 3
+work — users/permissions, storage/filesystem checks, system baselines, and log practice — continues.
 
 ## Phase 4: Docker and Service Lifecycle
 

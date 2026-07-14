@@ -148,10 +148,10 @@ This design avoids depending on DHCP stability and does not require opening inbo
 
 Current focus is **Phase 3 — Core Linux Administration**:
 
-1. Patching cadence **established on compute-node** (D18: daily security automation + a monthly manual window); next, audit pi-server's automatic-update state and bring it under the same cadence
+1. Patching cadence **established and exercised on both machines** (D18: daily security automation plus a monthly manual window)
 2. Practice and document package and service administration
 3. Collect sanitized system baselines with the system-information script
-4. Document users, permissions, and storage/filesystem checks
+4. Next: document users, groups, ownership, permissions, and storage/filesystem checks
 5. Add log-inspection and troubleshooting notes
 
 Docker and the first containerized service remain **Phase 4**; PostgreSQL, dataset ingestion, and the Track A/Track B branches follow in later phases.
