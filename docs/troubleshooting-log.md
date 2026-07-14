@@ -36,3 +36,19 @@ the shell prompt and failing repository paths; all wrong-host evidence was disca
 compute-node. Lesson: **verify the prompt identifies the intended host before every group of machine
 commands**, and if a session drops, stop until the intended host is re-established. The Session Start Gate
 now requires this check.
+
+## 2026-07-14 — Automatic-update timing can explain newly visible security updates
+pi-server's automatic-update configuration matched the healthy stock policy, and its recent unattended run
+reported no eligible packages. A later package-list refresh preceded the manual window, where security
+updates were then visible. The evidence is consistent with timer ordering rather than a broken policy: the
+install pass can legitimately run before newer metadata arrives. Lesson: compare the list-refresh timer,
+install timer, unattended-upgrades log, and current package policy before diagnosing automation from a
+single pending-update snapshot.
+
+## 2026-07-14 — Raspberry Pi kernel updates use staged A/B boot assets
+The pi-server kernel update staged assets under `/boot/firmware/new` and emitted `flash-kernel` path warnings,
+but the APT transaction exited successfully, `dpkg --audit` was clean, and `piboot-try --test` accepted the
+staged set. With physical recovery available, `piboot-try --reboot` tested the new assets directly. The Pi
+returned on the expected kernel; the reboot flag cleared; both retained boot slots were `good`; Tailscale,
+SSH, failed units, and a second fresh connection all passed. Lesson: do not classify an isolated trigger
+warning as failure — use the transaction exit, package audit, staged-boot test, and post-boot state together.
