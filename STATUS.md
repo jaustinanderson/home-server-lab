@@ -45,24 +45,25 @@ the first win.**
   and **independently verified both ways** (`sshd -T` + a refused external password login; cloud-init override
   removed, see D14); Tailscale on all three devices with verified remote access and reboot recovery;
   source-of-truth + public documentation set established and reconciled; ShellCheck CI gate.
-- **Phase 2 — Repository-on-Host Workflow 🔧** — GitHub push authentication works from compute-node.
-  Completed evidence: repository cloned over SSH on `main`; dedicated passphrase-protected ed25519 key;
-  deterministic `IdentitiesOnly` configuration; GitHub host key checked against the published fingerprint;
-  `ssh -T` greeting; GitHub noreply git identity; and a test-branch push/delete proven from compute-node.
-  The key is deliberately **account-scoped** (not a repo deploy key) because compute-node may serve future
-  Austin-owned repositories; the passphrase, hardened key-only SSH configuration, preferred administrative
-  access through Tailscale, and per-machine revocability make this acceptable. **Remaining completion
-  evidence:** one real sanitized compute-node-originated change must go through branch → commit → push → PR →
-  review → merge under **D17**. This documentation reconciliation is a Codex-authored PR under **D16**, so it
-  records the progress but does not substitute for that machine-side proof.
+- **Phase 2 — Repository-on-Host Workflow ✅** — the infrastructure repo is managed from compute-node.
+  GitHub push authentication works from compute-node (repository cloned over SSH on `main`; dedicated
+  passphrase-protected ed25519 key; deterministic `IdentitiesOnly` configuration; GitHub host key checked
+  against the published fingerprint; `ssh -T` greeting; GitHub noreply git identity). The key is deliberately
+  **account-scoped** (not a repo deploy key) because compute-node may serve future Austin-owned repositories;
+  the passphrase, hardened key-only SSH configuration, preferred administrative access through Tailscale, and
+  per-machine revocability make this acceptable. **Machine-side proof (D17):** the first real sanitized
+  compute-node-originated change — adding the durable Session Start Gate to `CONTRIBUTING.md` — was carried
+  through branch → commit → push → PR → independent review → squash-merge as **PR #6**, with `main` untouched
+  until merge.
 
 ## Current phase
-**Phase 2 — Repository-on-Host Workflow.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
-authoritative phase sequence. Phase 3 begins only after the remaining machine-side PR evidence is complete.
+**Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
+authoritative phase sequence. Docker remains Phase 4.
 
-**Immediate next action:** when Austin resumes, make one small public-safe documentation or configuration
-change from compute-node and carry it through the D17 pull-request workflow. On merge, mark Phase 2 complete
-and begin **Phase 3 — Core Linux Administration**. Docker remains Phase 4.
+**Immediate next action:** establish a patching cadence — on compute-node, review available updates
+(`apt list --upgradable`), apply them through a documented, reboot-aware process, and capture a sanitized
+before/after baseline as the first Phase 3 evidence. Each change continues to follow the D17 pull-request
+workflow from the machine.
 
 ## Open items / maintenance
 - **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
@@ -104,3 +105,8 @@ and begin **Phase 3 — Core Linux Administration**. Docker remains Phase 4.
   Codex PR under D16; added **D17** for Austin-controlled machine-side changes; recorded the account-key
   scope as deliberate; aligned STATUS with the existing roadmap; and left Phase 2 in progress pending one
   real sanitized compute-node-originated PR. Deferred ssh-agent automation and Penguin name-resolution work.
+- **2026-07-13 — Austin + Claude** — First genuine compute-node-originated change under **D17**: added a
+  durable **Session Start Gate** to `CONTRIBUTING.md` (live-GitHub reconciliation before each session; treat
+  rate-limit/error bodies as unverified) via branch → commit → push → PR → independent review → squash-merge
+  (**PR #6**). This completed **Phase 2 — Repository-on-Host Workflow** and began **Phase 3 — Core Linux
+  Administration**. The gate immediately caught stale-clone drift before branching.

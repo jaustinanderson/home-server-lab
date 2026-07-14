@@ -21,7 +21,7 @@ Completed:
 - Canonical `STATUS.md` and `DECISIONS.md` established
 - Legacy Pi-only documentation reconciled with the two-machine architecture
 
-## Phase 2: Repository-on-Host Workflow — In Progress
+## Phase 2: Repository-on-Host Workflow — Complete
 
 Goal: manage the infrastructure repository from the lab machines instead of relying only on browser uploads.
 
@@ -39,13 +39,11 @@ Completed evidence:
 - Repository cloned onto compute-node over SSH
 - Dedicated GitHub SSH authentication verified (passphrase-protected key, host key checked, `ssh -T` greeting)
 - Branch push proven from the lab machine
+- First real sanitized compute-node-originated change committed, pushed, and merged
+- Pull request reviewed and merged through the Austin-controlled D17 workflow (PR #6)
+- Durable Session Start Gate added to `CONTRIBUTING.md` (live-GitHub reconciliation before each session)
 
-Remaining completion evidence:
-
-- First real sanitized compute-node-originated change committed and pushed
-- Pull request reviewed and merged through the Austin-controlled workflow in D17
-
-## Phase 3: Core Linux Administration
+## Phase 3: Core Linux Administration — In Progress
 
 Goal: make routine server administration repeatable and evidence-driven.
 
