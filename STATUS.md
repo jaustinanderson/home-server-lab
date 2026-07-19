@@ -131,7 +131,8 @@ pull-request workflow.
 - **2026-07-19 — Austin + Claude + Codex** — Completed the Phase 3 users/groups/ownership/permissions
   inventory on both machines and a least-privilege exercise. Both hosts run a single regular login account
   with sole `sudo` membership, locked root password, disabled SSH password authentication, and no root SSH
-  keys (root login effectively impossible). Both had their login user in the `lxd` group while only the
+  keys (no usable direct-root credential via the verified password and default authorized-keys paths; see
+  `docs/linux-command-notes.md`). Both had their login user in the `lxd` group while only the
   wrapper (`lxd-installer`) — not full LXD — was installed; the membership was removed on each and verified
   in a fresh login session, eliminating latent root-equivalent access should LXD ever be installed.
   Documented the commands and concepts in `docs/linux-command-notes.md`. One divergence is recorded and
