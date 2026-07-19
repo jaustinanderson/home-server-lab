@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-14
+**Last updated:** 2026-07-19
 
 ---
 
@@ -60,10 +60,13 @@ the first win.**
 **Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
 authoritative phase sequence. Docker remains Phase 4.
 
-**Immediate next action:** begin the Phase 3 users/groups/ownership/permissions work with a read-only
-inventory on both machines. Explain the effective access model (login user, group membership, sudo, service
-accounts, and selected path ownership/modes), record only sanitized conclusions, then choose one low-risk
-permission exercise. Each repository change continues to follow the applicable D16/D17 pull-request workflow.
+**Immediate next action:** continue Phase 3 with a storage and filesystem review on both machines — mounts
+and usage (with attention to the Pi's separate `/boot/firmware`), the archive SSD's layout and health, and a
+sanitized baseline — then choose the next low-risk practice task. The users/groups/ownership/permissions
+inventory and its least-privilege exercise are complete on both machines. One item remains open and
+deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`) divergence from compute-node (see
+`docs/linux-command-notes.md`). Each repository change continues to follow the applicable D16/D17
+pull-request workflow.
 
 ## Open items / maintenance
 - **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
@@ -125,3 +128,12 @@ permission exercise. Each repository change continues to follow the applicable D
   Raspberry Pi staged-asset reboot with `piboot-try`; the new kernel booted, both retained boot slots reported
   `good`, the reboot flag cleared, and Tailscale, SSH, zero failed units, and a second fresh connection were
   verified. Patching is now established on both machines; next: users/groups/ownership/permissions practice.
+- **2026-07-19 — Austin + Claude + Codex** — Completed the Phase 3 users/groups/ownership/permissions
+  inventory on both machines and a least-privilege exercise. Both hosts run a single regular login account
+  with sole `sudo` membership, locked root password, disabled SSH password authentication, and no root SSH
+  keys (root login effectively impossible). Both had their login user in the `lxd` group while only the
+  wrapper (`lxd-installer`) — not full LXD — was installed; the membership was removed on each and verified
+  in a fresh login session, eliminating latent root-equivalent access should LXD ever be installed.
+  Documented the commands and concepts in `docs/linux-command-notes.md`. One divergence is recorded and
+  left unresolved: pi-server grants the login user passwordless sudo (`NOPASSWD`), where compute-node
+  requires a password; any future change awaits its own preflight and review.

@@ -61,14 +61,18 @@ Planned artifacts:
 
 - `docs/patching-cadence.md` — **added**: the D18 patching policy and monthly runbook
 - `docs/troubleshooting-log.md` — **added**: first sanitized Phase 3 findings
-- `docs/linux-command-notes.md`
+- `docs/linux-command-notes.md` — **added**: users, groups, sudo, ownership/modes, umask, and effective SSH policy
 - Sanitized system baselines
 
 Current evidence: the **D18** patching cadence is established and exercised on both machines. The compute-node
 canary completed 38 upgrades with 0 removed and needed no reboot. pi-server completed the same reviewed
 transaction counts, then passed a deliberate staged kernel reboot, boot-slot validation, lifeline checks,
-and a second fresh SSH connection. Both machines left two legitimate phased deferrals. Remaining Phase 3
-work — users/permissions, storage/filesystem checks, system baselines, and log practice — continues.
+and a second fresh SSH connection. Both machines left two legitimate phased deferrals. The
+users/groups/ownership/permissions inventory is also complete: both hosts run a single sudo-capable login
+account with locked root and key-only SSH, and each had its login user removed from the unused `lxd` group
+(wrapper-only; verified in a fresh session). A recorded, unresolved divergence remains — pi-server's
+passwordless sudo versus compute-node's password-required sudo. Remaining Phase 3 work — storage/filesystem
+checks, system baselines, and log practice — continues.
 
 ## Phase 4: Docker and Service Lifecycle
 
