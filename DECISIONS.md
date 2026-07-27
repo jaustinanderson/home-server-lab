@@ -112,3 +112,21 @@ first as the canary**, complete verification, then pi-server — which requires 
 automatic-update audit before its first maintenance run. The mechanisms are complementary, not disjoint: the
 manual window considers all configured sources and may also apply a pending security update. Runbook:
 `docs/patching-cadence.md`.
+
+**D19 — The Synology DS925+ is the canonical source archive; compute-node is the working tier and pi-server is secondary protection.** *(2026-07-27)*
+This supersedes the storage-role portion of D2. The NAS holds canonical raw source material and approved
+releases; `compute-node` receives working copies for transformation and AI work; `pi-server` remains a
+planned local second-copy/lightweight-service tier rather than the primary archive. GitHub holds sanitized
+catalogs, scripts, decisions, and documentation only. A future dedicated metaphase server may read approved
+NAS releases read-only. The current one-drive SHR pool has no drive-failure protection; the expected second
+16 TB drive must be added to the existing pool, finish synchronization, and pass health verification before
+redundancy is claimed. SHR redundancy is availability protection, not a backup. This decision preserves D1:
+only public, synthetic, or explicitly approved de-identified study data may enter the lab.
+
+**D20 — Backblaze B2 is the approved paid off-site-backup exception.** *(2026-07-27)*
+This supersedes D3 only for the off-site backup service and implements the off-site direction anticipated by
+D11. Synology Hyper Backup now sends the NAS's current personal content to Backblaze B2 on a daily schedule
+with version retention. Credentials, bucket identifiers, private paths, and recovery material remain outside
+this public repository. Operational backup status does not prove recoverability: the design remains
+incomplete until a disposable restore is completed, verified, and documented. Encryption status is not
+claimed until separately inspected.

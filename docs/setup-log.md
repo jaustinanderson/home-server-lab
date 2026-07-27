@@ -20,8 +20,9 @@ The lab supports practical learning in:
 
 | Machine | Hardware | Role |
 |---|---|---|
-| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute |
-| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, intended backup target, and lightweight services |
+| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services |
+| **Synology NAS** | DS925+, Btrfs on SHR, one 16 TB drive installed | Canonical source archive and current personal-content store |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH administration through the Linux terminal |
 
 Both servers run Ubuntu Server 26.04. Exact network identifiers are intentionally omitted.
@@ -55,12 +56,13 @@ The following foundation work is complete:
 
 ## Current Next Steps
 
-- Improve `.local` name resolution inside the Chromebook Linux environment
-- Clone this repository onto the lab machines
-- Configure authenticated Git push workflows
-- Select and deploy the first Dockerized service
-- Decide where PostgreSQL should run
-- Create the first dataset-provenance schema
+- Add the expected second 16 TB drive to the existing SHR pool and verify
+  completed synchronization, protected status, and both drives healthy
+- Complete the NAS-readiness checklist, including notifications, access,
+  provenance, checksums, and a disposable restore
+- Finish refreshed Linux system baselines and deliberate log-inspection practice
+- Run one bounded public metaphase pilot only after every readiness gate passes
+- Continue to Docker only after the storage protection boundary is trustworthy
 
 ## Troubleshooting Lessons
 
@@ -131,3 +133,20 @@ Never commit:
 - Added a public-safe diagram of the verified topology and planned backup flow
 - Removed stale Pi-only and already-completed next steps
 - Reduced sensitive detail in the default `system-info.sh` output
+
+### 2026-07-19
+
+- Completed a read-only storage/filesystem review on both Linux hosts
+- Confirmed simple GPT/ext4 layouts, the Pi's separate boot filesystem, and no
+  observed USB reset errors during the reviewed boot
+- Recorded missing drive-health tooling and the need for a sanitized durable
+  baseline
+
+### 2026-07-27
+
+- Incorporated the DS925+ into the canonical architecture as the source archive
+- Recorded the current one-drive SHR pool as healthy but without drive-failure
+  protection; second matching 16 TB drive expected 2026-07-28
+- Recorded daily Hyper Backup to Backblaze B2 as owner-confirmed operational for
+  selected personal NAS content, with restore verification still pending
+- Added the Phase 3.5 NAS-readiness gate and exact pre-ingestion checklist

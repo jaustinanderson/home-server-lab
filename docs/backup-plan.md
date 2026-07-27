@@ -1,14 +1,15 @@
 # Backup Plan
 
-This document defines the intended backup and restore model for the two-machine
-Home Server Lab. It distinguishes current hardware roles from controls that are
-not yet implemented.
+This document defines the backup and restore model for the Home Server Lab's
+Linux hosts, Synology source archive, and off-site protection. It distinguishes
+implemented controls from planned controls and unverified recovery claims.
 
-> **Current status:** `compute-node` is the working-storage machine and
-> `pi-server` is the intended archive and local-backup target. No automated
-> backup job, retention policy, off-site data backup, or completed restore test
-> is claimed yet. Do not place irreplaceable data on the lab until those controls
-> are implemented and verified.
+> **Current status (2026-07-27):** the DS925+ is the canonical source archive,
+> `compute-node` is the hot working tier, and `pi-server` is the planned local
+> secondary-protection tier (D19). Synology Hyper Backup to Backblaze B2 is
+> owner-confirmed operational for current personal NAS content on a daily schedule
+> with version retention (D20). No successful restore test, local NAS-to-pi backup
+> job, or metaphase-data recovery workflow is claimed yet.
 
 ## Backup principles
 
@@ -25,8 +26,9 @@ not yet implemented.
 | Data class | Examples | Intended protection |
 |---|---|---|
 | Source and public documentation | Git-tracked code, Compose files, runbooks, diagrams | GitHub plus local clones |
-| Reproducible public data | Original public datasets with recorded source and checksum | Provenance manifest; re-download when practical |
-| Irreplaceable project data | Annotations, curated metadata, database state, experiment decisions | Local second copy plus encrypted off-site copy |
+| Personal NAS content | Family home/Photos content currently selected in Hyper Backup | Daily versioned Backblaze B2 backup; restore verification pending |
+| Reproducible public data | Original public datasets with recorded source and checksum | Canonical NAS copy plus provenance manifest; re-download when practical |
+| Irreplaceable project data | Annotations, curated metadata, database state, experiment decisions | NAS source/archive plus planned local second copy and off-site copy |
 | Service state | Database dumps, persistent-volume data, configuration | Service-specific backup and restore runbook |
 | Secrets | Tokens, private keys, private addresses, recovery material | Private secret store; never this repository |
 | Caches and rebuildable artifacts | Package caches, images that can be rebuilt, temporary exports | Exclude unless a concrete recovery need exists |
@@ -37,21 +39,44 @@ backup policy does not make them acceptable.
 
 ## Practical 3-2-1 target
 
-For irreplaceable project data, the intended model is:
+For irreplaceable project data, the target model is:
 
-1. **Working copy:** `compute-node`.
-2. **Local second copy:** `pi-server`, created by a documented and monitored
-   backup job.
-3. **Off-site copy:** an encrypted, access-controlled destination selected when
-   valuable private project data exists.
+1. **Canonical source/archive copy:** Synology NAS.
+2. **Working copy:** `compute-node`, separate from immutable raw sources.
+3. **Local second copy:** `pi-server`, created by a documented and monitored
+   backup job; not implemented yet.
+4. **Off-site copy:** Backblaze B2 through Synology Hyper Backup, with each
+   protected workload explicitly added and verified.
 
 GitHub supplies an off-device copy of public source and documentation. It is not
 a substitute for database dumps, service data, private configuration, or a
 general off-site backup.
 
-Because both servers share the same location and network, copying from one to
-the other protects against a single-disk or single-machine failure but not
-theft, fire, account compromise, or a destructive command that reaches both.
+The second NAS drive will add one-drive-failure tolerance only after SHR expansion
+finishes and DSM reports the pool protected. It will not create another copy.
+The NAS, compute-node, and pi-server share a location; local replication protects
+against some device failures but not theft, fire, account compromise, or a
+destructive command that reaches multiple systems.
+
+## Implemented off-site job
+
+The current public-safe facts are:
+
+- Synology Hyper Backup sends selected current personal NAS content to Backblaze B2.
+- The job runs daily and uses version retention.
+- The owner reports the backup as active and currently protecting the selected content.
+- Credentials, account identifiers, bucket identifiers, private paths, and recovery
+  material are deliberately excluded here.
+
+Not yet claimed:
+
+- A completed disposable restore and independent content verification
+- Verified client-side encryption settings
+- Coverage for future metaphase manifests, annotations, databases, or working derivatives
+- A tested recovery-time or recovery-point objective
+
+Until the restore test passes, describe the job as **operational backup with
+recoverability unverified**, not as a complete disaster-recovery system.
 
 ## Backup scope template
 
@@ -118,12 +143,10 @@ data, and archive patterns. That is a safety net, not a content review.
 
 ## Implementation order
 
-1. Decide which first service or data class is valuable enough to protect.
-2. Define the backup scope with the template above.
-3. Select the tool and create a public-safe runbook.
-4. Implement the local `compute-node` to `pi-server` copy.
-5. Add failure monitoring and a retention policy.
-6. Complete and document a restore test.
-7. Add an encrypted off-site copy for irreplaceable private data.
-8. Review the design after the NAS is introduced; a NAS is storage, not
-   automatically a backup.
+1. Confirm daily Hyper Backup monitoring and failure notifications.
+2. Complete and document a disposable restore of the existing Backblaze-protected content.
+3. Define the metaphase manifest/annotation/database backup scope with the template above.
+4. Add only that approved scope to off-site protection and verify it.
+5. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
+6. Complete and document a restore from each required failure domain.
+7. Review scope, retention, encryption, credentials, and recovery timing after each new service.

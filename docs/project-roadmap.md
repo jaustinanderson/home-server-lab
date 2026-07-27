@@ -1,6 +1,9 @@
 # Project Roadmap
 
-This roadmap defines the phased development path for the two-machine Home Server Lab. Current completion and operational facts are tracked in [`../STATUS.md`](../STATUS.md); architectural rationale is tracked in [`../DECISIONS.md`](../DECISIONS.md).
+This roadmap defines the phased development path for the Home Server Lab's Linux hosts, Synology storage,
+and protected data workflows. Current completion and operational facts are tracked in
+[`../STATUS.md`](../STATUS.md); architectural rationale is tracked in
+[`../DECISIONS.md`](../DECISIONS.md).
 
 The lab exists to build practical infrastructure skills and support future public-data, synthetic-data, AI, and laboratory-informatics projects.
 
@@ -71,8 +74,44 @@ and a second fresh SSH connection. Both machines left two legitimate phased defe
 users/groups/ownership/permissions inventory is also complete: both hosts run a single sudo-capable login
 account with locked root and key-only SSH, and each had its login user removed from the unused `lxd` group
 (wrapper-only; verified in a fresh session). A recorded, unresolved divergence remains — pi-server's
-passwordless sudo versus compute-node's password-required sudo. Remaining Phase 3 work — storage/filesystem
-checks, system baselines, and log practice — continues.
+passwordless sudo versus compute-node's password-required sudo. The read-only Linux storage/filesystem
+review is complete and recorded in `docs/storage-baseline.md`. Remaining Phase 3 work — refreshed system
+baselines and deliberate log-inspection practice — continues.
+
+## Phase 3.5: NAS Storage Readiness — In Progress
+
+Goal: make the DS925+ a protected, recoverable source archive before any metaphase corpus is acquired.
+
+Current evidence:
+
+- DS925+ with Btrfs on a one-drive SHR pool is owner-confirmed healthy but has no drive-failure protection.
+- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for current personal NAS content on
+  a daily schedule with version retention.
+- A second matching 16 TB drive is expected on 2026-07-28 but is not installed or verified.
+- No metaphase share, `compute-node` mount, provenance workflow, checksum gate, or successful restore test is
+  claimed yet.
+
+Required gates:
+
+- Add the second drive to the existing SHR pool; wait for synchronization; verify both drives and the
+  protected pool healthy.
+- Run and record appropriate drive-health checks and enable storage/backup failure notifications.
+- Create the dedicated metaphase archive boundary and least-privilege access model.
+- Verify `compute-node` access while keeping canonical raw source material separate from working copies.
+- Require source, version, license, acquisition date, checksum, classification, intended use, and
+  transformation history for every dataset.
+- Restore a protected sample into a disposable location and verify it independently.
+- Run one small public-data pilot through quarantine → provenance/license review → checksum → archive →
+  working copy → restore.
+
+Planned artifacts:
+
+- `docs/storage-baseline.md` — **added**
+- `docs/nas-readiness-checklist.md` — **added**
+- `docs/backup-restore-test.md`
+
+Bulk acquisition remains Phase 8. Passing Phase 3.5 authorizes only a bounded first public-data pilot; it
+does not authorize patient, employer, uncertain-origin, or unrestricted corpus ingestion.
 
 ## Phase 4: Docker and Service Lifecycle
 
@@ -117,17 +156,18 @@ Potential tools:
 
 ## Phase 6: Storage, Backup, and Restore
 
-Goal: make data placement and recovery intentional.
+Goal: complete the full multi-device recovery model for services and irreplaceable project data.
 
 Tasks:
 
-- Define hot, working, archive, and backup storage roles
-- Decide what belongs on compute-node versus pi-server
+- Apply the D19 roles: NAS source archive, compute-node working tier, pi-server local secondary protection
 - Define backup frequency and retention
 - Separate code, datasets, databases, configuration, and secrets
+- Implement and monitor the planned local second-copy flow
+- Extend off-site protection to irreplaceable project data with a documented scope
 - Run a documented restore test
 - Record recovery time and gaps
-- Evaluate future NAS integration without treating storage as backup by default
+- Review the design after each protected service is introduced; SHR remains redundancy, not backup
 
 Planned artifact:
 
@@ -150,7 +190,8 @@ This phase is the beginning of the cytogenetics data-pipeline track, not merely 
 
 ## Phase 8: Public Dataset Ingestion
 
-Goal: ingest one public cytogenetics or related biomedical dataset end to end.
+Goal: scale the proven Phase 3.5 pilot into a governed public cytogenetics or related biomedical dataset
+ingestion workflow.
 
 Tasks:
 

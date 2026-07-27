@@ -7,15 +7,15 @@ flows that are not yet implemented.
 ## Current diagrams
 
 - [`home-lab-architecture.md`](home-lab-architecture.md) — Chromebook control
-  surface, private Tailscale access, the two server roles, local connectivity,
-  and the planned backup direction
+  surface, private Tailscale access, both Linux server roles, the Synology source
+  archive, and implemented/planned protection flows
 
 ## Planned diagrams
 
 Add these only when the corresponding systems exist:
 
 - Docker service topology for the first deployed service
-- Backup and restore flow after the first successful restore test
+- Detailed backup and restore flow after the first successful restore test
 - PostgreSQL and dataset-provenance data flow
 - Track A and Track B application topology
 
