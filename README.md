@@ -2,7 +2,7 @@
 
 ![Shell checks](https://github.com/jaustinanderson/home-server-lab/actions/workflows/shellcheck.yml/badge.svg)
 
-A public-safe, two-machine home-lab project for Linux administration, secure remote access, infrastructure-as-code, Docker, data engineering, and future clinical-AI experimentation.
+A public-safe, multi-device home-lab project for Linux administration, secure remote access, resilient storage, infrastructure-as-code, Docker, data engineering, and future clinical-AI experimentation.
 
 This repository documents the real architecture, decisions, validation steps, and lessons learned while building a small self-hosted environment. It is part of my transition from clinical cytogenetics into clinical AI, laboratory informatics, data systems, and practical software engineering.
 
@@ -12,11 +12,17 @@ This repository documents the real architecture, decisions, validation steps, an
 
 | Machine | Hardware | Role | Operating system |
 |---|---|---|---|
-| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Working storage, data services, and future AI compute | Ubuntu Server 26.04 |
-| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Bulk archive, intended backup target, and lightweight services | Ubuntu Server 26.04 |
+| **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute | Ubuntu Server 26.04 |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services | Ubuntu Server 26.04 |
+| **Synology NAS** | DS925+, Btrfs on SHR, one 16 TB drive installed | Canonical source archive and current personal-content store | Synology DSM |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH control surface through the Linux terminal | ChromeOS |
 
 Network addresses, MAC addresses, credentials, private keys, and other operational secrets are intentionally excluded from this public repository.
+
+The NAS currently has only one installed drive, so its SHR pool has no drive-failure protection yet. A second
+matching 16 TB drive is expected on 2026-07-28 but is not treated as installed or healthy until DSM completes
+the expansion and reports the pool protected. Synology Hyper Backup is operational to Backblaze B2 for the
+NAS's current personal content; a documented restore test is still required.
 
 ## Verified Foundation
 
@@ -31,6 +37,8 @@ The infrastructure foundation is complete and independently verified:
 - mDNS hostnames working between the two servers
 - Public-safe project state and architectural decisions stored in GitHub
 - Security and backup boundaries documented
+- Synology NAS incorporated into the canonical storage architecture (D19)
+- Daily off-site Hyper Backup from the NAS to Backblaze B2 reported operational; restore verification pending
 - Authenticated Git workflow from compute-node: SSH clone, dedicated key, and branch → commit → push → pull-request → review → merge proven end to end (D17)
 - A durable Session Start Gate requiring live-GitHub reconciliation before each work session
 
@@ -70,6 +78,8 @@ home-server-lab/
 │   ├── network-notes.md
 │   ├── security-checklist.md
 │   ├── backup-plan.md
+│   ├── storage-baseline.md
+│   ├── nas-readiness-checklist.md
 │   ├── patching-cadence.md
 │   ├── troubleshooting-log.md
 │   └── project-roadmap.md
@@ -93,10 +103,12 @@ home-server-lab/
 - [`docs/network-notes.md`](docs/network-notes.md) — managed-network constraints and private-access strategy
 - [`docs/security-checklist.md`](docs/security-checklist.md) — public-repository and server-security rules
 - [`docs/backup-plan.md`](docs/backup-plan.md) — backup philosophy, scope, and restore planning
+- [`docs/storage-baseline.md`](docs/storage-baseline.md) — sanitized Linux and NAS storage inventory and readiness gates
+- [`docs/nas-readiness-checklist.md`](docs/nas-readiness-checklist.md) — second-drive, protection, access, and pilot-ingestion gate
 - [`docs/patching-cadence.md`](docs/patching-cadence.md) — update policy (D18): daily automatic security patching plus the monthly manual maintenance runbook
 - [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md) — dated, sanitized operational findings and lessons
 - [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
-- [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and planned backup flow
+- [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and implemented/planned protection flows
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — change workflow, validation expectations, and scope control
 - [`SECURITY.md`](SECURITY.md) — reporting and response guidance for security or data-safety problems
 - [`LICENSE`](LICENSE) — MIT License
@@ -149,12 +161,14 @@ This design avoids depending on DHCP stability and does not require opening inbo
 Current focus is **Phase 3 — Core Linux Administration**:
 
 1. Patching cadence **established and exercised on both machines** (D18: daily security automation plus a monthly manual window)
-2. Practice and document package and service administration
-3. Collect sanitized system baselines with the system-information script
-4. Next: document users, groups, ownership, permissions, and storage/filesystem checks
-5. Add log-inspection and troubleshooting notes
+2. Users, groups, ownership, and permissions **audited on both machines**
+3. Storage/filesystem review **completed and promoted into the sanitized baseline**
+4. Next: finish refreshed system baselines and deliberate log-inspection practice
+5. In parallel, complete **Phase 3.5 — NAS Storage Readiness** after the second drive arrives
 
-Docker and the first containerized service remain **Phase 4**; PostgreSQL, dataset ingestion, and the Track A/Track B branches follow in later phases.
+The first small public-metaphase pilot may begin only after the Phase 3.5 protection, access, provenance,
+checksum, and restore gates pass. Docker remains **Phase 4**; automated database-backed ingestion remains
+later work.
 
 See [`STATUS.md`](STATUS.md) for the authoritative order and current completion state.
 

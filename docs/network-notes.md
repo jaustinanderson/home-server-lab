@@ -1,8 +1,9 @@
 # Network Notes
 
-This document records the verified, public-safe network model for the two-machine
-Home Server Lab. Operational addresses, device identifiers, Wi-Fi details, and
-account credentials are intentionally omitted.
+This document records the verified, public-safe network model for the Home Server
+Lab's control surface, two Linux hosts, and Synology NAS. Operational addresses,
+device identifiers, Wi-Fi details, account credentials, and private service
+identifiers are intentionally omitted.
 
 > [`../STATUS.md`](../STATUS.md) is the source of truth for current state.
 > [`../DECISIONS.md`](../DECISIONS.md) records why the lab uses DHCP, mDNS, and
@@ -14,11 +15,14 @@ account credentials are intentionally omitted.
 |---|---|---|
 | **Chromebook** | SSH control surface | Reaches both servers through the private Tailscale mesh |
 | **compute-node** | Working storage, data services, and future compute | Key-based SSH; local server-to-server connectivity; Tailscale |
-| **pi-server** | Archive, planned backup target, and lightweight services | Key-based SSH; local server-to-server connectivity; Tailscale |
+| **pi-server** | Planned local secondary protection and lightweight services | Key-based SSH; local server-to-server connectivity; Tailscale |
+| **Synology NAS** | Canonical source archive and current personal-content store | Local-network access; managed family access; not currently a tailnet device |
 
 The apartment-managed network provides DHCP and device-to-device connectivity,
 but no router administration, static DHCP reservations, or public port
 forwarding. Nothing in the lab depends on opening an inbound internet port.
+The NAS initiates a service connection to Backblaze B2 through Synology Hyper
+Backup; no inbound port-forwarding rule is required for that job.
 
 See the rendered topology in
 [`../diagrams/home-lab-architecture.md`](../diagrams/home-lab-architecture.md).
@@ -120,5 +124,6 @@ route problem.
 1. Improve `.local` resolution inside the Chromebook Linux environment.
 2. Document the standard Git/SSH authentication path for repository pushes.
 3. Inventory ports and firewall rules before deploying the first service.
-4. Update the architecture diagram when a service topology is actually
-   verified.
+4. Verify the future `compute-node` NAS mount and least-privilege share access.
+5. Decide whether NAS administration should join the private tailnet through a
+   separately reviewed change.

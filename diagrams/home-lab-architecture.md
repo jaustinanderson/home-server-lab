@@ -8,9 +8,11 @@ device identifiers, credentials, and service details.
 flowchart TD
     C["Chromebook<br/>SSH control surface"] -->|"SSH over Tailscale"| T["Private Tailscale mesh"]
     T --> N["compute-node<br/>working storage + future compute"]
-    T --> P["pi-server<br/>archive + lightweight services"]
+    T --> P["pi-server<br/>secondary protection + services"]
     N <-->|"Local network + mDNS"| P
-    N -.->|"Planned backup flow"| P
+    N -.->|"Planned working mount"| S["Synology DS925+<br/>canonical source archive"]
+    P -.->|"Planned local second copy"| S
+    S -->|"Operational Hyper Backup"| B["Backblaze B2<br/>off-site backup"]
 ```
 
 ## Verified now
@@ -22,10 +24,16 @@ flowchart TD
 - The servers resolve each other's `.local` names.
 - The Chromebook Linux environment uses Tailscale addressing because `.local`
   resolution there is not yet reliable.
+- The Synology NAS is local-network accessible and is the canonical source
+  archive under D19.
+- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
+  selected current NAS personal content.
 
 ## Planned, not yet claimed as implemented
 
-- A defined backup job from working data on `compute-node` to `pi-server`
+- The second NAS drive, protected SHR state, and verified drive-health checks
+- The `compute-node` working mount and metaphase share permissions
+- A local second copy from the NAS to `pi-server`
 - A tested restore procedure
 - Dockerized services and their service-level topology
 - PostgreSQL and the dataset-provenance workflow

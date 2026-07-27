@@ -1,8 +1,9 @@
 # Security Checklist
 
 This checklist separates controls that are verified today from controls that
-must be completed before the lab hosts additional services. It applies to both
-`compute-node` and `pi-server` and to every public artifact in this repository.
+must be completed before the lab hosts additional services or metaphase data. It
+applies to `compute-node`, `pi-server`, the Synology NAS, and every public
+artifact in this repository.
 
 > Current facts live in [`../STATUS.md`](../STATUS.md). Security decisions and
 > the SSH configuration-precedence lesson live in
@@ -22,6 +23,8 @@ must be completed before the lab hosts additional services. It applies to both
   addresses, and local data through documented rules and `.gitignore`.
 - [x] No patient data, employer-confidential material, or proprietary clinical
   content is permitted on the lab.
+- [x] Daily Synology Hyper Backup to Backblaze B2 is owner-confirmed operational
+  for selected current personal NAS content.
 
 Verified does not mean permanent. Re-run the relevant checks after SSH, network,
 package, or operating-system changes.
@@ -107,22 +110,29 @@ Before accepting a Compose file:
 
 ## Backup and recovery gate
 
-The hardware roles are chosen, but an automated backup and tested restore are
-not yet verified. Before valuable data is stored:
+The hardware roles and an off-site NAS backup are now implemented, but a tested
+restore and the metaphase-specific recovery scope are not yet verified. Before
+metaphase data is stored:
 
 - Define source, destination, schedule, retention, exclusions, and encryption.
 - Keep at least one copy outside the failure domain of the working machine.
 - Protect credentials separately from public documentation.
 - Run and document a restore test.
 - Treat a backup as incomplete until the restored data is verified.
+- Do not treat a second SHR drive as a backup; it adds redundancy only after DSM
+  reports the expansion complete and the pool protected.
 
 See [`backup-plan.md`](backup-plan.md).
 
 ## Remaining security work
 
-- [ ] Establish and record a repeatable patching cadence for both servers.
+- [x] Establish and record a repeatable patching cadence for both servers (D18).
 - [ ] Inventory listening ports before the first service deployment.
 - [ ] Define and verify host-firewall rules for the actual service topology.
-- [ ] Implement a backup job and complete a restore test.
+- [x] Implement an off-site backup job for current NAS personal content.
+- [ ] Complete and document a disposable Backblaze restore test.
+- [ ] Define, protect, and restore-test the future metaphase manifests,
+  annotations, databases, and other irreplaceable project data.
+- [ ] Implement and verify the planned local NAS-to-pi second copy.
 - [ ] Decide whether genuinely sensitive operational notes need a private
   repository or other private store.

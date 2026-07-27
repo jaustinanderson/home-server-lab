@@ -1,11 +1,11 @@
-# Project Status — Home Lab (compute-node + pi-server)
+# Project Status — Home Server Lab
 
 > **Single source of truth.** Austin, Claude, and ChatGPT read and edit this file *in place* — don't
 > regenerate it; append a dated line to the Changelog. Target ~one page.
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-19
+**Last updated:** 2026-07-27
 
 ---
 
@@ -23,12 +23,19 @@ the first win.**
 - **Infrastructure-as-code from day one**; configs + runbook in git. Public repo + LinkedIn are sanitized
   derivatives of the truth.
 
-## Machines
+## Machines and storage
 | Name | Hardware | Role | OS | User |
 |---|---|---|---|---|
-| **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot/working store + AI compute | Ubuntu Server 26.04 | `austin` |
-| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Bulk archive + intended backup target (cold) | Ubuntu Server 26.04 | `ubuntu` |
+| **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot working store + AI compute | Ubuntu Server 26.04 | `austin` |
+| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Planned local secondary protection + lightweight services | Ubuntu Server 26.04 | `ubuntu` |
+| **Synology NAS** | DS925+ — Btrfs on SHR; one 16TB drive installed | Canonical source archive + protected personal-content store | Synology DSM | Private |
 | **Chromebook** | Acer Chromebook Plus 514 (tailnet device "nissa") | Control surface (SSH only, via Penguin terminal) | ChromeOS | `jeradaustinanderson` |
+
+The NAS is owner-confirmed operational on the local network. Its current one-drive SHR pool is healthy but
+has **no drive-failure protection**. A second matching 16 TB drive is expected on 2026-07-28; it remains
+future state until installed, synchronized, and verified healthy. Synology Hyper Backup to Backblaze B2 is
+owner-confirmed operational for current NAS personal content on a daily schedule with version retention.
+No successful restore test is claimed yet. See D19, D20, and `docs/storage-baseline.md`.
 
 ## Network
 - Apartment-managed `/16` DHCP — no router admin, no static leases, no port forwarding.
@@ -58,15 +65,20 @@ the first win.**
 
 ## Current phase
 **Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
-authoritative phase sequence. Docker remains Phase 4.
+authoritative phase sequence. The Linux storage/filesystem review is complete and now recorded in
+`docs/storage-baseline.md`; refreshed system baselines and deliberate log-inspection practice remain.
+**Phase 3.5 — NAS Storage Readiness** is in progress in parallel. Docker remains Phase 4.
 
-**Immediate next action:** continue Phase 3 with a storage and filesystem review on both machines — mounts
-and usage (with attention to the Pi's separate `/boot/firmware`), the archive SSD's layout and health, and a
-sanitized baseline — then choose the next low-risk practice task. The users/groups/ownership/permissions
-inventory and its least-privilege exercise are complete on both machines. One item remains open and
-deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`) divergence from compute-node (see
-`docs/linux-command-notes.md`). Each repository change continues to follow the applicable D16/D17
-pull-request workflow.
+**Immediate next action:** when the second drive arrives, add it to the existing SHR pool through DSM,
+allow expansion/synchronization to finish, and verify both drives plus the protected pool are healthy. Do
+not create a second pool and do not claim redundancy before DSM reports completion. Then complete the
+remaining gates in `docs/nas-readiness-checklist.md`: metaphase share and permissions, `compute-node`
+access, provenance/checksum workflow, backup monitoring, and a disposable restore test.
+
+The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
+machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
+divergence from compute-node (see `docs/linux-command-notes.md`). Each repository change continues to
+follow the applicable D16/D17 pull-request workflow.
 
 ## Open items / maintenance
 - **D10 vs. roadmap ordering:** D10 makes **Track B** the first win, but the roadmap frames Phase 7
@@ -77,6 +89,11 @@ pull-request workflow.
   test; optional `.local` resolution in Penguin.
 - Patching cadence **established and exercised on both machines (D18)**. The compute-node canary required no
   reboot; pi-server completed a deliberate staged kernel reboot with post-boot lifeline and boot-slot checks.
+- **Metaphase-ingestion gate:** do not begin corpus acquisition. A single small public pilot becomes eligible
+  only after second-drive protection, healthy storage, dedicated share/permissions, verified
+  `compute-node` access, provenance/license/checksum controls, and a successful restore exercise.
+- **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
+  annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
 
 ## Changelog
@@ -138,3 +155,9 @@ pull-request workflow.
   Documented the commands and concepts in `docs/linux-command-notes.md`. One divergence is recorded and
   left unresolved: pi-server grants the login user passwordless sudo (`NOPASSWD`), where compute-node
   requires a password; any future change awaits its own preflight and review.
+- **2026-07-27 — Austin + ChatGPT/Codex** — Promoted the completed read-only Linux storage review into
+  `docs/storage-baseline.md`; incorporated the DS925+ as the canonical source archive through D19; recorded
+  the one-drive/no-protection boundary and the second 16 TB drive expected 2026-07-28; and added the Phase
+  3.5 NAS-readiness gate. Recorded owner-confirmed daily Synology Hyper Backup to Backblaze B2 as operational
+  for current NAS personal content through D20 while preserving the untested-restore and unverified-encryption
+  boundaries.
