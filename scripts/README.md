@@ -44,7 +44,9 @@ BACKUP_PATH=<your-backup-path-here>
 
 | Script | Purpose | Safety note |
 |---|---|---|
-| [`system-info.sh`](system-info.sh) | Summarize OS, kernel, uptime, memory, root-filesystem use, CPU, temperature, network-link state, and Docker availability | Omits network addresses and unique CPU serials by default; review all output before sharing |
+| [`system-info.sh`](system-info.sh) | Summarize OS, kernel, uptime, memory, root-filesystem use, CPU, temperature, network-link state, and Docker availability | Allowlists interface name/state so IP and MAC addresses are omitted; review all output before sharing |
+| [`test-system-info-safety.sh`](test-system-info-safety.sh) | Regression-test the network-output privacy contract with a mocked link-layer address | Fails if a MAC address escapes or expected sanitized fields disappear |
+| [`check-markdown-links.py`](check-markdown-links.py) | Check repository-relative Markdown links | Reads repository Markdown only and reports missing local targets |
 
 Run the current utility from the repository root:
 
@@ -53,8 +55,8 @@ chmod +x scripts/system-info.sh
 ./scripts/system-info.sh
 ```
 
-GitHub Actions runs ShellCheck against every repository shell script on pushes
-and pull requests.
+GitHub Actions runs ShellCheck, the system-output privacy regression, and the
+relative Markdown-link check on every push and pull request.
 
 ## Planned Scripts
 

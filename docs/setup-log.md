@@ -22,7 +22,7 @@ The lab supports practical learning in:
 |---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute |
 | **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services |
-| **Synology NAS** | DS925+, Btrfs on SHR, one 16 TB drive installed | Canonical source archive and current personal-content store |
+| **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives installed; conversion in progress | Canonical source archive and current personal-content store |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH administration through the Linux terminal |
 
 Both servers run Ubuntu Server 26.04. Exact network identifiers are intentionally omitted.
@@ -56,8 +56,8 @@ The following foundation work is complete:
 
 ## Current Next Steps
 
-- Add the expected second 16 TB drive to the existing SHR pool and verify
-  completed synchronization, protected status, and both drives healthy
+- Allow the current SHR conversion/synchronization to finish, then verify
+  protected status and both drives healthy
 - Complete the NAS-readiness checklist, including notifications, access,
   provenance, checksums, and a disposable restore
 - Finish refreshed Linux system baselines and deliberate log-inspection practice
@@ -150,3 +150,12 @@ Never commit:
 - Recorded daily Hyper Backup to Backblaze B2 as owner-confirmed operational for
   selected personal NAS content, with restore verification still pending
 - Added the Phase 3.5 NAS-readiness gate and exact pre-ingestion checklist
+
+### 2026-07-29
+
+- Installed the second matching 16 TB NAS drive and added it to the existing SHR
+  pool
+- Began DSM conversion/synchronization; protected status, two-drive health, and
+  redundancy remain pending until completion and verification
+- Clarified the readiness sequence: sections A–D authorize one bounded pilot,
+  while passing the pilot in section E completes Phase 3.5

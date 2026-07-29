@@ -17,12 +17,12 @@ artifact in this repository.
 - [x] An independent password-only client test was rejected.
 - [x] Conflicting cloud-init and legacy SSH fragments were removed.
 - [x] Tailscale provides private remote access without public port forwarding.
-- [x] Tailscale starts after reboot; unattended recovery was verified on
-  `compute-node`.
+- [x] Tailscale starts after reboot; recovery was verified on `compute-node`
+  and after the deliberate `pi-server` maintenance reboot.
 - [x] The public repository excludes secrets, private keys, operational
   addresses, and local data through documented rules and `.gitignore`.
-- [x] No patient data, employer-confidential material, or proprietary clinical
-  content is permitted on the lab.
+- [x] Only synthetic data or legitimately public, appropriately licensed
+  datasets are permitted; de-identification alone is insufficient (D1/D21).
 - [x] Daily Synology Hyper Backup to Backblaze B2 is owner-confirmed operational
   for selected current personal NAS content.
 
@@ -79,9 +79,9 @@ apt list --upgradable
 ```
 
 Apply approved updates deliberately, inspect service impact, and reboot when a
-kernel or other relevant update requires it. Record the patching cadence and
-last verified run in a future maintenance runbook; do not claim a cadence until
-it is actually followed.
+kernel or other relevant update requires it. Follow
+[`patching-cadence.md`](patching-cadence.md) and record each verified maintenance
+run; do not infer current patch status from the documented cadence alone.
 
 ## Firewall and service exposure
 
@@ -110,9 +110,10 @@ Before accepting a Compose file:
 
 ## Backup and recovery gate
 
-The hardware roles and an off-site NAS backup are now implemented, but a tested
-restore and the metaphase-specific recovery scope are not yet verified. Before
-metaphase data is stored:
+The hardware roles and an off-site NAS backup are now implemented. The second
+matching drive is installed and SHR conversion/synchronization is in progress,
+but redundancy, a tested restore, and the metaphase-specific recovery scope are
+not yet verified. Before metaphase data is stored:
 
 - Define source, destination, schedule, retention, exclusions, and encryption.
 - Keep at least one copy outside the failure domain of the working machine.
@@ -127,6 +128,8 @@ See [`backup-plan.md`](backup-plan.md).
 ## Remaining security work
 
 - [x] Establish and record a repeatable patching cadence for both servers (D18).
+- [ ] Complete SHR conversion and verify both drives and the storage pool
+  healthy, protected, and redundant.
 - [ ] Inventory listening ports before the first service deployment.
 - [ ] Define and verify host-firewall rules for the actual service topology.
 - [x] Implement an off-site backup job for current NAS personal content.

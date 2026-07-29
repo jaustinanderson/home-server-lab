@@ -2,15 +2,37 @@
 
 This checklist is the gate between owning storage and safely ingesting the first
 public metaphase dataset. A checked box requires evidence; planned or in-progress
-work is not completion.
+work is not completion. Sections A–D must pass before one bounded pilot is
+authorized. Passing section E completes Phase 3.5 and authorizes planning for
+broader acquisition in the later roadmap phase.
+
+## Evidence state — 2026-07-29
+
+| Stage | State | Evidence boundary |
+|---|---|---|
+| Expected | Complete historically | Matching 16 TB drive selected |
+| Arrived | Owner-confirmed complete | Second drive received |
+| Installed | Owner-confirmed complete | Second drive physically installed |
+| Recognized | Owner-confirmed complete | DSM reports SHR conversion underway |
+| Synchronized | In progress | Conversion completion not reported |
+| Healthy | Pending | No post-conversion both-drive/pool health evidence |
+| Redundant | Pending | DSM protected status not verified |
+| Backup current | Pending verification | Hyper Backup is operational for selected data; latest run and alerts are unverified |
+| Restore verified | Pending | No disposable restore is claimed |
+| Workload authorized | No | Pre-ingestion gates remain incomplete |
 
 ## A. Second-drive protection
 
-- [ ] Confirm the new drive is the expected compatible model and capacity.
-- [ ] Add it to the **existing** SHR pool; do not create a second pool.
-- [ ] Allow expansion/synchronization to complete without interruption.
+- [x] Confirm the matching 16 TB drive arrived.
+- [x] Confirm the drive is physically installed.
+- [x] Confirm DSM recognizes the drive and reports conversion of the existing
+  SHR pool in progress.
+- [ ] Allow expansion/synchronization to complete without interruption
+  (**in progress as of 2026-07-29**).
+- [ ] Verify the final topology is the intended SHR pool, not a second
+  independent pool.
 - [ ] Verify DSM reports the storage pool protected and healthy.
-- [ ] Verify both drives report healthy.
+- [ ] Verify both drives report healthy after conversion.
 - [ ] Run and record appropriate drive-health tests.
 - [ ] Confirm storage-pool, drive, capacity, and backup-failure notifications.
 
@@ -30,11 +52,13 @@ work is not completion.
 - [ ] Require dataset name, version, source URL/DOI, publisher, acquisition date,
   license, redistribution limits, and intended use.
 - [ ] Require SHA-256 checksums before promotion from quarantine.
-- [ ] Classify every source as public, synthetic, or explicitly approved
-  de-identified study data.
+- [ ] Classify every source as synthetic or as a legitimately public,
+  appropriately licensed dataset; de-identification alone is insufficient
+  (D1/D21).
 - [ ] Record every transformation from source to derivative.
-- [ ] Reject patient data, employer material, real identifiers, uncertain-origin
-  collections, and sources without an acceptable license.
+- [ ] Reject non-public patient-derived or clinical study data, employer
+  material, real identifiers, uncertain-origin collections, restricted data,
+  and sources without an acceptable license.
 
 ## D. Backup and recovery
 

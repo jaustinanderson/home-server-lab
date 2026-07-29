@@ -52,3 +52,27 @@ staged set. With physical recovery available, `piboot-try --reboot` tested the n
 returned on the expected kernel; the reboot flag cleared; both retained boot slots were `good`; Tailscale,
 SSH, failed units, and a second fresh connection all passed. Lesson: do not classify an isolated trigger
 warning as failure — use the transaction exit, package audit, staged-boot test, and post-boot state together.
+
+## 2026-07-29 — Repository safety audit found three cross-artifact defects
+
+A whole-repository review found three defects that individual file reviews had missed:
+
+1. `system-info.sh` claimed to omit network addresses but used `ip -brief link`, whose normal output includes
+   link-layer/MAC addresses.
+2. D19 and the NAS checklist unintentionally broadened D1 from public/synthetic-only data to potentially
+   "approved de-identified study data."
+3. The architecture diagram drew the planned local backup arrow from `pi-server` to the NAS, opposite the D19
+   NAS-to-`pi-server` protection flow.
+
+The correct pre-publication action would have been to inspect allowed output fields, test cross-document policy
+invariants, and compare diagram direction against the written source/destination roles. The correction
+allowlists interface name/state, adds a mocked MAC-address regression test and always-running repository
+checks, records D21 to restore D1 as controlling, and reverses the diagram edge. Prevention: treat public-safe
+output claims as executable contracts, check architectural diagrams semantically rather than visually, and
+include cross-file contradiction searches in future repository-wide reviews.
+
+The first pull-request check then failed because ShellCheck interpreted intentionally literal parameter
+expressions in the generated mock script as accidental single-quote suppression (SC2016). The runtime test
+itself passed. The correction adds a narrowly scoped, documented ShellCheck directive to the generated-source
+block; prevention is to keep lint suppressions adjacent to intentional code-generation boundaries and require
+the full repository check before merge.

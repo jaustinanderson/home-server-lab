@@ -75,8 +75,8 @@ published unchanged.
 ### A `.local` hostname does not resolve from the Chromebook
 
 Use the verified Tailscale-backed SSH alias. Then inspect mDNS support inside
-the Chromebook Linux container. Installing or enabling Avahi there is the next
-planned quality-of-life task; it is not required for secure remote access.
+the Chromebook Linux container if desired. Installing or enabling Avahi there
+is a deferred quality-of-life task; it is not required for secure remote access.
 
 ### A server-to-server `.local` hostname stops resolving
 
@@ -121,9 +121,8 @@ route problem.
 
 ## Next network work
 
-1. Improve `.local` resolution inside the Chromebook Linux environment.
-2. Document the standard Git/SSH authentication path for repository pushes.
-3. Inventory ports and firewall rules before deploying the first service.
-4. Verify the future `compute-node` NAS mount and least-privilege share access.
-5. Decide whether NAS administration should join the private tailnet through a
+1. Verify the future `compute-node` NAS mount and least-privilege share access.
+2. Inventory ports and firewall rules before deploying the first service.
+3. Optionally improve `.local` resolution inside the Chromebook Linux environment.
+4. Decide whether NAS administration should join the private tailnet through a
    separately reviewed change.

@@ -22,7 +22,7 @@ Operating policy and monthly runbook for OS updates on the lab machines. Recorde
 ### 0. Session gate
 1. Live-GitHub reconciliation per the Session Start Gate in [`CONTRIBUTING.md`](../CONTRIBUTING.md).
 2. **Intended-host check:** the shell prompt must identify the target machine (for example
-   `austin@compute-node`) before every group of commands. If the SSH session dropped, stop, reconnect, and
+   `<private-user>@compute-node`) before every group of commands. If the SSH session dropped, stop, reconnect, and
    discard anything run on the wrong host.
 3. Open a second idle SSH session as a fallback and confirm local-console access is possible.
 

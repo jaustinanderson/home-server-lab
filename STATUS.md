@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-27
+**Last updated:** 2026-07-29
 
 ---
 
@@ -16,7 +16,9 @@ clinical-lab AI. Two tracks: **Track A** — data lake + AI pipeline for cytogen
 the first win.**
 
 ## Non-negotiable constraints
-- **No real patient data / PHI on this lab. Ever.** Public datasets + synthetic/fake data only.
+- **No real patient data / PHI on this lab. Ever.** Public datasets + synthetic/fake data only (D1,
+  reaffirmed by D21). De-identification alone is insufficient; any non-synthetic source must be a
+  legitimately public, appropriately licensed dataset.
 - **Free & open-source** stack, installed cleanly (not snaps).
 - **One phase at a time** — explain the *why*. Austin reviews and approves repository changes; all changes
   follow the applicable PR workflow in D16/D17.
@@ -24,18 +26,19 @@ the first win.**
   derivatives of the truth.
 
 ## Machines and storage
-| Name | Hardware | Role | OS | User |
-|---|---|---|---|---|
-| **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot working store + AI compute | Ubuntu Server 26.04 | `austin` |
-| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Planned local secondary protection + lightweight services | Ubuntu Server 26.04 | `ubuntu` |
-| **Synology NAS** | DS925+ — Btrfs on SHR; one 16TB drive installed | Canonical source archive + protected personal-content store | Synology DSM | Private |
-| **Chromebook** | Acer Chromebook Plus 514 (tailnet device "nissa") | Control surface (SSH only, via Penguin terminal) | ChromeOS | `jeradaustinanderson` |
+| Name | Hardware | Role | OS |
+|---|---|---|---|
+| **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot working store + AI compute | Ubuntu Server 26.04 |
+| **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Planned local secondary protection + lightweight services | Ubuntu Server 26.04 |
+| **Synology NAS** | DS925+ — Btrfs on SHR; two matching 16TB drives installed; conversion in progress | Canonical source archive + protected personal-content store | Synology DSM |
+| **Chromebook** | Acer Chromebook Plus 514 | Control surface (SSH only, via Penguin terminal) | ChromeOS |
 
-The NAS is owner-confirmed operational on the local network. Its current one-drive SHR pool is healthy but
-has **no drive-failure protection**. A second matching 16 TB drive is expected on 2026-07-28; it remains
-future state until installed, synchronized, and verified healthy. Synology Hyper Backup to Backblaze B2 is
-owner-confirmed operational for current NAS personal content on a daily schedule with version retention.
-No successful restore test is claimed yet. See D19, D20, and `docs/storage-baseline.md`.
+The NAS is owner-confirmed operational on the local network. The second matching 16 TB drive is installed
+and DSM is converting/synchronizing the existing SHR pool as of 2026-07-29. Redundancy, protected status,
+and two-drive health remain unverified until the process finishes and DSM reports the required state.
+Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for selected current personal content
+on a daily schedule with version retention. No successful restore test is claimed yet. See D19–D21 and
+`docs/storage-baseline.md`.
 
 ## Network
 - Apartment-managed `/16` DHCP — no router admin, no static leases, no port forwarding.
@@ -43,9 +46,10 @@ No successful restore test is claimed yet. See D19, D20, and `docs/storage-basel
 - **Tailscale mesh VPN** is the remote-access layer: all three devices joined, stable per-device tailnet
   addresses, nothing exposed publicly, DHCP-churn-proof.
 - **Operational rule (2026-07-12):** connect to the servers **from the Penguin terminal over their Tailscale
-  addresses** — LAN IPs drift and the Chromebook's old saved SSH profiles were stale/mislabeled.
-  **compute-node's login user is `austin`; pi-server's is `ubuntu`.** (MagicDNS name resolution from *inside
-  Penguin* is untested — verify later; `.local` support in Penguin is optional convenience, not a gate.)
+  addresses** — LAN IPs drift and the Chromebook's old saved SSH profiles were stale/mislabeled. Use the
+  locally configured host aliases and private per-host usernames; do not publish those account identifiers.
+  (MagicDNS name resolution from *inside Penguin* is untested — verify later; `.local` support in Penguin is
+  optional convenience, not a gate.)
 
 ## Phase progress
 - **Phase 1 — Foundation & Secure Access ✅** — Ubuntu Server 26.04 on both boxes; SSH keys-only, hardened
@@ -69,11 +73,14 @@ authoritative phase sequence. The Linux storage/filesystem review is complete an
 `docs/storage-baseline.md`; refreshed system baselines and deliberate log-inspection practice remain.
 **Phase 3.5 — NAS Storage Readiness** is in progress in parallel. Docker remains Phase 4.
 
-**Immediate next action:** when the second drive arrives, add it to the existing SHR pool through DSM,
-allow expansion/synchronization to finish, and verify both drives plus the protected pool are healthy. Do
-not create a second pool and do not claim redundancy before DSM reports completion. Then complete the
-remaining gates in `docs/nas-readiness-checklist.md`: metaphase share and permissions, `compute-node`
-access, provenance/checksum workflow, backup monitoring, and a disposable restore test.
+**Immediate next action:** allow the current SHR conversion/synchronization to finish without interruption.
+While it runs, continue only NAS-independent Phase 3 work: refreshed sanitized system baselines and deliberate
+log-inspection practice. Do not begin the pilot or deploy a storage-dependent service during conversion.
+Then verify DSM reports the pool protected and healthy, verify both drives, run appropriate post-conversion
+drive-health tests, and confirm storage/backup alerts. Do not claim redundancy before those checks pass.
+Next, complete sections B–D of `docs/nas-readiness-checklist.md`: metaphase share and permissions,
+`compute-node` access, provenance/checksum controls, backup currency, and a disposable restore test.
+Sections A–D authorize one bounded public/synthetic pilot; passing section E completes Phase 3.5.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -121,7 +128,7 @@ follow the applicable D16/D17 pull-request workflow.
 - **2026-07-12 — Austin + Claude** — Established GitHub push authentication on compute-node (dedicated
   passphrase-protected ed25519 account key, `IdentitiesOnly` config, verified host key + `ssh -T`, git
   identity, SSH clone on `main`, and proven test-branch push/delete). A stale-connection detour reaffirmed
-  the Tailscale-from-Penguin rule and the `austin`/`ubuntu` usernames.
+  the Tailscale-from-Penguin rule and the need to use the correct private per-host usernames.
 - **2026-07-13 — Austin + ChatGPT** — Reconciled the verified Git-authentication work through a focused
   Codex PR under D16; added **D17** for Austin-controlled machine-side changes; recorded the account-key
   scope as deliberate; aligned STATUS with the existing roadmap; and left Phase 2 in progress pending one
@@ -161,3 +168,10 @@ follow the applicable D16/D17 pull-request workflow.
   3.5 NAS-readiness gate. Recorded owner-confirmed daily Synology Hyper Backup to Backblaze B2 as operational
   for current NAS personal content through D20 while preserving the untested-restore and unverified-encryption
   boundaries.
+- **2026-07-29 — Austin + ChatGPT/Codex** — Recorded the second matching 16 TB NAS drive as installed and
+  added to the existing SHR pool, with DSM conversion/synchronization in progress. Preserved the unverified
+  redundancy, drive-health, backup-currency, encryption, restore, and metaphase-authorization boundaries;
+  clarified that readiness sections A–D authorize one bounded pilot and section E completes Phase 3.5.
+  A repository-safety audit also corrected MAC-address disclosure in `system-info.sh`, reversed the local
+  NAS-to-pi backup arrow, sanitized operational account/device identifiers, added continuous privacy/link
+  checks, and recorded D21 to restore D1's public-or-synthetic-only data boundary.

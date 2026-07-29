@@ -16,7 +16,7 @@ inspection unless explicitly noted. No addresses, key contents, or credentials a
   daemons run as. A `sync` account whose shell is `/bin/sync` is a harmless traditional fossil.
 
 ### Private (per-user) primary groups and `umask 0002`
-Ubuntu gives each user a **private primary group** of the same name (e.g. `austin:austin`), so a
+Ubuntu gives each user a **private primary group** of the same name (e.g. `<user>:<user>`), so a
 group-writable default is safe: files you create are group-owned by *your own* group, not a shared one.
 `umask 0002` therefore yields `775` directories and `664` files. Note that `umask` alone does **not** make
 content private: those modes still grant read (and directory traverse) to "others" wherever the parent path

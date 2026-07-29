@@ -130,3 +130,11 @@ with version retention. Credentials, bucket identifiers, private paths, and reco
 this public repository. Operational backup status does not prove recoverability: the design remains
 incomplete until a disposable restore is completed, verified, and documented. Encryption status is not
 claimed until separately inspected.
+
+**D21 — D1 remains controlling: only public or synthetic data may enter the lab.** *(2026-07-29)*
+This corrects and supersedes only D19's phrase allowing "explicitly approved de-identified study data," which
+was inconsistent with D1 and is not an authorization. De-identification alone does not move real
+patient-derived, institutional, employer, restricted, or uncertain-origin material across the lab boundary.
+Any non-synthetic source must already be a legitimately public, appropriately licensed dataset. A future
+proposal to expand that rule requires a new explicit decision after applicable legal, institutional, privacy,
+security, and data-use review; until then, public datasets and synthetic/fake data are the complete allowed set.

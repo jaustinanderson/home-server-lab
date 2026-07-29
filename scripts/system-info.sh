@@ -2,9 +2,9 @@
 
 # Script: system-info.sh
 # Purpose: Print a share-conscious system summary for either home-lab server.
-# Safety: Network addresses and unique CPU serials are omitted. Review all
-# output before publishing because device names, mount paths, or other local
-# context may still be sensitive.
+# Safety: IP addresses, MAC addresses, and unique CPU serials are omitted.
+# Review all output before publishing because interface names, mount paths, or
+# other local context may still be sensitive.
 
 set -u
 
@@ -58,7 +58,11 @@ else
 fi
 
 section "Network Link State (addresses omitted)"
-ip -brief link 2>/dev/null || echo "ip command not available."
+if command -v ip >/dev/null 2>&1; then
+  ip -brief link 2>/dev/null | awk '{print $1, $2}'
+else
+  echo "ip command not available."
+fi
 
 section "Docker Status"
 if command -v docker >/dev/null 2>&1; then
