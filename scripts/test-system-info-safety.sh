@@ -13,6 +13,9 @@ cleanup() {
 trap cleanup EXIT
 
 mock_ip="$test_dir/ip"
+# These single-quoted arguments are literal source lines for the generated mock;
+# their parameter expansions must occur later, when that mock runs.
+# shellcheck disable=SC2016
 printf '%s\n' \
   '#!/usr/bin/env bash' \
   'separator=:' \
