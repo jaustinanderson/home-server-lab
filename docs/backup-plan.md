@@ -4,12 +4,14 @@ This document defines the backup and restore model for the Home Server Lab's
 Linux hosts, Synology source archive, and off-site protection. It distinguishes
 implemented controls from planned controls and unverified recovery claims.
 
-> **Current status (2026-07-27):** the DS925+ is the canonical source archive,
+> **Current status (2026-07-29):** the DS925+ is the canonical source archive,
 > `compute-node` is the hot working tier, and `pi-server` is the planned local
 > secondary-protection tier (D19). Synology Hyper Backup to Backblaze B2 is
-> owner-confirmed operational for current personal NAS content on a daily schedule
-> with version retention (D20). No successful restore test, local NAS-to-pi backup
-> job, or metaphase-data recovery workflow is claimed yet.
+> owner-confirmed operational for selected current personal NAS content on a daily schedule
+> with version retention (D20). The second matching NAS drive is installed and SHR
+> conversion/synchronization is in progress; redundancy is not yet claimed. No
+> successful restore test, local NAS-to-pi backup job, or metaphase-data recovery
+> workflow is claimed yet.
 
 ## Backup principles
 
@@ -33,9 +35,10 @@ implemented controls from planned controls and unverified recovery claims.
 | Secrets | Tokens, private keys, private addresses, recovery material | Private secret store; never this repository |
 | Caches and rebuildable artifacts | Package caches, images that can be rebuilt, temporary exports | Exclude unless a concrete recovery need exists |
 
-Patient data, employer-confidential material, proprietary clinical-system
-content, and real clinical identifiers are prohibited on the lab entirely; a
-backup policy does not make them acceptable.
+Non-public patient-derived or clinical study data, employer-confidential
+material, proprietary clinical-system content, and real clinical identifiers
+are prohibited on the lab under D1/D21; de-identification or a backup policy
+does not make them acceptable.
 
 ## Practical 3-2-1 target
 
@@ -52,8 +55,9 @@ GitHub supplies an off-device copy of public source and documentation. It is not
 a substitute for database dumps, service data, private configuration, or a
 general off-site backup.
 
-The second NAS drive will add one-drive-failure tolerance only after SHR expansion
-finishes and DSM reports the pool protected. It will not create another copy.
+The second NAS drive is installed and being incorporated into the existing SHR
+pool. It adds one-drive-failure tolerance only after conversion/synchronization
+finishes and DSM reports the pool protected. It does not create another copy.
 The NAS, compute-node, and pi-server share a location; local replication protects
 against some device failures but not theft, fire, account compromise, or a
 destructive command that reaches multiple systems.
@@ -143,10 +147,12 @@ data, and archive patterns. That is a safety net, not a content review.
 
 ## Implementation order
 
-1. Confirm daily Hyper Backup monitoring and failure notifications.
-2. Complete and document a disposable restore of the existing Backblaze-protected content.
-3. Define the metaphase manifest/annotation/database backup scope with the template above.
-4. Add only that approved scope to off-site protection and verify it.
-5. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
-6. Complete and document a restore from each required failure domain.
-7. Review scope, retention, encryption, credentials, and recovery timing after each new service.
+1. Allow the current SHR conversion/synchronization to complete.
+2. Verify both drives and the storage pool healthy, protected, and redundant.
+3. Confirm the latest scheduled Hyper Backup run, monitoring, and failure notifications.
+4. Complete and document a disposable restore of the existing Backblaze-protected content.
+5. Define the metaphase manifest/annotation/database backup scope with the template above.
+6. Add only that approved scope to off-site protection and verify it.
+7. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
+8. Complete and document a restore from each required failure domain.
+9. Review scope, retention, encryption, credentials, and recovery timing after each new service.

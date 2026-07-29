@@ -30,13 +30,13 @@ Example public-safe configuration:
 ```sshconfig
 Host compute-node
     HostName <private-host-or-tailnet-address>
-    User austin
+    User <compute-user>
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 
 Host pi-server
     HostName <private-host-or-tailnet-address>
-    User ubuntu
+    User <pi-user>
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
 ```

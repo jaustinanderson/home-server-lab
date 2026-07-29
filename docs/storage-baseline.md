@@ -5,9 +5,9 @@ separates direct read-only observations from owner-confirmed NAS state and avoid
 operational addresses, device serials, account identifiers, credentials, and
 private paths.
 
-- **Baseline date:** 2026-07-27
+- **Baseline date:** 2026-07-29
 - **Linux observation date:** 2026-07-19
-- **NAS/backup owner confirmation:** 2026-07-27
+- **NAS/backup owner confirmation:** 2026-07-29
 
 ## Role model
 
@@ -48,18 +48,18 @@ Usage percentages are historical observations, not live monitoring claims.
 
 ## Synology observations and owner-confirmed state
 
-- DS925+ with one matching 16 TB NAS drive installed
-- One healthy Btrfs volume on a one-drive SHR pool
-- The pool currently has **no drive-failure protection**
+- DS925+ with two matching 16 TB NAS drives installed
+- The second drive has been added to the existing SHR pool
+- DSM conversion/synchronization is in progress as of 2026-07-29
+- Redundancy, protected pool status, and two-drive health are not yet verified
 - SMB is enabled; NFS is disabled
 - Local-network and managed family access are operational
 - The NAS is not currently a tailnet device
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current personal content on a daily schedule with version retention
-- A second matching 16 TB drive is expected on 2026-07-28
-
-The second drive is not installed, healthy, synchronized, or protective until
-DSM reports those facts after expansion of the existing pool.
+Current state: **expected → arrived → installed → recognized/added → conversion
+in progress**. Synchronization complete, healthy, redundant, backup current,
+restore verified, and workload authorized remain separate evidence gates.
 
 ## Controls not yet verified
 
@@ -67,7 +67,7 @@ DSM reports those facts after expansion of the existing pool.
 - Hyper Backup encryption settings
 - Storage/backup failure-notification test
 - Extended drive-health test evidence for both NAS drives
-- Protected SHR state with the second drive
+- Completed SHR conversion with the pool protected and both drives healthy
 - Dedicated metaphase share and least-privilege permissions
 - Verified `compute-node` access to the NAS
 - Local second copy to `pi-server`
@@ -78,6 +78,7 @@ DSM reports those facts after expansion of the existing pool.
 
 Do not begin corpus acquisition merely because the NAS can store files. One
 small public/synthetic pilot becomes eligible only after every gate in
-`nas-readiness-checklist.md` passes. Patient data, employer material, real case
-identifiers, uncertain-origin images, and restricted data without explicit
-authorization remain prohibited.
+`nas-readiness-checklist.md` passes. Non-public patient-derived or clinical
+study data, employer material, real case identifiers, uncertain-origin images,
+and restricted data remain prohibited under D1/D21; de-identification alone is
+not authorization.

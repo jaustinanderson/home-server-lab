@@ -84,17 +84,17 @@ Goal: make the DS925+ a protected, recoverable source archive before any metapha
 
 Current evidence:
 
-- DS925+ with Btrfs on a one-drive SHR pool is owner-confirmed healthy but has no drive-failure protection.
+- DS925+ with Btrfs on SHR now has two matching 16 TB drives installed.
+- DSM conversion/synchronization of the existing SHR pool is in progress as of 2026-07-29; redundancy,
+  protected status, and two-drive health are not yet claimed.
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for current personal NAS content on
   a daily schedule with version retention.
-- A second matching 16 TB drive is expected on 2026-07-28 but is not installed or verified.
 - No metaphase share, `compute-node` mount, provenance workflow, checksum gate, or successful restore test is
   claimed yet.
 
 Required gates:
 
-- Add the second drive to the existing SHR pool; wait for synchronization; verify both drives and the
-  protected pool healthy.
+- Allow the current conversion/synchronization to finish; verify both drives and the protected pool healthy.
 - Run and record appropriate drive-health checks and enable storage/backup failure notifications.
 - Create the dedicated metaphase archive boundary and least-privilege access model.
 - Verify `compute-node` access while keeping canonical raw source material separate from working copies.
@@ -110,8 +110,9 @@ Planned artifacts:
 - `docs/nas-readiness-checklist.md` — **added**
 - `docs/backup-restore-test.md`
 
-Bulk acquisition remains Phase 8. Passing Phase 3.5 authorizes only a bounded first public-data pilot; it
-does not authorize patient, employer, uncertain-origin, or unrestricted corpus ingestion.
+Passing sections A–D of `docs/nas-readiness-checklist.md` authorizes only one bounded public/synthetic pilot.
+Passing the pilot in section E completes Phase 3.5. Bulk acquisition remains Phase 8; no phase authorizes
+patient, employer, uncertain-origin, or unrestricted corpus ingestion.
 
 ## Phase 4: Docker and Service Lifecycle
 

@@ -18,7 +18,7 @@ Before making any change in a work session, reconcile against **live GitHub** �
 2. Read the current canonical files (`STATUS.md`, `DECISIONS.md`, `docs/project-roadmap.md`, `CONTRIBUTING.md`, `README.md`) from `raw.githubusercontent.com`.
 3. Treat any GitHub response whose body is a rate-limit notice or other error as **unverified** — never parse an error body as data.
 4. Before any machine or repository command, confirm the shell is on the **intended host** — the prompt
-   must identify it (for example `austin@compute-node`). If an SSH session has dropped, or the prompt shows
+   must identify it (for example `<private-user>@compute-node`). If an SSH session has dropped, or the prompt shows
    a different machine (such as the Penguin container), **stop**: reconnect to the intended host and discard
    any evidence gathered on the wrong host before continuing.
 5. When working from a lab machine, reconcile the local clone read-only before branching:
@@ -59,6 +59,8 @@ Use placeholders, generalized diagrams, synthetic examples, and sanitized eviden
 - Quote expansions unless word splitting is intentional.
 - Avoid printing secrets or unnecessary network identifiers.
 - Pass ShellCheck before merging.
+- Run `bash scripts/test-system-info-safety.sh` after changing shared diagnostic output.
+- Run `python3 scripts/check-markdown-links.py` after changing Markdown structure.
 - Document prerequisites, side effects, and rollback behavior.
 
 ## Docker and Configuration
