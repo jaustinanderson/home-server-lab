@@ -10,7 +10,7 @@ flowchart TD
     T --> N["compute-node<br/>working storage + future compute"]
     T --> P["pi-server<br/>secondary protection + services"]
     N <-->|"Local network + mDNS"| P
-    N -.->|"Planned approved-source mount"| S["Synology DS925+<br/>canonical source archive<br/>SHR conversion in progress"]
+    N -.->|"Planned approved-source mount"| S["Synology DS925+<br/>canonical source archive<br/>healthy SHR protection"]
     S -.->|"Planned local second copy"| P
     S -->|"Operational Hyper Backup"| B["Backblaze B2<br/>off-site backup"]
 ```
@@ -26,15 +26,15 @@ flowchart TD
   resolution there is not yet reliable.
 - The Synology NAS is local-network accessible and is the canonical source
   archive under D19.
-- Two matching 16 TB drives are installed in the NAS, and DSM conversion/
-  synchronization of the existing SHR pool is in progress. Protected status and
-  two-drive health are not yet claimed.
+- Two matching 16 TB drives are installed in one healthy SHR pool with one-drive
+  fault tolerance; both drives passed extended S.M.A.R.T. tests.
+- The first data scrub completed successfully, quarterly scrubbing is scheduled,
+  and DSM warning/critical email delivery was tested.
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current NAS personal content.
 
 ## Planned, not yet claimed as implemented
 
-- Completed SHR conversion, protected pool status, and verified drive-health checks
 - The `compute-node` working mount and metaphase share permissions
 - A local second copy from the NAS to `pi-server`
 - A tested restore procedure

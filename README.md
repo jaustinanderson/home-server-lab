@@ -14,15 +14,16 @@ This repository documents the real architecture, decisions, validation steps, an
 |---|---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute | Ubuntu Server 26.04 |
 | **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services | Ubuntu Server 26.04 |
-| **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives installed; conversion in progress | Canonical source archive and current personal-content store | Synology DSM |
+| **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives, one-drive fault tolerance | Canonical source archive and current personal-content store | Synology DSM |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH control surface through the Linux terminal | ChromeOS |
 
 Network addresses, MAC addresses, credentials, private keys, and other operational secrets are intentionally excluded from this public repository.
 
-Both matching 16 TB drives are installed, and DSM is converting/synchronizing the existing SHR pool. The
-conversion is in progress as of 2026-07-29; redundancy, protected status, and two-drive health are not claimed
-until DSM reports completion and the required checks pass. Synology Hyper Backup is operational to Backblaze
-B2 for selected current personal content; recoverability remains unverified until a documented restore passes.
+Both matching 16 TB drives are installed in one healthy SHR pool with one-drive fault tolerance and
+approximately 13.8 TB usable capacity. Both drives passed extended S.M.A.R.T. tests, the first data scrub
+completed successfully, quarterly scrubbing is scheduled, and DSM email alerts were tested. Synology Hyper
+Backup is operational to Backblaze B2 for selected current personal content; recoverability remains
+unverified until a documented restore passes.
 
 ## Verified Foundation
 
@@ -38,6 +39,7 @@ The infrastructure foundation is complete and independently verified:
 - Public-safe project state and architectural decisions stored in GitHub
 - Security and backup boundaries documented
 - Synology NAS incorporated into the canonical storage architecture (D19)
+- Healthy two-drive SHR protection, extended drive tests, tested DSM email alerts, and scheduled scrubbing
 - Daily off-site Hyper Backup from the NAS to Backblaze B2 reported operational; restore verification pending
 - Authenticated Git workflow from compute-node: SSH clone, dedicated key, and branch → commit → push → pull-request → review → merge proven end to end (D17)
 - A durable Session Start Gate requiring live-GitHub reconciliation before each work session
@@ -167,14 +169,16 @@ This design avoids depending on DHCP stability and does not require opening inbo
 
 ## Near-Term Roadmap
 
-Current focus is **Phase 3 — Core Linux Administration**:
+**Phase 3 — Core Linux Administration is complete.** Current focus is **Phase 3.5 — NAS Storage Readiness**:
 
 1. Patching cadence **established and exercised on both machines** (D18: daily security automation plus a monthly manual window)
 2. Users, groups, ownership, and permissions **audited on both machines**
 3. Storage/filesystem review **completed and promoted into the sanitized baseline**
-4. Next: finish refreshed system baselines and deliberate log-inspection practice
-5. In parallel, allow the current SHR conversion to finish, verify protection and drive health, and complete
-   **Phase 3.5 — NAS Storage Readiness**
+4. Refreshed system baselines, deliberate log inspection, controlled reboots, and SSH aliases **verified**
+5. NAS protection gate A **completed**: healthy one-drive-fault-tolerant SHR, both extended drive tests,
+   tested email alerts, successful first scrub, and quarterly scrub schedule
+6. Next: prove Hyper Backup recovery, then implement archive/access, provenance/checksum, and local-second-copy
+   controls before the one bounded public/synthetic pilot
 
 The first small public-metaphase pilot may begin only after the Phase 3.5 protection, access, provenance,
 checksum, backup, and restore prerequisites pass. Passing that bounded pilot completes Phase 3.5; bulk

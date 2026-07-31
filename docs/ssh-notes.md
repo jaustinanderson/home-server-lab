@@ -12,6 +12,8 @@ SSH key authentication is configured and working from the Chromebook to both lab
 - **pi-server** — Ubuntu Server 26.04
 
 Password authentication is disabled on both machines and was independently verified from an external client. Tailscale provides private remote connectivity without public port forwarding.
+Tested Chromebook SSH aliases now connect to both hosts using the intended private usernames, the existing
+Ed25519 identity, `IdentitiesOnly yes`, and keepalive settings.
 
 ## Administration Device
 
@@ -33,12 +35,16 @@ Host compute-node
     User <compute-user>
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
 
 Host pi-server
     HostName <private-host-or-tailnet-address>
     User <pi-user>
     IdentityFile ~/.ssh/id_ed25519
     IdentitiesOnly yes
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
 ```
 
 `IdentitiesOnly yes` restricts authentication to the configured identity instead of offering every key loaded into `ssh-agent`.
@@ -61,7 +67,8 @@ compute-node.local
 pi-server.local
 ```
 
-The Chromebook Linux environment does not yet resolve `.local` names consistently. Tailscale addressing remains the verified working fallback until mDNS support is improved inside the Linux container.
+The Chromebook Linux environment now resolves the Tailscale hostnames used by the tested aliases. `.local`
+resolution remains optional and is not required for administration.
 
 ## Tailscale Remote Access
 

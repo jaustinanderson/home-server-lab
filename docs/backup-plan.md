@@ -4,12 +4,12 @@ This document defines the backup and restore model for the Home Server Lab's
 Linux hosts, Synology source archive, and off-site protection. It distinguishes
 implemented controls from planned controls and unverified recovery claims.
 
-> **Current status (2026-07-29):** the DS925+ is the canonical source archive,
+> **Current status (2026-07-31):** the DS925+ is the canonical source archive,
 > `compute-node` is the hot working tier, and `pi-server` is the planned local
 > secondary-protection tier (D19). Synology Hyper Backup to Backblaze B2 is
 > owner-confirmed operational for selected current personal NAS content on a daily schedule
-> with version retention (D20). The second matching NAS drive is installed and SHR
-> conversion/synchronization is in progress; redundancy is not yet claimed. No
+> with version retention (D20). The two-drive SHR pool is healthy with one-drive
+> fault tolerance; both extended drive tests passed; email alerts work; and quarterly scrubbing is set. No
 > successful restore test, local NAS-to-pi backup job, or metaphase-data recovery
 > workflow is claimed yet.
 
@@ -55,9 +55,8 @@ GitHub supplies an off-device copy of public source and documentation. It is not
 a substitute for database dumps, service data, private configuration, or a
 general off-site backup.
 
-The second NAS drive is installed and being incorporated into the existing SHR
-pool. It adds one-drive-failure tolerance only after conversion/synchronization
-finishes and DSM reports the pool protected. It does not create another copy.
+The second NAS drive is incorporated into the existing healthy SHR pool, which
+now provides one-drive-failure tolerance. This is availability protection, not another copy.
 The NAS, compute-node, and pi-server share a location; local replication protects
 against some device failures but not theft, fire, account compromise, or a
 destructive command that reaches multiple systems.
@@ -69,6 +68,7 @@ The current public-safe facts are:
 - Synology Hyper Backup sends selected current personal NAS content to Backblaze B2.
 - The job runs daily and uses version retention.
 - The owner reports the backup as active and currently protecting the selected content.
+- DSM warning/critical email delivery was tested and the configured rule covers backup failures.
 - Credentials, account identifiers, bucket identifiers, private paths, and recovery
   material are deliberately excluded here.
 
@@ -147,12 +147,10 @@ data, and archive patterns. That is a safety net, not a content review.
 
 ## Implementation order
 
-1. Allow the current SHR conversion/synchronization to complete.
-2. Verify both drives and the storage pool healthy, protected, and redundant.
-3. Confirm the latest scheduled Hyper Backup run, monitoring, and failure notifications.
-4. Complete and document a disposable restore of the existing Backblaze-protected content.
-5. Define the metaphase manifest/annotation/database backup scope with the template above.
-6. Add only that approved scope to off-site protection and verify it.
-7. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
-8. Complete and document a restore from each required failure domain.
-9. Review scope, retention, encryption, credentials, and recovery timing after each new service.
+1. Confirm the latest scheduled Hyper Backup run, included scope, retention, and encryption state.
+2. Complete and document a disposable restore of the existing Backblaze-protected content.
+3. Define the metaphase manifest/annotation/database backup scope with the template above.
+4. Add only that approved scope to off-site protection and verify it.
+5. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
+6. Complete and document a restore from each required failure domain.
+7. Review scope, retention, encryption, credentials, and recovery timing after each new service.

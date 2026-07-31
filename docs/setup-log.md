@@ -22,7 +22,7 @@ The lab supports practical learning in:
 |---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute |
 | **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services |
-| **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives installed; conversion in progress | Canonical source archive and current personal-content store |
+| **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives, one-drive fault tolerance | Canonical source archive and current personal-content store |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH administration through the Linux terminal |
 
 Both servers run Ubuntu Server 26.04. Exact network identifiers are intentionally omitted.
@@ -56,11 +56,9 @@ The following foundation work is complete:
 
 ## Current Next Steps
 
-- Allow the current SHR conversion/synchronization to finish, then verify
-  protected status and both drives healthy
-- Complete the NAS-readiness checklist, including notifications, access,
-  provenance, checksums, and a disposable restore
-- Finish refreshed Linux system baselines and deliberate log-inspection practice
+- Complete the Hyper Backup evidence review and a disposable restore
+- Complete the remaining NAS-readiness controls: access, provenance, checksums,
+  and a local second copy
 - Run one bounded public metaphase pilot only after every readiness gate passes
 - Continue to Docker only after the storage protection boundary is trustworthy
 
@@ -88,7 +86,8 @@ Because the apartment network does not provide router administration, the design
 
 ### Chromebook name resolution
 
-The Chromebook Linux environment does not yet resolve `.local` names consistently. Tailnet addresses provide a working fallback until Avahi/mDNS support is improved inside the Linux container.
+Tailscale hostnames now resolve from the Chromebook Linux environment and are used through tested SSH
+aliases. `.local` resolution remains optional and is not required for administration.
 
 ## Security Rules
 
@@ -159,3 +158,13 @@ Never commit:
   redundancy remain pending until completion and verification
 - Clarified the readiness sequence: sections A–D authorize one bounded pilot,
   while passing the pilot in section E completes Phase 3.5
+
+### 2026-07-31
+
+- Completed refreshed Linux baselines, log inspection, controlled reboots, and tested SSH aliases on both hosts
+- Corrected compute-node's boot wait-online timeout by retaining the disconnected secondary Ethernet port as optional
+- Promoted pi-server's staged kernel through the protected `piboot-try` path and verified boot state `good`
+- Verified the NAS as one healthy SHR pool with one-drive fault tolerance and approximately 13.8 TB usable capacity
+- Confirmed both extended drive tests passed, tested DSM email notifications, completed the first data scrub,
+  and scheduled quarterly scrubbing
+- Marked Phase 3 complete and moved the immediate focus to Phase 3.5 recovery and data-governance controls
