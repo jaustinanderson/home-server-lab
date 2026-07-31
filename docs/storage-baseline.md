@@ -5,9 +5,9 @@ separates direct read-only observations from owner-confirmed NAS state and avoid
 operational addresses, device serials, account identifiers, credentials, and
 private paths.
 
-- **Baseline date:** 2026-07-29
+- **Baseline date:** 2026-07-31
 - **Linux observation date:** 2026-07-19
-- **NAS/backup owner confirmation:** 2026-07-29
+- **NAS/backup owner confirmation:** 2026-07-31
 
 ## Role model
 
@@ -49,25 +49,23 @@ Usage percentages are historical observations, not live monitoring claims.
 ## Synology observations and owner-confirmed state
 
 - DS925+ with two matching 16 TB NAS drives installed
-- The second drive has been added to the existing SHR pool
-- DSM conversion/synchronization is in progress as of 2026-07-29
-- Redundancy, protected pool status, and two-drive health are not yet verified
+- Both drives belong to the intended existing SHR pool; the pool and Btrfs volume report healthy
+- The pool reports one-drive fault tolerance and approximately 13.8 TB usable capacity
+- Both drives passed extended S.M.A.R.T. tests
+- The first data scrub completed successfully on 2026-07-31; quarterly scrubbing is scheduled
+- DSM warning/critical email delivery was tested successfully and covers storage and backup failures
 - SMB is enabled; NFS is disabled
 - Local-network and managed family access are operational
 - The NAS is not currently a tailnet device
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current personal content on a daily schedule with version retention
-Current state: **expected → arrived → installed → recognized/added → conversion
-in progress**. Synchronization complete, healthy, redundant, backup current,
-restore verified, and workload authorized remain separate evidence gates.
+Current state: **expected → arrived → installed → recognized/added → synchronized → healthy → protected**.
+Backup currency, restore verification, and workload authorization remain separate evidence gates.
 
 ## Controls not yet verified
 
 - Successful disposable restore from the Backblaze backup
 - Hyper Backup encryption settings
-- Storage/backup failure-notification test
-- Extended drive-health test evidence for both NAS drives
-- Completed SHR conversion with the pool protected and both drives healthy
 - Dedicated metaphase share and least-privilege permissions
 - Verified `compute-node` access to the NAS
 - Local second copy to `pi-server`

@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-29
+**Last updated:** 2026-07-31
 
 ---
 
@@ -30,26 +30,25 @@ the first win.**
 |---|---|---|---|
 | **compute-node** | GMKtec M8 — Ryzen 5 PRO 6650H, 16GB, 1TB NVMe, dual 2.5GbE, Oculink | Hot working store + AI compute | Ubuntu Server 26.04 |
 | **pi-server** | Raspberry Pi 5 8GB + 2TB SanDisk Extreme SSD (USB; OS+data) | Planned local secondary protection + lightweight services | Ubuntu Server 26.04 |
-| **Synology NAS** | DS925+ — Btrfs on SHR; two matching 16TB drives installed; conversion in progress | Canonical source archive + protected personal-content store | Synology DSM |
+| **Synology NAS** | DS925+ — Btrfs on SHR; two matching 16TB drives; one-drive fault tolerance | Canonical source archive + protected personal-content store | Synology DSM |
 | **Chromebook** | Acer Chromebook Plus 514 | Control surface (SSH only, via Penguin terminal) | ChromeOS |
 
-The NAS is owner-confirmed operational on the local network. The second matching 16 TB drive is installed
-and DSM is converting/synchronizing the existing SHR pool as of 2026-07-29. Redundancy, protected status,
-and two-drive health remain unverified until the process finishes and DSM reports the required state.
-Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for selected current personal content
-on a daily schedule with version retention. No successful restore test is claimed yet. See D19–D21 and
-`docs/storage-baseline.md`.
+The NAS is operational on the local network. The existing SHR pool now contains both matching 16 TB drives,
+reports healthy with one-drive fault tolerance, and provides approximately 13.8 TB usable capacity. Both
+drives passed extended S.M.A.R.T. tests; the first data scrub completed successfully; quarterly scrubbing is
+scheduled; and the DSM warning/critical email-notification path was tested successfully. Synology Hyper
+Backup to Backblaze B2 remains operational for selected current personal content on a daily schedule with
+version retention. No successful restore test is claimed yet. See D19–D21 and `docs/storage-baseline.md`.
 
 ## Network
 - Apartment-managed `/16` DHCP — no router admin, no static leases, no port forwarding.
 - The two servers reach each other directly (~0.3 ms); mDNS `*.local` resolves *between the servers*.
 - **Tailscale mesh VPN** is the remote-access layer: all three devices joined, stable per-device tailnet
   addresses, nothing exposed publicly, DHCP-churn-proof.
-- **Operational rule (2026-07-12):** connect to the servers **from the Penguin terminal over their Tailscale
-  addresses** — LAN IPs drift and the Chromebook's old saved SSH profiles were stale/mislabeled. Use the
-  locally configured host aliases and private per-host usernames; do not publish those account identifiers.
-  (MagicDNS name resolution from *inside Penguin* is untested — verify later; `.local` support in Penguin is
-  optional convenience, not a gate.)
+- **Operational rule (updated 2026-07-31):** connect from the Penguin terminal through the tested SSH host
+  aliases. Each alias uses the intended private username, the existing Ed25519 identity, `IdentitiesOnly yes`,
+  and keepalives; both Tailscale hostnames now resolve from Penguin. LAN addresses can drift and must not be
+  published. `.local` support in Penguin remains optional convenience, not a gate.
 
 ## Phase progress
 - **Phase 1 — Foundation & Secure Access ✅** — Ubuntu Server 26.04 on both boxes; SSH keys-only, hardened
@@ -68,19 +67,22 @@ on a daily schedule with version retention. No successful restore test is claime
   until merge.
 
 ## Current phase
-**Phase 3 — Core Linux Administration.** See [`docs/project-roadmap.md`](docs/project-roadmap.md) for the
-authoritative phase sequence. The Linux storage/filesystem review is complete and now recorded in
-`docs/storage-baseline.md`; refreshed system baselines and deliberate log-inspection practice remain.
-**Phase 3.5 — NAS Storage Readiness** is in progress in parallel. Docker remains Phase 4.
+**Phase 3 — Core Linux Administration ✅.** Both hosts completed a refreshed D18 maintenance window,
+required controlled reboots, package audits, service checks, log inspection, and sanitized resource
+baselines. `compute-node` now runs kernel `7.0.0-28-generic`; `pi-server` runs
+`7.0.0-1015-raspi` after a protected `piboot-try` promotion. Both returned with clean package state, no
+failed units, working Tailscale and SSH, and no reboot flag. The compute-node's disconnected secondary
+Ethernet port is retained but marked optional in Netplan, eliminating the prior boot wait-online timeout.
 
-**Immediate next action:** allow the current SHR conversion/synchronization to finish without interruption.
-While it runs, continue only NAS-independent Phase 3 work: refreshed sanitized system baselines and deliberate
-log-inspection practice. Do not begin the pilot or deploy a storage-dependent service during conversion.
-Then verify DSM reports the pool protected and healthy, verify both drives, run appropriate post-conversion
-drive-health tests, and confirm storage/backup alerts. Do not claim redundancy before those checks pass.
-Next, complete sections B–D of `docs/nas-readiness-checklist.md`: metaphase share and permissions,
-`compute-node` access, provenance/checksum controls, backup currency, and a disposable restore test.
-Sections A–D authorize one bounded public/synthetic pilot; passing section E completes Phase 3.5.
+**Phase 3.5 — NAS Storage Readiness** is now the current phase. Section A of
+`docs/nas-readiness-checklist.md` is complete. Docker remains Phase 4.
+
+**Immediate next action:** complete issue #13 by inspecting the current Hyper Backup job and performing one
+disposable restore with independent integrity verification. Then complete sections B–D in this order:
+create the dedicated metaphase archive boundary and least-privilege access; verify `compute-node` access and
+raw-source protection; implement provenance/license/checksum promotion controls; and implement the planned
+NAS-to-`pi-server` local second copy. Only then run issue #15's one bounded public/synthetic pilot. Passing
+section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -92,13 +94,13 @@ follow the applicable D16/D17 pull-request workflow.
   (PostgreSQL) as the start of **Track A**. Phases 3–6 are track-agnostic, so this doesn't bite yet —
   **resolve deliberately before Phase 7** (honor D10, or add a *new* dated decision that supersedes it). Do
   not rewrite D10.
-- **Deferred convenience (none are gates):** guarded ssh-agent auto-load per session; MagicDNS-from-Penguin
-  test; optional `.local` resolution in Penguin.
-- Patching cadence **established and exercised on both machines (D18)**. The compute-node canary required no
-  reboot; pi-server completed a deliberate staged kernel reboot with post-boot lifeline and boot-slot checks.
-- **Metaphase-ingestion gate:** do not begin corpus acquisition. A single small public pilot becomes eligible
-  only after second-drive protection, healthy storage, dedicated share/permissions, verified
-  `compute-node` access, provenance/license/checksum controls, and a successful restore exercise.
+- **Deferred convenience (none are gates):** guarded ssh-agent auto-load per session; optional `.local`
+  resolution in Penguin.
+- Patching cadence **established and exercised twice on both machines (D18)**. The July 31 window included
+  deliberate reboots and complete recovery verification on both hosts.
+- **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection and NAS health now
+  pass; a single small public pilot remains blocked on the dedicated share/permissions, verified
+  `compute-node` access, provenance/license/checksum controls, local second copy, and successful restore.
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -175,3 +177,13 @@ follow the applicable D16/D17 pull-request workflow.
   A repository-safety audit also corrected MAC-address disclosure in `system-info.sh`, reversed the local
   NAS-to-pi backup arrow, sanitized operational account/device identifiers, added continuous privacy/link
   checks, and recorded D21 to restore D1's public-or-synthetic-only data boundary.
+- **2026-07-31 — Austin + ChatGPT/Codex** — Completed refreshed Phase 3 baselines and a second D18 maintenance
+  window on both Linux hosts. `compute-node` was patched, rebooted into kernel `7.0.0-28-generic`, and
+  verified clean after retaining its disconnected secondary Ethernet port as optional in Netplan, which
+  removed the prior wait-online failure. `pi-server` was patched and promoted through the guarded
+  `piboot-try` path into kernel `7.0.0-1015-raspi`; its boot state returned `good`. Both hosts passed package,
+  service, SSH/Tailscale, log, disk, memory, and reboot-status checks, and both Chromebook SSH aliases were
+  verified. The NAS SHR conversion completed healthy with one-drive fault tolerance; both drives passed
+  extended S.M.A.R.T. tests; DSM email alerts were tested; the first data scrub completed successfully; and
+  quarterly scrubbing was scheduled. Phase 3 is complete; Phase 3.5 now proceeds with restore and data-
+  governance controls.

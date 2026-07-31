@@ -110,26 +110,26 @@ Before accepting a Compose file:
 
 ## Backup and recovery gate
 
-The hardware roles and an off-site NAS backup are now implemented. The second
-matching drive is installed and SHR conversion/synchronization is in progress,
-but redundancy, a tested restore, and the metaphase-specific recovery scope are
-not yet verified. Before metaphase data is stored:
+The hardware roles, healthy one-drive-fault-tolerant SHR pool, drive-health checks,
+scrubbing, tested email alerts, and an off-site NAS backup are now implemented.
+A tested restore and the metaphase-specific recovery scope are not yet verified.
+Before metaphase data is stored:
 
 - Define source, destination, schedule, retention, exclusions, and encryption.
 - Keep at least one copy outside the failure domain of the working machine.
 - Protect credentials separately from public documentation.
 - Run and document a restore test.
 - Treat a backup as incomplete until the restored data is verified.
-- Do not treat a second SHR drive as a backup; it adds redundancy only after DSM
-  reports the expansion complete and the pool protected.
+- Do not treat the second SHR drive as a backup; it provides availability through
+  one-drive fault tolerance but does not create another copy.
 
 See [`backup-plan.md`](backup-plan.md).
 
 ## Remaining security work
 
 - [x] Establish and record a repeatable patching cadence for both servers (D18).
-- [ ] Complete SHR conversion and verify both drives and the storage pool
-  healthy, protected, and redundant.
+- [x] Complete SHR conversion and verify both drives and the storage pool
+  healthy, protected, and one-drive fault tolerant.
 - [ ] Inventory listening ports before the first service deployment.
 - [ ] Define and verify host-firewall rules for the actual service topology.
 - [x] Implement an off-site backup job for current NAS personal content.

@@ -46,7 +46,7 @@ Completed evidence:
 - Pull request reviewed and merged through the Austin-controlled D17 workflow (PR #6)
 - Durable Session Start Gate added to `CONTRIBUTING.md` (live-GitHub reconciliation before each session)
 
-## Phase 3: Core Linux Administration — In Progress
+## Phase 3: Core Linux Administration — Complete
 
 Goal: make routine server administration repeatable and evidence-driven.
 
@@ -67,16 +67,18 @@ Planned artifacts:
 - `docs/linux-command-notes.md` — **added**: users, groups, sudo, ownership/modes, umask, and effective SSH policy
 - Sanitized system baselines
 
-Current evidence: the **D18** patching cadence is established and exercised on both machines. The compute-node
-canary completed 38 upgrades with 0 removed and needed no reboot. pi-server completed the same reviewed
-transaction counts, then passed a deliberate staged kernel reboot, boot-slot validation, lifeline checks,
-and a second fresh SSH connection. Both machines left two legitimate phased deferrals. The
+Current evidence: the **D18** patching cadence is established and exercised twice on both machines. The July
+31 window applied reviewed transactions with zero removals, followed the required deliberate reboot paths,
+and verified the expected kernels, clean package state, zero failed units, Tailscale, SSH, logs, disk, memory,
+and cleared reboot flags. `compute-node` also completed a reviewed Netplan correction that preserved its
+unused Ethernet port while eliminating the wait-online boot timeout. `pi-server` passed the protected
+`piboot-try` promotion and returned with its current boot assets marked `good`. The
 users/groups/ownership/permissions inventory is also complete: both hosts run a single sudo-capable login
 account with locked root and key-only SSH, and each had its login user removed from the unused `lxd` group
 (wrapper-only; verified in a fresh session). A recorded, unresolved divergence remains — pi-server's
 passwordless sudo versus compute-node's password-required sudo. The read-only Linux storage/filesystem
-review is complete and recorded in `docs/storage-baseline.md`. Remaining Phase 3 work — refreshed system
-baselines and deliberate log-inspection practice — continues.
+review is complete and recorded in `docs/storage-baseline.md`. Refreshed system baselines, deliberate log
+inspection, and tested Chromebook SSH aliases complete the phase.
 
 ## Phase 3.5: NAS Storage Readiness — In Progress
 
@@ -85,8 +87,9 @@ Goal: make the DS925+ a protected, recoverable source archive before any metapha
 Current evidence:
 
 - DS925+ with Btrfs on SHR now has two matching 16 TB drives installed.
-- DSM conversion/synchronization of the existing SHR pool is in progress as of 2026-07-29; redundancy,
-  protected status, and two-drive health are not yet claimed.
+- The existing SHR pool is healthy with one-drive fault tolerance and approximately 13.8 TB usable capacity.
+- Both drives passed extended S.M.A.R.T. tests; the first data scrub completed successfully; quarterly
+  scrubbing is scheduled; and the warning/critical email-notification path was tested.
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for current personal NAS content on
   a daily schedule with version retention.
 - No metaphase share, `compute-node` mount, provenance workflow, checksum gate, or successful restore test is
@@ -94,8 +97,7 @@ Current evidence:
 
 Required gates:
 
-- Allow the current conversion/synchronization to finish; verify both drives and the protected pool healthy.
-- Run and record appropriate drive-health checks and enable storage/backup failure notifications.
+- Maintain the verified two-drive protection, health tests, notification path, and scrub schedule.
 - Create the dedicated metaphase archive boundary and least-privilege access model.
 - Verify `compute-node` access while keeping canonical raw source material separate from working copies.
 - Require source, version, license, acquisition date, checksum, classification, intended use, and

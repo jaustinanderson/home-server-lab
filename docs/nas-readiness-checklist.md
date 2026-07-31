@@ -6,7 +6,7 @@ work is not completion. Sections A–D must pass before one bounded pilot is
 authorized. Passing section E completes Phase 3.5 and authorizes planning for
 broader acquisition in the later roadmap phase.
 
-## Evidence state — 2026-07-29
+## Evidence state — 2026-07-31
 
 | Stage | State | Evidence boundary |
 |---|---|---|
@@ -14,10 +14,10 @@ broader acquisition in the later roadmap phase.
 | Arrived | Owner-confirmed complete | Second drive received |
 | Installed | Owner-confirmed complete | Second drive physically installed |
 | Recognized | Owner-confirmed complete | DSM reports SHR conversion underway |
-| Synchronized | In progress | Conversion completion not reported |
-| Healthy | Pending | No post-conversion both-drive/pool health evidence |
-| Redundant | Pending | DSM protected status not verified |
-| Backup current | Pending verification | Hyper Backup is operational for selected data; latest run and alerts are unverified |
+| Synchronized | Complete | Existing SHR pool finished conversion |
+| Healthy | Complete | Pool, Btrfs volume, and both drives report healthy; both extended tests passed |
+| Redundant | Complete | SHR reports one-drive fault tolerance |
+| Backup current | Pending verification | Hyper Backup is operational for selected data; latest scheduled run is unverified |
 | Restore verified | Pending | No disposable restore is claimed |
 | Workload authorized | No | Pre-ingestion gates remain incomplete |
 
@@ -27,14 +27,14 @@ broader acquisition in the later roadmap phase.
 - [x] Confirm the drive is physically installed.
 - [x] Confirm DSM recognizes the drive and reports conversion of the existing
   SHR pool in progress.
-- [ ] Allow expansion/synchronization to complete without interruption
-  (**in progress as of 2026-07-29**).
-- [ ] Verify the final topology is the intended SHR pool, not a second
+- [x] Allow expansion/synchronization to complete without interruption.
+- [x] Verify the final topology is the intended SHR pool, not a second
   independent pool.
-- [ ] Verify DSM reports the storage pool protected and healthy.
-- [ ] Verify both drives report healthy after conversion.
-- [ ] Run and record appropriate drive-health tests.
-- [ ] Confirm storage-pool, drive, capacity, and backup-failure notifications.
+- [x] Verify DSM reports the storage pool protected and healthy.
+- [x] Verify both drives report healthy after conversion.
+- [x] Run and record appropriate drive-health tests.
+- [x] Confirm storage-pool, drive, capacity, and backup-failure notifications.
+- [x] Complete the first data scrub and schedule recurring quarterly scrubbing.
 
 ## B. Archive boundary and access
 
@@ -64,7 +64,8 @@ broader acquisition in the later roadmap phase.
 
 - [x] Daily Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current personal NAS content.
-- [ ] Verify the backup job's latest run and failure-notification path.
+- [ ] Verify the backup job's latest scheduled run.
+- [x] Verify the notification delivery path covers backup failures.
 - [ ] Inspect and record encryption behavior without exposing keys or credentials.
 - [ ] Restore a sample into a disposable location.
 - [ ] Independently verify restored files or records.

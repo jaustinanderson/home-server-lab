@@ -3,7 +3,7 @@
 Dated, sanitized findings from real operations — the *why* behind rules that might otherwise look
 arbitrary. Newest entries at the bottom. No addresses, identifiers, secrets, or raw logs; summaries only.
 
-## 2026-07-13 — systemd-networkd-wait-online fails once at boot (pre-existing, benign)
+## 2026-07-13 — systemd-networkd-wait-online fails once at boot (later resolved)
 Patching preflight found `systemd-networkd-wait-online.service` in a failed state. The journal showed a
 single boot-time timeout (from 2026-07-01) while waiting for the wired interfaces to reach a fully "online"
 state; runtime connectivity over Tailscale was unaffected the whole time. Classified **pre-existing and
@@ -76,3 +76,17 @@ expressions in the generated mock script as accidental single-quote suppression 
 itself passed. The correction adds a narrowly scoped, documented ShellCheck directive to the generated-source
 block; prevention is to keep lint suppressions adjacent to intentional code-generation boundaries and require
 the full repository check before merge.
+
+## 2026-07-31 — Required-but-disconnected interface caused a recurring boot wait timeout
+
+The earlier wait-online failure was not a live outage, but it was also not merely harmless stale state. Netplan
+still defined the installed secondary Ethernet port as required even though that port was disconnected, so the
+generated wait-online unit waited for it and timed out during each boot. The appropriate first action was to
+trace the effective Netplan configuration and generated unit, identify the physical interface, and distinguish
+unused hardware from obsolete configuration before editing.
+
+The correction preserved the secondary port for future use and marked only that interface `optional: true`.
+`netplan generate` validated the change; the generated wait rule no longer required the disconnected port; and
+a controlled reboot returned with wait-online active and no failed units. Prevention: when wait-online fails,
+compare actual interfaces, effective Netplan, and generated service arguments; never edit generated files under
+`/run`, and do not remove a port until its hardware identity and intended future role are understood.
