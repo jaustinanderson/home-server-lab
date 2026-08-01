@@ -56,8 +56,8 @@ The following foundation work is complete:
 
 ## Current Next Steps
 
-- Complete the Hyper Backup evidence review and a disposable restore
-- Complete the remaining NAS-readiness controls: access, provenance, checksums,
+- Create the metaphase archive boundary and least-privilege access model
+- Complete the remaining NAS-readiness controls: provenance, checksums, approved backup scope,
   and a local second copy
 - Run one bounded public metaphase pilot only after every readiness gate passes
 - Continue to Docker only after the storage protection boundary is trustworthy
@@ -168,3 +168,7 @@ Never commit:
 - Confirmed both extended drive tests passed, tested DSM email notifications, completed the first data scrub,
   and scheduled quarterly scrubbing
 - Marked Phase 3 complete and moved the immediate focus to Phase 3.5 recovery and data-governance controls
+- Inspected the daily, client-side-encrypted, versioned Hyper Backup configuration and privately held recovery material
+- Completed a disposable restore from Backblaze into an isolated destination and verified an identical SHA-256 checksum
+- Corrected an initial destination-selection mistake without data loss, removed both disposable NAS folders,
+  and recorded that exact copy duration was not measured
