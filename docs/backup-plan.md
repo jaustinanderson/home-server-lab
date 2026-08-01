@@ -9,9 +9,9 @@ implemented controls from planned controls and unverified recovery claims.
 > secondary-protection tier (D19). Synology Hyper Backup to Backblaze B2 is
 > owner-confirmed operational for selected current personal NAS content on a daily schedule
 > with version retention (D20). The two-drive SHR pool is healthy with one-drive
-> fault tolerance; both extended drive tests passed; email alerts work; and quarterly scrubbing is set. No
-> successful restore test, local NAS-to-pi backup job, or metaphase-data recovery
-> workflow is claimed yet.
+> fault tolerance; both extended drive tests passed; email alerts work; and quarterly scrubbing is set. One
+> encrypted Backblaze restore of a disposable fixture matched its source SHA-256 checksum. No local NAS-to-pi
+> backup job or metaphase-data recovery workflow is claimed yet.
 
 ## Backup principles
 
@@ -28,7 +28,7 @@ implemented controls from planned controls and unverified recovery claims.
 | Data class | Examples | Intended protection |
 |---|---|---|
 | Source and public documentation | Git-tracked code, Compose files, runbooks, diagrams | GitHub plus local clones |
-| Personal NAS content | Family home/Photos content currently selected in Hyper Backup | Daily versioned Backblaze B2 backup; restore verification pending |
+| Personal NAS content | Selected current personal content in Hyper Backup | Daily encrypted, versioned Backblaze B2 backup; one checksum-verified disposable restore passed |
 | Reproducible public data | Original public datasets with recorded source and checksum | Canonical NAS copy plus provenance manifest; re-download when practical |
 | Irreplaceable project data | Annotations, curated metadata, database state, experiment decisions | NAS source/archive plus planned local second copy and off-site copy |
 | Service state | Database dumps, persistent-volume data, configuration | Service-specific backup and restore runbook |
@@ -66,21 +66,24 @@ destructive command that reaches multiple systems.
 The current public-safe facts are:
 
 - Synology Hyper Backup sends selected current personal NAS content to Backblaze B2.
-- The job runs daily and uses version retention.
+- The job runs daily, uses client-side encryption, retains up to 60 versions through Smart Recycle, and has weekly integrity checks enabled.
+- The latest scheduled run inspected on 2026-07-31 succeeded; a later manual test backup also succeeded.
 - The owner reports the backup as active and currently protecting the selected content.
 - DSM warning/critical email delivery was tested and the configured rule covers backup failures.
+- One disposable file was restored from the encrypted repository into an isolated destination and matched the source SHA-256 checksum.
+- Recovery credentials are stored privately outside GitHub.
 - Credentials, account identifiers, bucket identifiers, private paths, and recovery
   material are deliberately excluded here.
 
 Not yet claimed:
 
-- A completed disposable restore and independent content verification
-- Verified client-side encryption settings
 - Coverage for future metaphase manifests, annotations, databases, or working derivatives
+- Full-file or full-repository recovery validation beyond the single disposable fixture
 - A tested recovery-time or recovery-point objective
+- A complete disaster-recovery system
 
-Until the restore test passes, describe the job as **operational backup with
-recoverability unverified**, not as a complete disaster-recovery system.
+The supported claim is **operational, client-side-encrypted, versioned backup with one checksum-verified
+disposable restore for the selected current scope**. See `backup-restore-test.md`.
 
 ## Backup scope template
 
@@ -147,10 +150,8 @@ data, and archive patterns. That is a safety net, not a content review.
 
 ## Implementation order
 
-1. Confirm the latest scheduled Hyper Backup run, included scope, retention, and encryption state.
-2. Complete and document a disposable restore of the existing Backblaze-protected content.
-3. Define the metaphase manifest/annotation/database backup scope with the template above.
-4. Add only that approved scope to off-site protection and verify it.
-5. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
-6. Complete and document a restore from each required failure domain.
-7. Review scope, retention, encryption, credentials, and recovery timing after each new service.
+1. Define the metaphase manifest/annotation/database backup scope with the template above.
+2. Add only that approved scope to off-site protection and verify it.
+3. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data.
+4. Complete and document a restore from each required failure domain.
+5. Review scope, retention, encryption, credentials, and recovery timing after each new service.

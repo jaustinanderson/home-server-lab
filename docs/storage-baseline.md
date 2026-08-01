@@ -57,20 +57,25 @@ Usage percentages are historical observations, not live monitoring claims.
 - SMB is enabled; NFS is disabled
 - Local-network and managed family access are operational
 - The NAS is not currently a tailnet device
-- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
-  selected current personal content on a daily schedule with version retention
-Current state: **expected → arrived → installed → recognized/added → synchronized → healthy → protected**.
-Backup currency, restore verification, and workload authorization remain separate evidence gates.
+- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for selected current personal content
+  on a daily schedule, with client-side encryption, Smart Recycle retention, and weekly integrity checks
+- The latest scheduled run inspected on 2026-07-31 succeeded
+- A disposable file restored into an isolated destination matched its source SHA-256 checksum
+Current state: **expected → arrived → installed → recognized/added → synchronized → healthy → protected →
+selected-scope backup and fixture recovery tested**. Workload authorization remains a separate evidence gate.
 
 ## Controls not yet verified
 
-- Successful disposable restore from the Backblaze backup
-- Hyper Backup encryption settings
+- Full-file or full-repository recovery beyond the single disposable fixture
 - Dedicated metaphase share and least-privilege permissions
 - Verified `compute-node` access to the NAS
 - Local second copy to `pi-server`
 - Provenance, license, classification, checksum, and transformation manifests
 - Backup coverage for future manifests, annotations, databases, and working data
+
+The restore proof is intentionally narrow: it validates one encrypted backup version and one disposable file,
+not all selected personal content, future metaphase data, or a recovery-time objective. See
+`backup-restore-test.md`.
 
 ## Metaphase ingestion boundary
 

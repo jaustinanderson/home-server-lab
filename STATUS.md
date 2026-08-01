@@ -38,7 +38,9 @@ reports healthy with one-drive fault tolerance, and provides approximately 13.8 
 drives passed extended S.M.A.R.T. tests; the first data scrub completed successfully; quarterly scrubbing is
 scheduled; and the DSM warning/critical email-notification path was tested successfully. Synology Hyper
 Backup to Backblaze B2 remains operational for selected current personal content on a daily schedule with
-version retention. No successful restore test is claimed yet. See D19–D21 and `docs/storage-baseline.md`.
+version retention and client-side encryption. A disposable file restored from the encrypted repository on
+2026-07-31 matched its source SHA-256 checksum; this proves the tested backup version was recoverable, not
+that future metaphase data is protected. See D19–D21 and `docs/backup-restore-test.md`.
 
 ## Network
 - Apartment-managed `/16` DHCP — no router admin, no static leases, no port forwarding.
@@ -77,12 +79,11 @@ Ethernet port is retained but marked optional in Netplan, eliminating the prior 
 **Phase 3.5 — NAS Storage Readiness** is now the current phase. Section A of
 `docs/nas-readiness-checklist.md` is complete. Docker remains Phase 4.
 
-**Immediate next action:** complete issue #13 by inspecting the current Hyper Backup job and performing one
-disposable restore with independent integrity verification. Then complete sections B–D in this order:
-create the dedicated metaphase archive boundary and least-privilege access; verify `compute-node` access and
-raw-source protection; implement provenance/license/checksum promotion controls; and implement the planned
-NAS-to-`pi-server` local second copy. Only then run issue #15's one bounded public/synthetic pilot. Passing
-section E completes Phase 3.5 and unlocks Phase 4.
+**Immediate next action:** complete issue #17 by creating the dedicated metaphase archive boundary and
+least-privilege access, then verify `compute-node` access and raw-source protection. Next implement
+provenance/license/checksum promotion controls in issue #18 and the planned NAS-to-`pi-server` local second
+copy in issue #19. Only then run issue #15's one bounded public/synthetic pilot. Passing section E completes
+Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -98,9 +99,10 @@ follow the applicable D16/D17 pull-request workflow.
   resolution in Penguin.
 - Patching cadence **established and exercised twice on both machines (D18)**. The July 31 window included
   deliberate reboots and complete recovery verification on both hosts.
-- **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection and NAS health now
-  pass; a single small public pilot remains blocked on the dedicated share/permissions, verified
-  `compute-node` access, provenance/license/checksum controls, local second copy, and successful restore.
+- **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, and one
+  disposable personal-content restore now pass; a single small public pilot remains blocked on the dedicated
+  share/permissions, verified `compute-node` access, provenance/license/checksum controls, local second copy,
+  and metaphase-specific protection design.
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -187,3 +189,13 @@ follow the applicable D16/D17 pull-request workflow.
   extended S.M.A.R.T. tests; DSM email alerts were tested; the first data scrub completed successfully; and
   quarterly scrubbing was scheduled. Phase 3 is complete; Phase 3.5 now proceeds with restore and data-
   governance controls.
+
+- **2026-07-31 — Austin + ChatGPT/Codex** — Inspected the current Hyper Backup task and verified a successful
+  scheduled run, selected personal-content scope, daily schedule, weekly integrity checks, Smart Recycle
+  version retention, client-side encryption, tested failure notifications, and privately stored recovery
+  credentials. A deterministic disposable file was backed up manually, copied from the encrypted Backblaze
+  repository into an isolated destination, downloaded, and verified byte-for-byte by matching SHA-256
+  checksums. A first destination-selection mistake was corrected without data loss; the isolated restore was
+  repeated successfully. Both disposable NAS folders were removed. Exact copy duration was not captured, so
+  no recovery-time objective is claimed. Issue #13 is technically complete; metaphase-specific backup and
+  recovery remain pending.
