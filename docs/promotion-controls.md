@@ -65,8 +65,15 @@ Schema draft 2020-12). Every field below is required unless noted.
 | `is_derivative` | `true` if this material was produced by transforming source material. |
 | `files` | Array of `{path, sha256}` governed files. `path` is relative to the validation root; `sha256` is the lowercase 64-hex digest of the file's bytes. |
 | `transformation_history` | Array of transformation records (empty array `[]` allowed only when `is_derivative` is `false`). |
-| `eligibility_state` | `pending_review` \| `quarantine` \| `eligible_for_promotion` \| `rejected`. Descriptive workflow status only — see below. |
+| `eligibility_state` | `pending_review` \| `quarantine` \| `eligible_for_promotion` \| `rejected`. Only `eligible_for_promotion` can pass, and that self-declared state never overrides another failure. |
 
+### Strict contract and format checks
+
+- Unknown fields are rejected at the manifest root and inside redistribution, content-flag, file, and transformation records; the validator never silently ignores an unrecognized policy field.
+- `source_url`, when present, must be a non-empty public HTTP(S) URL. `doi`, when present, must match DOI form. At least one is required.
+- `acquisition_date` must be a real calendar date, not merely a string shaped like `YYYY-MM-DD`.
+- Transformation steps must be positive, unique, and sequential from 1; timestamps must parse as ISO 8601 dates or date-times.
+- `eligibility_state` must be `eligible_for_promotion`. `pending_review`, `quarantine`, and `rejected` all fail closed.
 ### Dataset license vs. repository license
 
 `license` describes the **dataset's** license. It is completely independent
@@ -157,6 +164,7 @@ still be a valid 64-hex digest.
 - A **declared derivative** (`is_derivative: true`) must have at least one
   transformation record, or it is rejected for missing required
   transformation history.
+- Step values must be the exact sequence `1..N`, and every timestamp must be a valid ISO 8601 date or date-time.
 
 ## Validator usage
 
@@ -217,10 +225,9 @@ resolved by re-running the validator — if any of the following occurs:
 - A referenced path is absolute, contains `..`, or resolves outside the
   supplied validation root.
 - A declared derivative has no transformation history.
-- The manifest's own `eligibility_state` claims `eligible_for_promotion`
-  while other controls fail — the validator flags this as an additional
-  `eligibility_consistency` failure rather than trusting the self-declared
-  state.
+- `eligibility_state` is `pending_review`, `quarantine`, or `rejected`; only `eligible_for_promotion` may pass.
+- The manifest claims `eligible_for_promotion` while another control fails — the validator adds an `eligibility_consistency` failure rather than trusting the self-declared state.
+- A source locator, calendar date, transformation timestamp/sequence, or declared field is invalid or unknown.
 - Anything about the material's real-world origin, license, or content is
   uncertain, even if every machine-checkable field happens to be filled in.
 
@@ -266,11 +273,7 @@ designed against **synthetic data only**. It does **not** prove:
 
 - Anything about real dataset content, license terms, or provenance, since
   no real dataset was used anywhere in this work.
-- The suite includes a symlink-based root-escape regression and verifies that
-  case is rejected without changing the linked-to file. It does not exhaustively
-  cover every adversarial input, such as extremely large files, nested or
-  platform-specific path behavior beyond the tested case, or non-UTF-8 manifest
-  encodings.
+- Exhaustive behavior across every adversarial input. The suite covers a symlink-based root escape and verifies the linked-to file is unchanged, but does not exhaustively cover extremely large files, nested or platform-specific path behavior beyond that case, or non-UTF-8 manifest encodings.
 - Integration with an actual quarantine → canonical promotion mechanism —
   no such mechanism exists yet; this validator only gates a manifest, it
   does not perform or trigger a promotion.
@@ -287,6 +290,7 @@ designed against **synthetic data only**. It does **not** prove:
   (`validate-promotion-manifest.py`), and fixture suite
   (`promotion-manifest-fixtures/`) were exercised only with synthetic,
   obviously-fake fixtures using reserved/example identifiers.
+- Sixteen automated unit tests cover the shipped valid/rejection fixtures, symlink containment, non-destructive behavior, usage errors, schema alignment, rejected workflow states, malformed source locators, impossible dates, unknown fields, and transformation sequence/timestamp enforcement.
 - No real dataset was acquired, ingested, promoted, copied, or modified.
 - No NAS archive content was accessed or changed; this work is entirely
   repository-local (schema, script, fixtures, tests, documentation) on
