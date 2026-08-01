@@ -45,8 +45,9 @@
       "minLength": 1
     },
     "source_url": {
-      "description": "Public URL the material was obtained from. At least one of source_url or doi is required.",
+      "description": "Structurally public HTTP(S) source locator. The validator rejects credentials, local hostnames, and non-global IP addresses; human origin review establishes actual public legitimacy. At least one of source_url or doi is required.",
       "type": "string",
+      "pattern": "^https?://",
       "format": "uri"
     },
     "doi": {
@@ -205,7 +206,7 @@
       }
     },
     "eligibility_state": {
-      "description": "Workflow status recorded by a human reviewer. This field is descriptive only: the validator computes its own pass/fail result from every other control and never trusts a self-declared 'eligible_for_promotion' value as authorization.",
+      "description": "Workflow status recorded by a human reviewer. Only 'eligible_for_promotion' can pass; pending_review, quarantine, and rejected fail closed. The validator also computes every other control and never lets a self-declared eligible state override another failure.",
       "enum": ["pending_review", "quarantine", "eligible_for_promotion", "rejected"]
     }
   },
