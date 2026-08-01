@@ -12,7 +12,7 @@ When documents disagree, update them deliberately and preserve `STATUS.md` as th
 
 ## Session Start Gate
 
-Before making any change in a work session, reconcile against **live GitHub** — it is authoritative. Chat history, memory, and pasted summaries are only leads.
+Before answering a current-status or next-step question, recommending or running a machine command, or making any repository change, reconcile against **live GitHub** — it is authoritative. Chat history, memory, screenshots, and pasted summaries are only leads.
 
 1. Confirm the default branch, the current `main` HEAD, and the open pull requests and their refs with `git ls-remote` (git protocol — do not depend on the rate-limited REST API).
 2. Read the current canonical files (`STATUS.md`, `DECISIONS.md`, `docs/project-roadmap.md`, `CONTRIBUTING.md`, `README.md`) from `raw.githubusercontent.com`.
@@ -26,9 +26,10 @@ Before making any change in a work session, reconcile against **live GitHub** �
    - `git status --short --branch`
    - `git branch -vv`
    - `git log --oneline --decorate -5 origin/main`
-6. Report any difference between memory, the local clone, and live GitHub before proceeding.
+6. Report any difference between memory, historical screenshots, the local clone, open pull requests, and live `main` before proceeding.
+7. For every status or next-step answer, distinguish facts already merged to `main` from changes staged in an open pull request and from historical evidence. Record the `main` commit or retrieval time used. If live GitHub cannot be read, label the answer **unverified** and stop rather than filling the gap from memory.
 
-Do not begin work based solely on remembered state.
+Do not answer a current-state question or begin work based solely on remembered state.
 
 ## Public-Safety Rules
 
