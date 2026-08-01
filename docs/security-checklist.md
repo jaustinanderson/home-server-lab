@@ -23,8 +23,9 @@ artifact in this repository.
   addresses, and local data through documented rules and `.gitignore`.
 - [x] Only synthetic data or legitimately public, appropriately licensed
   datasets are permitted; de-identification alone is insufficient (D1/D21).
-- [x] Daily Synology Hyper Backup to Backblaze B2 is owner-confirmed operational
-  for selected current personal NAS content.
+- [x] Daily client-side-encrypted, versioned Synology Hyper Backup to Backblaze B2 is owner-confirmed
+  operational for selected current personal NAS content.
+- [x] One disposable restore from the encrypted repository matched its source SHA-256 checksum.
 
 Verified does not mean permanent. Re-run the relevant checks after SSH, network,
 package, or operating-system changes.
@@ -112,8 +113,8 @@ Before accepting a Compose file:
 
 The hardware roles, healthy one-drive-fault-tolerant SHR pool, drive-health checks,
 scrubbing, tested email alerts, and an off-site NAS backup are now implemented.
-A tested restore and the metaphase-specific recovery scope are not yet verified.
-Before metaphase data is stored:
+A checksum-verified disposable restore now proves recovery for one selected-scope fixture. Metaphase-specific
+backup scope, local second copy, and recovery remain unverified. Before metaphase data is stored:
 
 - Define source, destination, schedule, retention, exclusions, and encryption.
 - Keep at least one copy outside the failure domain of the working machine.
@@ -133,7 +134,7 @@ See [`backup-plan.md`](backup-plan.md).
 - [ ] Inventory listening ports before the first service deployment.
 - [ ] Define and verify host-firewall rules for the actual service topology.
 - [x] Implement an off-site backup job for current NAS personal content.
-- [ ] Complete and document a disposable Backblaze restore test.
+- [x] Complete and document a disposable Backblaze restore test.
 - [ ] Define, protect, and restore-test the future metaphase manifests,
   annotations, databases, and other irreplaceable project data.
 - [ ] Implement and verify the planned local NAS-to-pi second copy.
