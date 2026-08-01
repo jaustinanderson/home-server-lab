@@ -70,7 +70,7 @@ Schema draft 2020-12). Every field below is required unless noted.
 ### Strict contract and format checks
 
 - Unknown fields are rejected at the manifest root and inside redistribution, content-flag, file, and transformation records; the validator never silently ignores an unrecognized policy field.
-- `source_url`, when present, must be a non-empty public HTTP(S) URL. `doi`, when present, must match DOI form. At least one is required.
+- `source_url`, when present, must be a structurally public HTTP(S) URL: credentials, whitespace, local/single-label hostnames, and non-global IP addresses are rejected. `doi`, when present, must match DOI form. At least one is required. The human origin review—not URL parsing—establishes that the source is genuinely public and legitimate.
 - `acquisition_date` must be a real calendar date, not merely a string shaped like `YYYY-MM-DD`.
 - Transformation steps must be positive, unique, and sequential from 1; timestamps must parse as ISO 8601 dates or date-times.
 - `eligibility_state` must be `eligible_for_promotion`. `pending_review`, `quarantine`, and `rejected` all fail closed.
@@ -273,6 +273,10 @@ designed against **synthetic data only**. It does **not** prove:
 
 - Anything about real dataset content, license terms, or provenance, since
   no real dataset was used anywhere in this work.
+- That a syntactically acceptable source URL is reachable, genuinely public,
+  owned by the claimed publisher, or appropriately licensed. The validator
+  performs no DNS lookup or network request; explicit human origin and license
+  review remain mandatory.
 - Exhaustive behavior across every adversarial input. The suite covers a symlink-based root escape and verifies the linked-to file is unchanged, but does not exhaustively cover extremely large files, nested or platform-specific path behavior beyond that case, or non-UTF-8 manifest encodings.
 - Integration with an actual quarantine → canonical promotion mechanism —
   no such mechanism exists yet; this validator only gates a manifest, it
