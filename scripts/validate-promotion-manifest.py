@@ -17,8 +17,10 @@ import json
 import re
 import sys
 from dataclasses import dataclass
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urlparse
 
 SCHEMA_VERSION = "1.0.0"
 
@@ -48,6 +50,42 @@ CONTENT_FLAG_KEYS = (
 
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+DOI_PATTERN = re.compile(r"^10\.\d{4,9}/\S+$")
+ALLOWED_TOP_LEVEL_FIELDS = {
+    "schema_version",
+    "dataset_name",
+    "dataset_version",
+    "publisher",
+    "source_url",
+    "doi",
+    "acquisition_date",
+    "license",
+    "license_review_state",
+    "redistribution",
+    "intended_use",
+    "source_classification",
+    "origin_review_state",
+    "identifier_safety_state",
+    "content_classification_flags",
+    "is_derivative",
+    "files",
+    "transformation_history",
+    "eligibility_state",
+}
+REDISTRIBUTION_FIELDS = {"allowed", "conditions"}
+FILE_ENTRY_FIELDS = {"path", "sha256"}
+TRANSFORMATION_FIELDS = {
+    "step",
+    "action",
+    "timestamp",
+    "description",
+    "input_ref",
+    "input_sha256",
+    "output_ref",
+    "output_sha256",
+    "tool",
+    "tool_version",
+}
 CHUNK_SIZE = 1024 * 1024
 
 
@@ -112,6 +150,24 @@ def require_field(manifest: dict[str, Any], field: str, failures: list[Failure])
     return True
 
 
+def reject_unknown_fields(
+    value: dict[str, Any], allowed: set[str], label: str, failures: list[Failure]
+) -> None:
+    unknown = sorted(set(value) - allowed)
+    if unknown:
+        failures.append(Failure("schema", f"{label} contains unknown fields: {', '.join(unknown)}"))
+
+
+def is_valid_iso8601(value: str) -> bool:
+    try:
+        if DATE_PATTERN.fullmatch(value):
+            date.fromisoformat(value)
+        else:
+            datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return True
+
 def validate_top_level_fields(manifest: dict[str, Any], failures: list[Failure]) -> None:
     required_fields = (
         "schema_version",
@@ -135,6 +191,8 @@ def validate_top_level_fields(manifest: dict[str, Any], failures: list[Failure])
     for field in required_fields:
         require_field(manifest, field, failures)
 
+    reject_unknown_fields(manifest, ALLOWED_TOP_LEVEL_FIELDS, "manifest", failures)
+
     if manifest.get("schema_version") is not None and manifest.get("schema_version") != SCHEMA_VERSION:
         failures.append(
             Failure("provenance", f"unsupported schema_version: {manifest.get('schema_version')!r}")
@@ -143,22 +201,38 @@ def validate_top_level_fields(manifest: dict[str, Any], failures: list[Failure])
     if "source_url" not in manifest and "doi" not in manifest:
         failures.append(Failure("provenance", "missing both source_url and doi; at least one is required"))
 
+    if "source_url" in manifest:
+        source_url = manifest.get("source_url")
+        if not isinstance(source_url, str) or not source_url.strip():
+            failures.append(Failure("provenance", "source_url must be a non-empty public HTTP(S) URL"))
+        else:
+            parsed = urlparse(source_url)
+            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+                failures.append(Failure("provenance", "source_url must be a valid public HTTP(S) URL"))
+
+    if "doi" in manifest:
+        doi = manifest.get("doi")
+        if not isinstance(doi, str) or not DOI_PATTERN.fullmatch(doi):
+            failures.append(Failure("provenance", "doi must match the DOI form 10.<registrant>/<suffix>"))
+
     for string_field in ("dataset_name", "dataset_version", "publisher", "intended_use"):
         value = manifest.get(string_field)
         if string_field in manifest and (not isinstance(value, str) or not value.strip()):
             failures.append(Failure("provenance", f"{string_field} must be a non-empty string"))
 
     acquisition_date = manifest.get("acquisition_date")
-    if "acquisition_date" in manifest and (
-        not isinstance(acquisition_date, str) or not DATE_PATTERN.match(acquisition_date)
-    ):
-        failures.append(
-            Failure("provenance", "acquisition_date must be an unambiguous ISO 8601 date (YYYY-MM-DD)")
-        )
+    if "acquisition_date" in manifest:
+        if (
+            not isinstance(acquisition_date, str)
+            or not DATE_PATTERN.fullmatch(acquisition_date)
+            or not is_valid_iso8601(acquisition_date)
+        ):
+            failures.append(
+                Failure("provenance", "acquisition_date must be a real ISO 8601 date (YYYY-MM-DD)")
+            )
 
     if "is_derivative" in manifest and not isinstance(manifest.get("is_derivative"), bool):
         failures.append(Failure("provenance", "is_derivative must be a boolean"))
-
 
 def validate_license(manifest: dict[str, Any], failures: list[Failure]) -> None:
     license_id = manifest.get("license")
@@ -187,6 +261,7 @@ def validate_redistribution(manifest: dict[str, Any], failures: list[Failure]) -
     if not isinstance(redistribution, dict):
         failures.append(Failure("redistribution", "redistribution must be an object"))
         return
+    reject_unknown_fields(redistribution, REDISTRIBUTION_FIELDS, "redistribution", failures)
     if "allowed" not in redistribution or not isinstance(redistribution.get("allowed"), bool):
         failures.append(Failure("redistribution", "redistribution.allowed must be a boolean"))
     elif redistribution["allowed"] is not True:
@@ -240,6 +315,7 @@ def validate_content_flags(manifest: dict[str, Any], failures: list[Failure]) ->
     if not isinstance(flags, dict):
         failures.append(Failure("content_safety", "content_classification_flags must be an object"))
         return
+    reject_unknown_fields(flags, set(CONTENT_FLAG_KEYS), "content_classification_flags", failures)
 
     missing = [key for key in CONTENT_FLAG_KEYS if key not in flags]
     if missing:
@@ -278,6 +354,8 @@ def validate_files(
         if not isinstance(entry, dict):
             failures.append(Failure("provenance", f"{label} must be an object"))
             continue
+
+        reject_unknown_fields(entry, FILE_ENTRY_FIELDS, label, failures)
 
         raw_path = entry.get("path")
         checksum = entry.get("sha256")
@@ -324,24 +402,63 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
         failures.append(Failure("provenance", "transformation_history must be an array"))
         return
 
+    steps: list[int] = []
+    steps_are_valid = True
     for index, entry in enumerate(history):
         label = f"transformation_history[{index}]"
         if not isinstance(entry, dict):
             failures.append(Failure("provenance", f"{label} must be an object"))
+            steps_are_valid = False
             continue
+
+        reject_unknown_fields(entry, TRANSFORMATION_FIELDS, label, failures)
+
         for field in ("step", "action", "timestamp", "description"):
             if field not in entry:
                 failures.append(Failure("provenance", f"{label} missing required field: {field}"))
-        if "step" in entry and not isinstance(entry.get("step"), int):
-            failures.append(Failure("provenance", f"{label} step must be an integer"))
-        for text_field in ("action", "timestamp", "description"):
+
+        if "step" in entry:
+            step = entry.get("step")
+            if type(step) is not int or step < 1:
+                failures.append(Failure("provenance", f"{label} step must be an integer of 1 or greater"))
+                steps_are_valid = False
+            else:
+                steps.append(step)
+        else:
+            steps_are_valid = False
+
+        for text_field in ("action", "description"):
             value = entry.get(text_field)
             if text_field in entry and (not isinstance(value, str) or not value.strip()):
                 failures.append(Failure("provenance", f"{label} {text_field} must be a non-empty string"))
+
+        timestamp = entry.get("timestamp")
+        if "timestamp" in entry and (
+            not isinstance(timestamp, str)
+            or not timestamp.strip()
+            or not is_valid_iso8601(timestamp)
+        ):
+            failures.append(Failure("provenance", f"{label} timestamp must be a valid ISO 8601 date or date-time"))
+
+        for optional_text_field in ("input_ref", "output_ref", "tool", "tool_version"):
+            value = entry.get(optional_text_field)
+            if optional_text_field in entry and not isinstance(value, str):
+                failures.append(Failure("provenance", f"{label} {optional_text_field} must be a string"))
+
         for hash_field in ("input_sha256", "output_sha256"):
             value = entry.get(hash_field)
-            if hash_field in entry and (not isinstance(value, str) or not SHA256_PATTERN.match(value)):
+            if hash_field in entry and (not isinstance(value, str) or not SHA256_PATTERN.fullmatch(value)):
                 failures.append(Failure("checksum_format", f"{label} {hash_field} is not a valid 64-hex digest"))
+
+    if steps_are_valid and len(steps) == len(history):
+        expected_steps = list(range(1, len(history) + 1))
+        if steps != expected_steps:
+            failures.append(
+                Failure(
+                    "transformation_history",
+                    f"transformation steps must be unique and sequential from 1; got {steps!r}",
+                )
+            )
 
     if is_derivative is True and len(history) < 1:
         failures.append(
@@ -351,7 +468,6 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
             )
         )
 
-
 def validate_eligibility_state(manifest: dict[str, Any], failures: list[Failure]) -> None:
     state = manifest.get("eligibility_state")
     if "eligibility_state" not in manifest:
@@ -359,7 +475,15 @@ def validate_eligibility_state(manifest: dict[str, Any], failures: list[Failure]
     if state not in ELIGIBILITY_STATES:
         failures.append(Failure("provenance", f"eligibility_state is not a recognized value: {state!r}"))
         return
-    if state == "eligible_for_promotion" and len(failures) > 0:
+    if state != "eligible_for_promotion":
+        failures.append(
+            Failure(
+                "eligibility_state",
+                f"eligibility_state does not permit promotion (state: {state})",
+            )
+        )
+        return
+    if failures:
         failures.append(
             Failure(
                 "eligibility_consistency",
@@ -367,7 +491,6 @@ def validate_eligibility_state(manifest: dict[str, Any], failures: list[Failure]
                 "a self-declared state is never treated as authorization",
             )
         )
-
 
 def validate_manifest(manifest: dict[str, Any], root: Path) -> list[Failure]:
     failures: list[Failure] = []
