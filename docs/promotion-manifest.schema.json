@@ -4,7 +4,7 @@
   "title": "Home Server Lab Promotion Manifest",
   "description": "Public-safe provenance manifest contract for material considered for promotion from the metaphase archive quarantine area into the canonical archive (issue #18, section C of docs/nas-readiness-checklist.md). This schema describes the DATASET's own license and provenance. It is unrelated to, and does not change, this repository's own MIT LICENSE, which covers only the code and documentation in this Git repository.",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "schema_version",
     "dataset_name",
@@ -61,9 +61,9 @@
       "format": "date"
     },
     "license": {
-      "description": "Identifier for the DATASET's own license (for example an SPDX identifier, 'Public-Domain', or 'Synthetic-No-License-Required'). This is independent of the repository's MIT LICENSE, which governs only this repository's code and documentation, never third-party dataset content.",
+      "description": "Identifier for the DATASET's own license. This is independent of the repository's MIT LICENSE, which governs only this repository's code and documentation, never third-party dataset content.",
       "type": "string",
-      "minLength": 1
+      "enum": ["CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "MIT", "Apache-2.0", "Public-Domain", "Synthetic-No-License-Required"]
     },
     "license_review_state": {
       "description": "Human review state of the dataset license. Only 'approved' may satisfy the license-review control; every other value is fail-closed.",
@@ -190,7 +190,10 @@
           "timestamp": {
             "description": "Recorded date or date-time the transformation was performed, in ISO 8601 form.",
             "type": "string",
-            "minLength": 1
+            "anyOf": [
+              {"format": "date"},
+              {"format": "date-time"}
+            ]
           },
           "description": {
             "description": "Public-safe description of the transformation and its parameters. Must not contain secrets or private paths.",
