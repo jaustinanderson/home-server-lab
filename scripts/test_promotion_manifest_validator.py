@@ -161,11 +161,24 @@ class FailClosedPolicyTests(unittest.TestCase):
                 self.assert_rejected(result, "[eligibility_state]")
 
     def test_invalid_source_url_is_rejected(self) -> None:
-        def mutate(manifest: dict) -> None:
-            manifest.pop("doi", None)
-            manifest["source_url"] = "not-a-public-url"
+        invalid_urls = (
+            "not-a-public-url",
+            "http://localhost/data",
+            "https://dataset.local/data",
+            "https://127.0.0.1/data",
+            "https://10.0.0.1/data",
+            "http://[::1]/data",
+            "https://user:password@example.com/data",
+            "https://example.com/white space",
+            "https://single-label/data",
+        )
+        for source_url in invalid_urls:
+            with self.subTest(source_url=source_url):
+                def mutate(manifest: dict, value: str = source_url) -> None:
+                    manifest.pop("doi", None)
+                    manifest["source_url"] = value
 
-        self.assert_rejected(self.run_mutated_valid(mutate), "[provenance]")
+                self.assert_rejected(self.run_mutated_valid(mutate), "[provenance]")
 
     def test_invalid_doi_is_rejected(self) -> None:
         def mutate(manifest: dict) -> None:
@@ -279,9 +292,15 @@ class SchemaAlignmentTests(unittest.TestCase):
         self.assertEqual(schema_required, validator_required)
 
     def test_schema_rejects_unknown_fields_and_matches_license_policy(self) -> None:
+        properties = self.schema["properties"]
         self.assertFalse(self.schema["additionalProperties"])
+        self.assertFalse(properties["redistribution"]["additionalProperties"])
+        self.assertFalse(properties["content_classification_flags"]["additionalProperties"])
+        self.assertFalse(properties["files"]["items"]["additionalProperties"])
+        self.assertFalse(properties["transformation_history"]["items"]["additionalProperties"])
+        self.assertEqual(properties["source_url"]["pattern"], "^https?://")
         self.assertEqual(
-            set(self.schema["properties"]["license"]["enum"]),
+            set(properties["license"]["enum"]),
             {
                 "CC0-1.0",
                 "CC-BY-4.0",
