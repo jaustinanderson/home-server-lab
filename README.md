@@ -22,8 +22,9 @@ Network addresses, MAC addresses, credentials, private keys, and other operation
 Both matching 16 TB drives are installed in one healthy SHR pool with one-drive fault tolerance and
 approximately 13.8 TB usable capacity. Both drives passed extended S.M.A.R.T. tests, the first data scrub
 completed successfully, quarterly scrubbing is scheduled, and DSM email alerts were tested. Synology Hyper
-Backup is operational to Backblaze B2 for selected current personal content; recoverability remains
-unverified until a documented restore passes.
+Backup is operational to Backblaze B2 for selected current personal content. A client-side-encrypted,
+checksum-verified disposable restore passed on 2026-07-31; this proves recovery for the tested fixture and
+backup version, not for future metaphase data.
 
 ## Verified Foundation
 
@@ -40,7 +41,7 @@ The infrastructure foundation is complete and independently verified:
 - Security and backup boundaries documented
 - Synology NAS incorporated into the canonical storage architecture (D19)
 - Healthy two-drive SHR protection, extended drive tests, tested DSM email alerts, and scheduled scrubbing
-- Daily off-site Hyper Backup from the NAS to Backblaze B2 reported operational; restore verification pending
+- Daily client-side-encrypted, versioned Hyper Backup to Backblaze B2, with one checksum-verified disposable restore
 - Authenticated Git workflow from compute-node: SSH clone, dedicated key, and branch → commit → push → pull-request → review → merge proven end to end (D17)
 - A durable Session Start Gate requiring live-GitHub reconciliation before each work session
 
@@ -80,6 +81,7 @@ home-server-lab/
 │   ├── network-notes.md
 │   ├── security-checklist.md
 │   ├── backup-plan.md
+│   ├── backup-restore-test.md
 │   ├── storage-baseline.md
 │   ├── nas-readiness-checklist.md
 │   ├── linux-command-notes.md
@@ -108,6 +110,7 @@ home-server-lab/
 - [`docs/network-notes.md`](docs/network-notes.md) — managed-network constraints and private-access strategy
 - [`docs/security-checklist.md`](docs/security-checklist.md) — public-repository and server-security rules
 - [`docs/backup-plan.md`](docs/backup-plan.md) — backup philosophy, scope, and restore planning
+- [`docs/backup-restore-test.md`](docs/backup-restore-test.md) — sanitized evidence from the checksum-verified Backblaze restore exercise
 - [`docs/storage-baseline.md`](docs/storage-baseline.md) — sanitized Linux and NAS storage inventory and readiness gates
 - [`docs/nas-readiness-checklist.md`](docs/nas-readiness-checklist.md) — second-drive, protection, access, and pilot-ingestion gate
 - [`docs/linux-command-notes.md`](docs/linux-command-notes.md) — sanitized Linux users, permissions, sudo, and effective-policy notes
@@ -177,8 +180,8 @@ This design avoids depending on DHCP stability and does not require opening inbo
 4. Refreshed system baselines, deliberate log inspection, controlled reboots, and SSH aliases **verified**
 5. NAS protection gate A **completed**: healthy one-drive-fault-tolerant SHR, both extended drive tests,
    tested email alerts, successful first scrub, and quarterly scrub schedule
-6. Next: prove Hyper Backup recovery, then implement archive/access, provenance/checksum, and local-second-copy
-   controls before the one bounded public/synthetic pilot
+6. Hyper Backup recovery proof **completed** for one disposable fixture; next implement archive/access,
+   provenance/checksum, and local-second-copy controls before the one bounded public/synthetic pilot
 
 The first small public-metaphase pilot may begin only after the Phase 3.5 protection, access, provenance,
 checksum, backup, and restore prerequisites pass. Passing that bounded pilot completes Phase 3.5; bulk
