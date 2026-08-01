@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import ipaddress
 import json
 import re
 import sys
@@ -168,6 +169,47 @@ def is_valid_iso8601(value: str) -> bool:
         return False
     return True
 
+
+def is_structurally_public_http_url(value: str) -> bool:
+    """Reject malformed, credential-bearing, local, and non-global IP locators.
+
+    This is a structural check only. Human origin review remains responsible
+    for confirming that the source is genuinely public, legitimate, and
+    appropriately licensed; the validator never fetches or resolves the URL.
+    """
+    if any(character.isspace() for character in value):
+        return False
+    try:
+        parsed = urlparse(value)
+        hostname = parsed.hostname
+        # Accessing port forces urllib to reject malformed/out-of-range ports.
+        parsed.port
+    except ValueError:
+        return False
+
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not hostname:
+        return False
+    if parsed.username is not None or parsed.password is not None:
+        return False
+
+    normalized_host = hostname.rstrip(".").lower()
+    if normalized_host == "localhost" or normalized_host.endswith((".localhost", ".local")):
+        return False
+
+    try:
+        address = ipaddress.ip_address(normalized_host)
+    except ValueError:
+        if len(normalized_host) > 253 or "." not in normalized_host:
+            return False
+        labels = normalized_host.split(".")
+        return all(
+            1 <= len(label) <= 63
+            and re.fullmatch(r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", label) is not None
+            for label in labels
+        )
+    return address.is_global
+
+
 def validate_top_level_fields(manifest: dict[str, Any], failures: list[Failure]) -> None:
     required_fields = (
         "schema_version",
@@ -203,12 +245,18 @@ def validate_top_level_fields(manifest: dict[str, Any], failures: list[Failure])
 
     if "source_url" in manifest:
         source_url = manifest.get("source_url")
-        if not isinstance(source_url, str) or not source_url.strip():
-            failures.append(Failure("provenance", "source_url must be a non-empty public HTTP(S) URL"))
-        else:
-            parsed = urlparse(source_url)
-            if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-                failures.append(Failure("provenance", "source_url must be a valid public HTTP(S) URL"))
+        if (
+            not isinstance(source_url, str)
+            or not source_url.strip()
+            or not is_structurally_public_http_url(source_url)
+        ):
+            failures.append(
+                Failure(
+                    "provenance",
+                    "source_url must be a structurally public HTTP(S) URL without "
+                    "credentials, a local hostname, or a non-global IP address",
+                )
+            )
 
     if "doi" in manifest:
         doi = manifest.get("doi")
