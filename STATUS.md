@@ -82,8 +82,7 @@ CI-verified in draft PR #22, but is not complete until that PR is reviewed, merg
 `main`. Docker remains Phase 4.
 
 **Immediate next action:** issue #17 is complete on `main`. Issue #18's section C
-provenance/license/checksum manifest schema and fail-closed validator are staged in draft PR #22; GitHub
-Actions run #60 passed all checks, including 16 validator tests. Review PR #22, merge only with Austin's
+provenance/license/checksum manifest schema and fail-closed validator are staged in draft PR #22; An exact-head GitHub Actions run passed all checks, including 16 validator tests. Review PR #22, merge only with Austin's
 approval, and verify the result on `main` before closing issue #18. Then implement the planned
 NAS-to-`pi-server` local second copy in issue #19. Only after both gates pass should issue #15's one bounded
 public/synthetic pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
@@ -227,8 +226,7 @@ follow the applicable D16/D17 pull-request workflow.
   escaped the original representative fixture coverage. The validator now rejects every noneligible
   `eligibility_state`, invalid source locators/dates/timestamps/step sequences, and unknown root or nested
   fields; it still verifies actual SHA-256 bytes, path containment, approved license/origin/identifier
-  states, allowed source classifications, false disallowed-content flags, and derivative history. GitHub
-  Actions run #60 passed all 16 tests and every repository check. Only synthetic fixtures were used; no real
+  states, allowed source classifications, false disallowed-content flags, and derivative history. An exact-head GitHub Actions run passed all 16 tests and every repository check. Only synthetic fixtures were used; no real
   dataset or NAS archive content was accessed or changed. Section C is implemented and CI-verified on the
   draft branch, but issue #18 remains open until PR #22 is reviewed, merged with Austin's approval, and
   verified on `main`. Issue #19 and the bounded pilot remain blocked until then.
