@@ -172,3 +172,9 @@ Never commit:
 - Completed a disposable restore from Backblaze into an isolated destination and verified an identical SHA-256 checksum
 - Corrected an initial destination-selection mistake without data loss, removed both disposable NAS folders,
   and recorded that exact copy duration was not measured
+### 2026-08-01
+
+- Created and verified the dedicated metaphase archive boundary with eight logical areas, a least-privilege routine workflow identity, protected canonical-content permissions, and isolation from personal home-directory storage.
+- Verified `compute-node` on-demand SMB 3.1.1 access, least-privilege mount options, normal-reboot recovery, and local-NVMe processing with disposable synthetic placeholders only.
+- Added the versioned promotion-manifest schema, fail-closed standard-library validator, synthetic rejection/acceptance fixtures, and CI coverage for provenance, license, classification, path safety, SHA-256 integrity, and transformation history.
+- Kept corpus acquisition blocked pending the local `pi-server` second copy, metaphase-specific recovery design, and one bounded public/synthetic pilot.
