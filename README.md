@@ -115,6 +115,7 @@ home-server-lab/
 - [`docs/storage-baseline.md`](docs/storage-baseline.md) — sanitized Linux and NAS storage inventory and readiness gates
 - [`docs/nas-readiness-checklist.md`](docs/nas-readiness-checklist.md) — second-drive, protection, access, and pilot-ingestion gate
 - [`docs/metaphase-archive-boundary.md`](docs/metaphase-archive-boundary.md) — sanitized evidence for the dedicated metaphase archive share, least-privilege identity, and verified `compute-node` access (issue #17)
+- [`docs/promotion-controls.md`](docs/promotion-controls.md) — public-safe manifest schema, fail-closed validator, synthetic fixture suite, and stop/rollback conditions for pre-promotion controls (issue #18)
 - [`docs/linux-command-notes.md`](docs/linux-command-notes.md) — sanitized Linux users, permissions, sudo, and effective-policy notes
 - [`docs/patching-cadence.md`](docs/patching-cadence.md) — update policy (D18): daily automatic security patching plus the monthly manual maintenance runbook
 - [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md) — dated, sanitized operational findings and lessons
@@ -142,7 +143,8 @@ Review output before publishing it. Public-safe defaults reduce accidental discl
 
 ## Continuous Checks
 
-GitHub Actions runs ShellCheck, a privacy regression for `system-info.sh`, and a
+GitHub Actions runs ShellCheck, a privacy regression for `system-info.sh`, the
+promotion-manifest validator's automated tests (synthetic fixtures only), and a
 repository-relative Markdown-link check on every push and pull request.
 
 ## Security Model
@@ -184,8 +186,9 @@ This design avoids depending on DHCP stability and does not require opening inbo
    tested email alerts, successful first scrub, and quarterly scrub schedule
 6. Hyper Backup recovery proof **completed** for one disposable fixture
 7. Dedicated metaphase archive share, least-privilege access model, and verified `compute-node` access
-   **completed** (issue #17); next implement provenance/checksum and local-second-copy controls before the
-   one bounded public/synthetic pilot
+   **completed** (issue #17). Provenance/license/checksum promotion-control schema, fail-closed validator,
+   and synthetic-fixture tests **completed** (issue #18); next implement the local-second-copy control
+   (issue #19) before the one bounded public/synthetic pilot
 
 The first small public-metaphase pilot may begin only after the Phase 3.5 protection, access, provenance,
 checksum, backup, and restore prerequisites pass. Passing that bounded pilot completes Phase 3.5; bulk

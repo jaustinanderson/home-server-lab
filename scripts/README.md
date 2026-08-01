@@ -47,6 +47,8 @@ BACKUP_PATH=<your-backup-path-here>
 | [`system-info.sh`](system-info.sh) | Summarize OS, kernel, uptime, memory, root-filesystem use, CPU, temperature, network-link state, and Docker availability | Allowlists interface name/state so IP and MAC addresses are omitted; review all output before sharing |
 | [`test-system-info-safety.sh`](test-system-info-safety.sh) | Regression-test the network-output privacy contract with a mocked link-layer address | Fails if a MAC address escapes or expected sanitized fields disappear |
 | [`check-markdown-links.py`](check-markdown-links.py) | Check repository-relative Markdown links | Reads repository Markdown only and reports missing local targets |
+| [`validate-promotion-manifest.py`](validate-promotion-manifest.py) | Fail-closed pre-promotion control check for a `docs/promotion-manifest.schema.json` manifest and its referenced fixture bytes (issue #18) | Read-only: verifies SHA-256, license/origin/content-safety review state, and path safety; never moves, promotes, or rewrites anything; never prints file contents |
+| [`test_promotion_manifest_validator.py`](test_promotion_manifest_validator.py) | Automated tests for the promotion-manifest validator against `promotion-manifest-fixtures/` | Synthetic fixtures only; asserts the valid case passes, every invalid case fails, and fixtures stay byte-identical after each run |
 
 Run the current utility from the repository root:
 
@@ -55,8 +57,13 @@ chmod +x scripts/system-info.sh
 ./scripts/system-info.sh
 ```
 
-GitHub Actions runs ShellCheck, the system-output privacy regression, and the
-relative Markdown-link check on every push and pull request.
+[`promotion-manifest-fixtures/`](promotion-manifest-fixtures/) holds the synthetic,
+obviously-fake fixture manifests and files the validator's tests run against — one
+valid case and eight independent rejection cases. No real dataset content lives here.
+
+GitHub Actions runs ShellCheck, the system-output privacy regression, the
+promotion-manifest validator's automated tests, and the relative Markdown-link
+check on every push and pull request.
 
 ## Planned Scripts
 

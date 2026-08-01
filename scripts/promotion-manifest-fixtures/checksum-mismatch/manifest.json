@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_name": "Example Checksum-Mismatch Fixture",
+  "dataset_version": "1.0.0",
+  "publisher": "Example Publisher",
+  "source_url": "https://example.com/datasets/example-checksum-mismatch",
+  "acquisition_date": "2026-08-01",
+  "license": "CC0-1.0",
+  "license_review_state": "approved",
+  "redistribution": {
+    "allowed": true,
+    "conditions": "None; CC0-1.0 places no conditions on reuse."
+  },
+  "intended_use": "Exercise the rejection path for a SHA-256 mismatch between the manifest and the fixture bytes.",
+  "source_classification": "synthetic",
+  "origin_review_state": "approved",
+  "identifier_safety_state": "no_real_identifiers",
+  "content_classification_flags": {
+    "patient_derived": false,
+    "institutional": false,
+    "employer_confidential": false,
+    "clinical_study": false,
+    "restricted_other": false
+  },
+  "is_derivative": false,
+  "files": [
+    {
+      "path": "fixture.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "transformation_history": [],
+  "eligibility_state": "pending_review"
+}

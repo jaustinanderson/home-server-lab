@@ -25,5 +25,8 @@ jobs:
       - name: Test public-safe system output
         run: bash scripts/test-system-info-safety.sh
 
+      - name: Test promotion manifest validator (synthetic fixtures only)
+        run: python3 scripts/test_promotion_manifest_validator.py -v
+
       - name: Check repository-relative Markdown links
         run: python3 scripts/check-markdown-links.py

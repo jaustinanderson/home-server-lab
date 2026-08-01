@@ -22,7 +22,7 @@ logical areas, each with a distinct role:
 
 | Area | Role |
 |---|---|
-| Governance / manifests | Provenance, license, and checksum records (Section C, not yet populated) |
+| Governance / manifests | Provenance, license, and checksum records. Section C's manifest schema and fail-closed validator now exist (`promotion-controls.md`, issue #18); no real manifest has been populated here yet. |
 | Quarantine | Landing zone for material pending review; nothing is promoted automatically |
 | Canonical raw sources | Immutable original material once promoted from quarantine |
 | Approved releases | Reviewed, checksum-verified material approved for workflow use |

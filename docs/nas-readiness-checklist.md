@@ -63,16 +63,37 @@ offline was not tested.
 
 ## C. Provenance and safety
 
-- [ ] Require dataset name, version, source URL/DOI, publisher, acquisition date,
+- [x] Require dataset name, version, source URL/DOI, publisher, acquisition date,
   license, redistribution limits, and intended use.
-- [ ] Require SHA-256 checksums before promotion from quarantine.
-- [ ] Classify every source as synthetic or as a legitimately public,
+- [x] Require SHA-256 checksums before promotion from quarantine.
+- [x] Classify every source as synthetic or as a legitimately public,
   appropriately licensed dataset; de-identification alone is insufficient
   (D1/D21).
-- [ ] Record every transformation from source to derivative.
-- [ ] Reject non-public patient-derived or clinical study data, employer
+- [x] Record every transformation from source to derivative.
+- [x] Reject non-public patient-derived or clinical study data, employer
   material, real identifiers, uncertain-origin collections, restricted data,
   and sources without an acceptable license.
+
+Evidence recorded in `promotion-controls.md` (issue #18, D22): a versioned JSON
+Schema manifest contract (`promotion-manifest.schema.json`) and a dependency-free
+Python standard-library validator (`../scripts/validate-promotion-manifest.py`)
+implement every control above as a fail-closed check — missing, unknown, or
+ambiguous values never pass. The validator computes SHA-256 from the referenced
+fixture bytes and compares it to the manifest; rejects any classification other
+than `synthetic` or `public_licensed`; requires license review, origin review,
+and identifier-safety review to be explicitly approved/safe; requires every
+disallowed-content flag (patient-derived, institutional, employer-confidential,
+clinical-study, restricted-other) to be `false`; requires safe relative paths
+that cannot escape the supplied validation root; and requires transformation
+history for any declared derivative. A nine-case synthetic fixture suite
+(`../scripts/promotion-manifest-fixtures/`) and automated tests
+(`../scripts/test_promotion_manifest_validator.py`, wired into CI) exercise one
+valid case and eight independent rejection cases; the validator is read-only and
+never modifies a manifest or referenced file. Only synthetic fixtures were used —
+no real dataset was acquired, ingested, promoted, or referenced. Passing section
+C does not by itself authorize the bounded pilot in section E; section D's
+remaining metaphase-specific protection and local-second-copy work (issue #19)
+still blocks it.
 
 ## D. Backup and recovery
 

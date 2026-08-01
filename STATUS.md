@@ -79,11 +79,12 @@ Ethernet port is retained but marked optional in Netplan, eliminating the prior 
 **Phase 3.5 — NAS Storage Readiness** is now the current phase. Sections A and B of
 `docs/nas-readiness-checklist.md` are complete. Docker remains Phase 4.
 
-**Immediate next action:** issue #17 is complete — the dedicated metaphase archive boundary, its
-least-privilege routine workflow identity, and verified `compute-node` access are recorded in
-`docs/metaphase-archive-boundary.md`. Next implement provenance/license/checksum promotion controls in
-issue #18 and the planned NAS-to-`pi-server` local second copy in issue #19. Only then run issue #15's one
-bounded public/synthetic pilot. Passing section E completes Phase 3.5 and unlocks Phase 4.
+**Immediate next action:** issues #17 and #18 are complete. Issue #17 recorded the dedicated metaphase
+archive boundary, its least-privilege routine workflow identity, and verified `compute-node` access in
+`docs/metaphase-archive-boundary.md`. Issue #18 added the section C provenance/license/checksum manifest
+schema and fail-closed validator, recorded in `docs/promotion-controls.md`. Next implement the planned
+NAS-to-`pi-server` local second copy in issue #19. Only then run issue #15's one bounded public/synthetic
+pilot. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -100,9 +101,10 @@ follow the applicable D16/D17 pull-request workflow.
 - Patching cadence **established and exercised twice on both machines (D18)**. The July 31 window included
   deliberate reboots and complete recovery verification on both hosts.
 - **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, one
-  disposable personal-content restore, the dedicated archive share/permissions, and verified `compute-node`
-  access now pass; a single small public pilot remains blocked on provenance/license/checksum controls, local
-  second copy, and metaphase-specific protection design.
+  disposable personal-content restore, the dedicated archive share/permissions, verified `compute-node`
+  access, and the provenance/license/checksum manifest schema and validator (issue #18) now pass; a single
+  small public pilot remains blocked on the local second copy and metaphase-specific protection design
+  (issue #19).
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -212,3 +214,19 @@ follow the applicable D16/D17 pull-request workflow.
   synthetic placeholders were used and removed afterward. A reboot with the NAS deliberately offline was not
   tested. Recorded in `docs/metaphase-archive-boundary.md` and section B of `docs/nas-readiness-checklist.md`.
   Next: issue #18 (provenance/license/checksum controls).
+- **2026-08-01 — Austin + Claude** — Completed the repository-controlled portion of issue #18: a versioned
+  JSON Schema promotion-manifest contract (`docs/promotion-manifest.schema.json`), a dependency-free Python
+  standard-library validator (`scripts/validate-promotion-manifest.py`), a nine-case synthetic fixture suite
+  (`scripts/promotion-manifest-fixtures/`, one valid case and eight independent rejection cases), and
+  automated tests (`scripts/test_promotion_manifest_validator.py`) wired into the existing GitHub Actions
+  workflow alongside ShellCheck, the system-info privacy regression, and the Markdown-link check. The
+  validator is fail-closed and read-only: it verifies SHA-256 checksums against referenced fixture bytes,
+  requires safe relative paths that cannot escape a supplied validation root, requires source classification
+  to be exactly `synthetic` or `public_licensed` (de-identification alone is never accepted, per D1/D21),
+  requires license/origin/identifier-safety review states to be explicitly approved/safe, requires every
+  disallowed-content flag to be false, and requires transformation history for any declared derivative; it
+  never moves, promotes, or rewrites anything. Recorded the validator design as decision D22. Only synthetic,
+  obviously-fake fixtures were used; no real dataset was acquired, ingested, promoted, or referenced, and no
+  NAS archive content was accessed or changed. Section C of `docs/nas-readiness-checklist.md` is now checked
+  complete; passing it does not by itself authorize the bounded pilot in section E, which remains blocked on
+  issue #19's local-second-copy and metaphase-specific protection work. Next: issue #19.
