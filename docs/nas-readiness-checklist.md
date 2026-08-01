@@ -61,7 +61,7 @@ filesystem. No real dataset was ingested; only disposable synthetic placeholders
 were used, and they were removed afterward. A reboot with the NAS deliberately
 offline was not tested.
 
-## C. Provenance and safety
+## C. Provenance and safety — staged in draft PR #22
 
 - [x] Require dataset name, version, source URL/DOI, publisher, acquisition date,
   license, redistribution limits, and intended use.
@@ -74,26 +74,23 @@ offline was not tested.
   material, real identifiers, uncertain-origin collections, restricted data,
   and sources without an acceptable license.
 
-Evidence recorded in `promotion-controls.md` (issue #18, D22): a versioned JSON
-Schema manifest contract (`promotion-manifest.schema.json`) and a dependency-free
-Python standard-library validator (`../scripts/validate-promotion-manifest.py`)
-implement every control above as a fail-closed check — missing, unknown, or
-ambiguous values never pass. The validator computes SHA-256 from the referenced
-fixture bytes and compares it to the manifest; rejects any classification other
-than `synthetic` or `public_licensed`; requires license review, origin review,
-and identifier-safety review to be explicitly approved/safe; requires every
-disallowed-content flag (patient-derived, institutional, employer-confidential,
-clinical-study, restricted-other) to be `false`; requires safe relative paths
-that cannot escape the supplied validation root; and requires transformation
-history for any declared derivative. A nine-case synthetic fixture suite
-(`../scripts/promotion-manifest-fixtures/`) and automated tests
-(`../scripts/test_promotion_manifest_validator.py`, wired into CI) exercise one
-valid case and eight independent rejection cases; the validator is read-only and
-never modifies a manifest or referenced file. Only synthetic fixtures were used —
-no real dataset was acquired, ingested, promoted, or referenced. Passing section
-C does not by itself authorize the bounded pilot in section E; section D's
-remaining metaphase-specific protection and local-second-copy work (issue #19)
-still blocks it.
+Evidence staged in `promotion-controls.md` (issue #18, D22): a strict versioned
+JSON Schema manifest contract (`promotion-manifest.schema.json`) and a dependency-free Python
+standard-library validator (`../scripts/validate-promotion-manifest.py`) implement every control above as
+a fail-closed check. Missing, ambiguous, malformed, or unknown values do not pass. The validator computes
+SHA-256 from referenced bytes; accepts only `synthetic` or `public_licensed`; requires explicit
+license/origin/identifier approval, false disallowed-content flags, contained relative paths, valid source
+locators and dates, sequential transformation steps with valid timestamps, and transformation history for
+derivatives; and requires `eligibility_state` to be exactly `eligible_for_promotion`. Nine synthetic
+fixture directories (`../scripts/promotion-manifest-fixtures/`; one valid and eight rejection fixtures)
+plus 16 automated tests (`../scripts/test_promotion_manifest_validator.py`) cover the shipped fixtures,
+noneligible workflow states, schema alignment, unknown fields, malformed values, path escape,
+non-destructive behavior, and usage errors. GitHub Actions run #60 passed all 16 tests and every repository
+check. No real dataset was acquired, ingested, promoted, or referenced, and no NAS content was accessed or
+changed. The checked boxes describe the implementation on draft PR #22; issue #18 remains open, and section
+C is not complete on `main`, until Austin reviews and merges the PR and the result is verified on `main`.
+Passing section C still does not authorize section E; issue #19's metaphase-specific protection and local
+second-copy work also remain blockers.
 
 ## D. Backup and recovery
 
