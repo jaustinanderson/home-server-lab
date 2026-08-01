@@ -266,9 +266,11 @@ designed against **synthetic data only**. It does **not** prove:
 
 - Anything about real dataset content, license terms, or provenance, since
   no real dataset was used anywhere in this work.
-- Behavior against adversarially crafted JSON beyond what the fixtures cover
-  (for example, extremely large files, symlink-based path tricks, or
-  non-UTF-8 manifest encodings) — deliberately out of scope for this pass.
+- The suite includes a symlink-based root-escape regression and verifies that
+  case is rejected without changing the linked-to file. It does not exhaustively
+  cover every adversarial input, such as extremely large files, nested or
+  platform-specific path behavior beyond the tested case, or non-UTF-8 manifest
+  encodings.
 - Integration with an actual quarantine → canonical promotion mechanism —
   no such mechanism exists yet; this validator only gates a manifest, it
   does not perform or trigger a promotion.
