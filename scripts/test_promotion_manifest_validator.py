@@ -137,6 +137,76 @@ class PathSafetyTests(unittest.TestCase):
             self.assertEqual(before_mtime, after_mtime)
 
 
+class FailClosedPolicyTests(unittest.TestCase):
+    def run_mutated_valid(self, mutate) -> subprocess.CompletedProcess:
+        with tempfile.TemporaryDirectory(prefix="promotion-control-policy-test-") as tmp:
+            root = Path(tmp)
+            fixture_source = FIXTURES_DIR / "valid" / "fixture.txt"
+            (root / "fixture.txt").write_bytes(fixture_source.read_bytes())
+            manifest = json.loads((FIXTURES_DIR / "valid" / "manifest.json").read_text(encoding="utf-8"))
+            mutate(manifest)
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            return run_validator(manifest_path, root)
+
+    def assert_rejected(self, result: subprocess.CompletedProcess, expected: str) -> None:
+        self.assertNotEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        self.assertIn("REJECTED", result.stdout)
+        self.assertIn(expected, result.stdout, msg=result.stdout)
+
+    def test_noneligible_workflow_states_never_pass(self) -> None:
+        for state in ("pending_review", "quarantine", "rejected"):
+            with self.subTest(state=state):
+                result = self.run_mutated_valid(lambda manifest: manifest.update(eligibility_state=state))
+                self.assert_rejected(result, "[eligibility_state]")
+
+    def test_invalid_source_url_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest.pop("doi", None)
+            manifest["source_url"] = "not-a-public-url"
+
+        self.assert_rejected(self.run_mutated_valid(mutate), "[provenance]")
+
+    def test_invalid_doi_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest.pop("source_url", None)
+            manifest["doi"] = "not-a-doi"
+
+        self.assert_rejected(self.run_mutated_valid(mutate), "[provenance]")
+
+    def test_impossible_calendar_date_is_rejected(self) -> None:
+        result = self.run_mutated_valid(
+            lambda manifest: manifest.update(acquisition_date="2026-02-30")
+        )
+        self.assert_rejected(result, "real ISO 8601 date")
+
+    def test_unknown_top_level_and_nested_fields_are_rejected(self) -> None:
+        def mutate_top(manifest: dict) -> None:
+            manifest["unexpected_policy_bypass"] = True
+
+        self.assert_rejected(self.run_mutated_valid(mutate_top), "[schema]")
+
+        def mutate_nested(manifest: dict) -> None:
+            manifest["files"][0]["unexpected"] = "ignored-before-fix"
+
+        self.assert_rejected(self.run_mutated_valid(mutate_nested), "[schema]")
+
+    def test_transformation_steps_and_timestamps_are_enforced(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 0,
+                    "action": "synthetic-transform",
+                    "timestamp": "not-a-date",
+                    "description": "Synthetic invalid transformation record.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "step must be an integer of 1 or greater")
+        self.assertIn("timestamp must be a valid ISO 8601", result.stdout)
+
 class NonDestructiveTests(unittest.TestCase):
     def test_validator_does_not_modify_fixtures_or_manifests(self) -> None:
         before = snapshot_fixture_tree()
@@ -208,6 +278,20 @@ class SchemaAlignmentTests(unittest.TestCase):
         }
         self.assertEqual(schema_required, validator_required)
 
+    def test_schema_rejects_unknown_fields_and_matches_license_policy(self) -> None:
+        self.assertFalse(self.schema["additionalProperties"])
+        self.assertEqual(
+            set(self.schema["properties"]["license"]["enum"]),
+            {
+                "CC0-1.0",
+                "CC-BY-4.0",
+                "CC-BY-SA-4.0",
+                "MIT",
+                "Apache-2.0",
+                "Public-Domain",
+                "Synthetic-No-License-Required",
+            },
+        )
     def test_schema_enumerations_match_validator_allowlists(self) -> None:
         properties = self.schema["properties"]
         self.assertEqual(
