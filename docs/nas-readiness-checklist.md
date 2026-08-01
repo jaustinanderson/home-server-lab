@@ -85,7 +85,7 @@ derivatives; and requires `eligibility_state` to be exactly `eligible_for_promot
 fixture directories (`../scripts/promotion-manifest-fixtures/`; one valid and eight rejection fixtures)
 plus 16 automated tests (`../scripts/test_promotion_manifest_validator.py`) cover the shipped fixtures,
 noneligible workflow states, schema alignment, unknown fields, malformed values, path escape,
-non-destructive behavior, and usage errors. GitHub Actions run #60 passed all 16 tests and every repository
+non-destructive behavior, and usage errors. An exact-head GitHub Actions run passed all 16 tests and every repository
 check. No real dataset was acquired, ingested, promoted, or referenced, and no NAS content was accessed or
 changed. The checked boxes describe the implementation on draft PR #22; issue #18 remains open, and section
 C is not complete on `main`, until Austin reviews and merges the PR and the result is verified on `main`.
