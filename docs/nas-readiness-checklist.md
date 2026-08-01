@@ -38,14 +38,28 @@ broader acquisition in the later roadmap phase.
 
 ## B. Archive boundary and access
 
-- [ ] Create a dedicated metaphase source/archive share.
-- [ ] Separate quarantine, governance/manifests, raw sources, approved releases,
+- [x] Create a dedicated metaphase source/archive share.
+- [x] Separate quarantine, governance/manifests, raw sources, approved releases,
   annotations, working derivatives, exports, and logs.
-- [ ] Grant least-privilege access; keep administration separate from routine use.
-- [ ] Verify `compute-node` can access the intended share.
-- [ ] Verify raw sources cannot be silently overwritten by the working workflow.
-- [ ] Keep working copies and transformations on `compute-node`, not mixed into
+- [x] Grant least-privilege access; keep administration separate from routine use.
+- [x] Verify `compute-node` can access the intended share.
+- [x] Verify raw sources cannot be silently overwritten by the working workflow.
+- [x] Keep working copies and transformations on `compute-node`, not mixed into
   canonical raw-source directories.
+
+Evidence recorded in `metaphase-archive-boundary.md` (issue #17): the dedicated
+archive share is organized into the eight listed areas; a non-administrator routine
+workflow identity is scoped to the archive share only over SMB 3.1.1, with no access
+to personal home-directory storage and no NAS administration role; canonical raw
+sources and approved releases denied create/modify/rename/delete attempts from that
+identity while remaining readable, and the working-derivative area remained fully
+writable; `compute-node`'s on-demand automount (root-owned `0600` credential file,
+`nosuid`/`nodev`/`noexec`, network-dependent and non-fatal at boot) activated
+successfully and survived a normal reboot with passing post-reboot permission tests;
+and active transformations were confirmed to stay on `compute-node`'s local ext4
+filesystem. No real dataset was ingested; only disposable synthetic placeholders
+were used, and they were removed afterward. A reboot with the NAS deliberately
+offline was not tested.
 
 ## C. Provenance and safety
 

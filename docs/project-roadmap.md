@@ -93,14 +93,15 @@ Current evidence:
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for selected current personal NAS
   content on a daily, client-side-encrypted schedule with version retention and weekly integrity checks.
 - One disposable file restored from the encrypted repository matched its source SHA-256 checksum.
-- No metaphase share, `compute-node` mount, provenance workflow, checksum gate, local second copy, or
-  metaphase-specific recovery design is claimed yet.
+- The dedicated metaphase archive share, its eight-area structure, a least-privilege routine workflow
+  identity, canonical-content protection, and verified `compute-node` access (section B) are now complete;
+  see `docs/metaphase-archive-boundary.md` (issue #17).
+- No provenance workflow, checksum gate, local second copy, or metaphase-specific recovery design is
+  claimed yet.
 
 Required gates:
 
 - Maintain the verified two-drive protection, health tests, notification path, and scrub schedule.
-- Create the dedicated metaphase archive boundary and least-privilege access model.
-- Verify `compute-node` access while keeping canonical raw source material separate from working copies.
 - Require source, version, license, acquisition date, checksum, classification, intended use, and
   transformation history for every dataset.
 - Preserve the completed selected-scope recovery proof and extend tested protection to approved metaphase work.
@@ -112,6 +113,7 @@ Planned artifacts:
 - `docs/storage-baseline.md` — **added**
 - `docs/nas-readiness-checklist.md` — **added**
 - `docs/backup-restore-test.md` — **added**
+- `docs/metaphase-archive-boundary.md` — **added**
 
 Passing sections A–D of `docs/nas-readiness-checklist.md` authorizes only one bounded public/synthetic pilot.
 Passing the pilot in section E completes Phase 3.5. Bulk acquisition remains Phase 8; no phase authorizes
