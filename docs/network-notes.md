@@ -14,9 +14,9 @@ identifiers are intentionally omitted.
 | Device | Local role | Verified access |
 |---|---|---|
 | **Chromebook** | SSH control surface | Reaches both servers through the private Tailscale mesh |
-| **compute-node** | Working storage, data services, and future compute | Key-based SSH; local server-to-server connectivity; Tailscale |
+| **compute-node** | Working storage, data services, and future compute | Key-based SSH; local server-to-server connectivity; Tailscale; verified on-demand least-privilege SMB access to the metaphase archive |
 | **pi-server** | Planned local secondary protection and lightweight services | Key-based SSH; local server-to-server connectivity; Tailscale |
-| **Synology NAS** | Canonical source archive and current personal-content store | Local-network access; managed family access; not currently a tailnet device |
+| **Synology NAS** | Canonical source archive and current personal-content store | Local-network access; managed family access; verified least-privilege SMB from `compute-node`; not currently a tailnet device |
 
 The apartment-managed network provides DHCP and device-to-device connectivity,
 but no router administration, static DHCP reservations, or public port
@@ -121,8 +121,9 @@ route problem.
 
 ## Next network work
 
-1. Verify the future `compute-node` NAS mount and least-privilege share access.
-2. Inventory ports and firewall rules before deploying the first service.
-3. Optionally improve `.local` resolution inside the Chromebook Linux environment.
-4. Decide whether NAS administration should join the private tailnet through a
+1. Inventory ports and firewall rules before deploying the first service.
+2. Optionally improve `.local` resolution inside the Chromebook Linux environment.
+3. Decide whether NAS administration should join the private tailnet through a
    separately reviewed change.
+
+The `compute-node` archive automount and least-privilege SMB access are complete. A reboot with the NAS deliberately offline remains untested, but the mount is configured as network-dependent, on-demand, and non-fatal at boot.
