@@ -32,6 +32,9 @@ flowchart TD
   and DSM warning/critical email delivery was tested.
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current NAS personal content.
+- One disposable file restored from the encrypted Backblaze repository on
+  2026-07-31 matched its source SHA-256 checksum; this proves recovery only for
+  that tested fixture and backup version, not for future metaphase data.
 - The dedicated metaphase archive share and its least-privilege access model exist,
   and `compute-node` mounts it on demand over a least-privilege SMB configuration
   that survives a normal reboot (issue #17).
@@ -39,7 +42,8 @@ flowchart TD
 ## Planned, not yet claimed as implemented
 
 - A local second copy from the NAS to `pi-server`
-- A tested restore procedure
+- A tested metaphase-specific recovery procedure covering approved source data,
+  manifests, annotations, databases, and working derivatives
 - Dockerized services and their service-level topology
 - PostgreSQL and the dataset-provenance workflow
 
