@@ -10,7 +10,7 @@ flowchart TD
     T --> N["compute-node<br/>working storage + future compute"]
     T --> P["pi-server<br/>secondary protection + services"]
     N <-->|"Local network + mDNS"| P
-    N -.->|"Planned approved-source mount"| S["Synology DS925+<br/>canonical source archive<br/>healthy SHR protection"]
+    N -->|"Verified least-privilege archive mount"| S["Synology DS925+<br/>canonical source archive<br/>healthy SHR protection"]
     S -.->|"Planned local second copy"| P
     S -->|"Operational Hyper Backup"| B["Backblaze B2<br/>off-site backup"]
 ```
@@ -32,10 +32,12 @@ flowchart TD
   and DSM warning/critical email delivery was tested.
 - Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current NAS personal content.
+- The dedicated metaphase archive share and its least-privilege access model exist,
+  and `compute-node` mounts it on demand over a least-privilege SMB configuration
+  that survives a normal reboot (issue #17).
 
 ## Planned, not yet claimed as implemented
 
-- The `compute-node` working mount and metaphase share permissions
 - A local second copy from the NAS to `pi-server`
 - A tested restore procedure
 - Dockerized services and their service-level topology

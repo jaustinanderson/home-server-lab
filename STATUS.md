@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-07-31
+**Last updated:** 2026-08-01
 
 ---
 
@@ -76,14 +76,14 @@ baselines. `compute-node` now runs kernel `7.0.0-28-generic`; `pi-server` runs
 failed units, working Tailscale and SSH, and no reboot flag. The compute-node's disconnected secondary
 Ethernet port is retained but marked optional in Netplan, eliminating the prior boot wait-online timeout.
 
-**Phase 3.5 — NAS Storage Readiness** is now the current phase. Section A of
-`docs/nas-readiness-checklist.md` is complete. Docker remains Phase 4.
+**Phase 3.5 — NAS Storage Readiness** is now the current phase. Sections A and B of
+`docs/nas-readiness-checklist.md` are complete. Docker remains Phase 4.
 
-**Immediate next action:** complete issue #17 by creating the dedicated metaphase archive boundary and
-least-privilege access, then verify `compute-node` access and raw-source protection. Next implement
-provenance/license/checksum promotion controls in issue #18 and the planned NAS-to-`pi-server` local second
-copy in issue #19. Only then run issue #15's one bounded public/synthetic pilot. Passing section E completes
-Phase 3.5 and unlocks Phase 4.
+**Immediate next action:** issue #17 is complete — the dedicated metaphase archive boundary, its
+least-privilege routine workflow identity, and verified `compute-node` access are recorded in
+`docs/metaphase-archive-boundary.md`. Next implement provenance/license/checksum promotion controls in
+issue #18 and the planned NAS-to-`pi-server` local second copy in issue #19. Only then run issue #15's one
+bounded public/synthetic pilot. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -99,10 +99,10 @@ follow the applicable D16/D17 pull-request workflow.
   resolution in Penguin.
 - Patching cadence **established and exercised twice on both machines (D18)**. The July 31 window included
   deliberate reboots and complete recovery verification on both hosts.
-- **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, and one
-  disposable personal-content restore now pass; a single small public pilot remains blocked on the dedicated
-  share/permissions, verified `compute-node` access, provenance/license/checksum controls, local second copy,
-  and metaphase-specific protection design.
+- **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, one
+  disposable personal-content restore, the dedicated archive share/permissions, and verified `compute-node`
+  access now pass; a single small public pilot remains blocked on provenance/license/checksum controls, local
+  second copy, and metaphase-specific protection design.
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -199,3 +199,16 @@ follow the applicable D16/D17 pull-request workflow.
   repeated successfully. Both disposable NAS folders were removed. Exact copy duration was not captured, so
   no recovery-time objective is claimed. Issue #13 is technically complete; metaphase-specific backup and
   recovery remain pending.
+- **2026-08-01 — Austin + Claude** — Completed issue #17: created the dedicated metaphase archive share with
+  its eight-area structure (governance/manifests, quarantine, canonical raw sources, approved releases,
+  annotations, working derivatives, exports, logs); created a least-privilege routine workflow identity
+  scoped to that share over SMB, separate from NAS administration and unable to reach personal
+  home-directory storage; verified canonical raw sources and approved releases reject create/modify/rename/
+  delete from that identity while remaining readable, and that the working-derivative area stays fully
+  writable; verified `compute-node`'s on-demand SMB 3.1.1 automount (root-owned `0600` credential file,
+  `nosuid`/`nodev`/`noexec`, network-dependent, non-fatal at boot) activates on access and survives a normal
+  reboot with passing post-reboot permission tests; and confirmed active transformations stay on
+  `compute-node`'s local NVMe ext4 workspace, not the NAS. No real dataset was ingested; only disposable
+  synthetic placeholders were used and removed afterward. A reboot with the NAS deliberately offline was not
+  tested. Recorded in `docs/metaphase-archive-boundary.md` and section B of `docs/nas-readiness-checklist.md`.
+  Next: issue #18 (provenance/license/checksum controls).
