@@ -90,10 +90,11 @@ Current evidence:
 - The existing SHR pool is healthy with one-drive fault tolerance and approximately 13.8 TB usable capacity.
 - Both drives passed extended S.M.A.R.T. tests; the first data scrub completed successfully; quarterly
   scrubbing is scheduled; and the warning/critical email-notification path was tested.
-- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for current personal NAS content on
-  a daily schedule with version retention.
-- No metaphase share, `compute-node` mount, provenance workflow, checksum gate, or successful restore test is
-  claimed yet.
+- Synology Hyper Backup to Backblaze B2 is owner-confirmed operational for selected current personal NAS
+  content on a daily, client-side-encrypted schedule with version retention and weekly integrity checks.
+- One disposable file restored from the encrypted repository matched its source SHA-256 checksum.
+- No metaphase share, `compute-node` mount, provenance workflow, checksum gate, local second copy, or
+  metaphase-specific recovery design is claimed yet.
 
 Required gates:
 
@@ -102,7 +103,7 @@ Required gates:
 - Verify `compute-node` access while keeping canonical raw source material separate from working copies.
 - Require source, version, license, acquisition date, checksum, classification, intended use, and
   transformation history for every dataset.
-- Restore a protected sample into a disposable location and verify it independently.
+- Preserve the completed selected-scope recovery proof and extend tested protection to approved metaphase work.
 - Run one small public-data pilot through quarantine → provenance/license review → checksum → archive →
   working copy → restore.
 
@@ -110,7 +111,7 @@ Planned artifacts:
 
 - `docs/storage-baseline.md` — **added**
 - `docs/nas-readiness-checklist.md` — **added**
-- `docs/backup-restore-test.md`
+- `docs/backup-restore-test.md` — **added**
 
 Passing sections A–D of `docs/nas-readiness-checklist.md` authorizes only one bounded public/synthetic pilot.
 Passing the pilot in section E completes Phase 3.5. Bulk acquisition remains Phase 8; no phase authorizes
