@@ -17,8 +17,8 @@ broader acquisition in the later roadmap phase.
 | Synchronized | Complete | Existing SHR pool finished conversion |
 | Healthy | Complete | Pool, Btrfs volume, and both drives report healthy; both extended tests passed |
 | Redundant | Complete | SHR reports one-drive fault tolerance |
-| Backup current | Pending verification | Hyper Backup is operational for selected data; latest scheduled run is unverified |
-| Restore verified | Pending | No disposable restore is claimed |
+| Backup current | Complete for selected personal scope | Latest scheduled run succeeded; daily versioned encrypted job inspected |
+| Restore verified | Complete for one fixture | Isolated restore matched the source SHA-256 checksum |
 | Workload authorized | No | Pre-ingestion gates remain incomplete |
 
 ## A. Second-drive protection
@@ -64,15 +64,22 @@ broader acquisition in the later roadmap phase.
 
 - [x] Daily Hyper Backup to Backblaze B2 is owner-confirmed operational for
   selected current personal NAS content.
-- [ ] Verify the backup job's latest scheduled run.
+- [x] Verify the backup job's latest scheduled run.
 - [x] Verify the notification delivery path covers backup failures.
-- [ ] Inspect and record encryption behavior without exposing keys or credentials.
-- [ ] Restore a sample into a disposable location.
-- [ ] Independently verify restored files or records.
-- [ ] Record recovery time, missing prerequisites, and manual steps.
+- [x] Inspect and record encryption behavior without exposing keys or credentials.
+- [x] Restore a sample into a disposable location.
+- [x] Independently verify restored files or records.
+- [x] Record recovery time, missing prerequisites, and manual steps.
 - [ ] Define protection for metaphase manifests, licenses, annotations, database
   state, and other irreplaceable work.
 - [ ] Implement and verify the planned local second copy to `pi-server`.
+
+Evidence recorded in `backup-restore-test.md`: on 2026-07-31 the latest scheduled run was successful; the
+job was confirmed as daily, client-side encrypted, versioned with Smart Recycle, and covered by weekly
+integrity checks. A disposable file was backed up, restored into a separate destination, and verified by an
+identical SHA-256 checksum. The exact copy duration was not measured. An initial destination-selection error
+was corrected by creating a clearly separate destination and repeating the restore; disposable NAS folders
+were removed after verification.
 
 ## E. First bounded pilot
 
