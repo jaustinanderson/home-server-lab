@@ -138,3 +138,26 @@ patient-derived, institutional, employer, restricted, or uncertain-origin materi
 Any non-synthetic source must already be a legitimately public, appropriately licensed dataset. A future
 proposal to expand that rule requires a new explicit decision after applicable legal, institutional, privacy,
 security, and data-use review; until then, public datasets and synthetic/fake data are the complete allowed set.
+
+**D22 — Promotion from quarantine to the canonical archive requires passing an automated, fail-closed,
+standard-library manifest validator; a passing result never authorizes disallowed material.** *(2026-08-01)*
+Section C of the NAS readiness checklist named the required provenance/license/checksum controls, but no
+automated enforcement existed. This decision establishes `docs/promotion-manifest.schema.json` (a versioned
+JSON Schema draft 2020-12 manifest contract) and `scripts/validate-promotion-manifest.py` (a dependency-free
+Python standard-library validator) as the required technical gate ahead of any promotion: every governed file
+must carry a verified SHA-256 checksum computed from its actual bytes; every source must be classified as
+`synthetic` or `public_licensed`, never merely de-identified (D1/D21); license review, origin review, and
+identifier-safety review must each be explicitly approved/safe, not merely present; every disallowed-content
+flag (patient-derived, institutional, employer-confidential, clinical-study, restricted-other) must be false;
+referenced paths must be safe relative paths that cannot escape the supplied validation root; source locators,
+calendar dates, transformation timestamps, and transformation-step sequences must be valid; unknown root or
+nested contract fields must be rejected; a declared derivative must carry transformation history; and
+`eligibility_state` must be exactly `eligible_for_promotion` — `pending_review`, `quarantine`, and
+`rejected` always fail closed. A self-declared eligible state never overrides another failure. The validator
+is read-only, is deterministic, exits nonzero for every rejection, and never rewrites a manifest or
+moves/promotes material. Schema, validator, documentation, and tests must remain aligned; every accepted and
+rejected workflow state and every claimed strictness boundary requires positive or negative test coverage
+before the gate is described as fail-closed. This decision only formalizes the enforcement *mechanism* — it
+does not loosen D1, D19, or D21's substantive data-boundary rules, and a passing validator result does not by
+itself authorize the bounded pilot (section E) or any real dataset; see `docs/promotion-controls.md`
+(issue #18).

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_name": "Example Missing-Transformation-History Fixture",
+  "dataset_version": "1.0.0",
+  "publisher": "Example Publisher",
+  "source_url": "https://example.com/datasets/example-missing-transformation-history",
+  "acquisition_date": "2026-08-01",
+  "license": "CC0-1.0",
+  "license_review_state": "approved",
+  "redistribution": {
+    "allowed": true,
+    "conditions": "None; CC0-1.0 places no conditions on reuse."
+  },
+  "intended_use": "Exercise the rejection path for a declared derivative with no transformation history.",
+  "source_classification": "synthetic",
+  "origin_review_state": "approved",
+  "identifier_safety_state": "no_real_identifiers",
+  "content_classification_flags": {
+    "patient_derived": false,
+    "institutional": false,
+    "employer_confidential": false,
+    "clinical_study": false,
+    "restricted_other": false
+  },
+  "is_derivative": true,
+  "files": [
+    {
+      "path": "fixture.txt",
+      "sha256": "8ddb5f29dba35341d0221d7ae2a07b5b51ca73ad97b25b2ae11c080f7985b239"
+    }
+  ],
+  "transformation_history": [],
+  "eligibility_state": "pending_review"
+}

@@ -96,8 +96,9 @@ Current evidence:
 - The dedicated metaphase archive share, its eight-area structure, a least-privilege routine workflow
   identity, canonical-content protection, and verified `compute-node` access (section B) are now complete;
   see `docs/metaphase-archive-boundary.md` (issue #17).
-- No provenance workflow, checksum gate, local second copy, or metaphase-specific recovery design is
-  claimed yet.
+- Section C's provenance/license/checksum manifest schema and fail-closed validator are now complete,
+  exercised only with synthetic fixtures; see `docs/promotion-controls.md` (issue #18, D22).
+- No local second copy or metaphase-specific recovery design is claimed yet (issue #19).
 
 Required gates:
 
@@ -114,6 +115,7 @@ Planned artifacts:
 - `docs/nas-readiness-checklist.md` — **added**
 - `docs/backup-restore-test.md` — **added**
 - `docs/metaphase-archive-boundary.md` — **added**
+- `docs/promotion-controls.md` — **added**
 
 Passing sections A–D of `docs/nas-readiness-checklist.md` authorizes only one bounded public/synthetic pilot.
 Passing the pilot in section E completes Phase 3.5. Bulk acquisition remains Phase 8; no phase authorizes

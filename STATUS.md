@@ -77,13 +77,15 @@ failed units, working Tailscale and SSH, and no reboot flag. The compute-node's 
 Ethernet port is retained but marked optional in Netplan, eliminating the prior boot wait-online timeout.
 
 **Phase 3.5 — NAS Storage Readiness** is now the current phase. Sections A and B of
-`docs/nas-readiness-checklist.md` are complete. Docker remains Phase 4.
+`docs/nas-readiness-checklist.md` are complete on `main`. Section C's implementation is staged and
+CI-verified in draft PR #22, but is not complete until that PR is reviewed, merged, and verified on
+`main`. Docker remains Phase 4.
 
-**Immediate next action:** issue #17 is complete — the dedicated metaphase archive boundary, its
-least-privilege routine workflow identity, and verified `compute-node` access are recorded in
-`docs/metaphase-archive-boundary.md`. Next implement provenance/license/checksum promotion controls in
-issue #18 and the planned NAS-to-`pi-server` local second copy in issue #19. Only then run issue #15's one
-bounded public/synthetic pilot. Passing section E completes Phase 3.5 and unlocks Phase 4.
+**Immediate next action:** issue #17 is complete on `main`. Issue #18's section C
+provenance/license/checksum manifest schema and fail-closed validator are staged in draft PR #22; An exact-head GitHub Actions run passed all checks, including 16 validator tests. Review PR #22, merge only with Austin's
+approval, and verify the result on `main` before closing issue #18. Then implement the planned
+NAS-to-`pi-server` local second copy in issue #19. Only after both gates pass should issue #15's one bounded
+public/synthetic pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -101,8 +103,9 @@ follow the applicable D16/D17 pull-request workflow.
   deliberate reboots and complete recovery verification on both hosts.
 - **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, one
   disposable personal-content restore, the dedicated archive share/permissions, and verified `compute-node`
-  access now pass; a single small public pilot remains blocked on provenance/license/checksum controls, local
-  second copy, and metaphase-specific protection design.
+  access pass on `main`. The provenance/license/checksum controls pass 16 tests on draft PR #22 but remain
+  staged until review, merge, and `main` verification. The bounded pilot remains blocked on both that step
+  and issue #19's local second copy and metaphase-specific protection design.
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -212,3 +215,18 @@ follow the applicable D16/D17 pull-request workflow.
   synthetic placeholders were used and removed afterward. A reboot with the NAS deliberately offline was not
   tested. Recorded in `docs/metaphase-archive-boundary.md` and section B of `docs/nas-readiness-checklist.md`.
   Next: issue #18 (provenance/license/checksum controls).
+- **2026-08-01 — Austin + Claude + ChatGPT/Codex** — Staged the repository-controlled
+  implementation for issue #18 in draft PR #22: a strict versioned JSON Schema promotion-manifest contract
+  (`docs/promotion-manifest.schema.json`), a dependency-free Python standard-library validator
+  (`scripts/validate-promotion-manifest.py`), nine synthetic fixture directories
+  (`scripts/promotion-manifest-fixtures/`; one valid and eight rejection fixtures), and 16 automated tests
+  (`scripts/test_promotion_manifest_validator.py`) wired into GitHub Actions alongside ShellCheck, the
+  system-info privacy regression, and the Markdown-link check. A semantic audit found and corrected a
+  pre-merge fail-closed gap: noneligible workflow states and malformed/unknown contract fields could have
+  escaped the original representative fixture coverage. The validator now rejects every noneligible
+  `eligibility_state`, invalid source locators/dates/timestamps/step sequences, and unknown root or nested
+  fields; it still verifies actual SHA-256 bytes, path containment, approved license/origin/identifier
+  states, allowed source classifications, false disallowed-content flags, and derivative history. An exact-head GitHub Actions run passed all 16 tests and every repository check. Only synthetic fixtures were used; no real
+  dataset or NAS archive content was accessed or changed. Section C is implemented and CI-verified on the
+  draft branch, but issue #18 remains open until PR #22 is reviewed, merged with Austin's approval, and
+  verified on `main`. Issue #19 and the bounded pilot remain blocked until then.

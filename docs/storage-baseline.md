@@ -5,9 +5,11 @@ separates direct read-only observations from owner-confirmed NAS state and avoid
 operational addresses, device serials, account identifiers, credentials, and
 private paths.
 
-- **Baseline date:** 2026-07-31
+- **Initial baseline date:** 2026-07-31
+- **Last reconciled:** 2026-08-01
 - **Linux observation date:** 2026-07-19
-- **NAS/backup owner confirmation:** 2026-07-31
+- **NAS/backup confirmation:** 2026-07-31
+- **Archive/access and promotion-control evidence:** 2026-08-01
 
 ## Role model
 
@@ -64,14 +66,22 @@ Usage percentages are historical observations, not live monitoring claims.
 Current state: **expected → arrived → installed → recognized/added → synchronized → healthy → protected →
 selected-scope backup and fixture recovery tested**. Workload authorization remains a separate evidence gate.
 
-## Controls not yet verified
+## Metaphase archive and control state
 
-- Full-file or full-repository recovery beyond the single disposable fixture
-- Dedicated metaphase share and least-privilege permissions
-- Verified `compute-node` access to the NAS
-- Local second copy to `pi-server`
-- Provenance, license, classification, checksum, and transformation manifests
-- Backup coverage for future manifests, annotations, databases, and working data
+- A dedicated metaphase archive share now exists with separate governance/manifests, quarantine, canonical raw sources, approved releases, annotations, working derivatives, exports, and logs areas.
+- A non-administrator routine workflow identity is limited to that share over SMB and cannot reach personal home-directory storage or NAS administration.
+- Canonical raw sources and approved releases reject create/modify/rename/delete attempts from the routine identity while remaining readable.
+- `compute-node` mounts the archive on demand with root-protected credentials and least-privilege options; normal reboot and post-reboot access/permission checks passed.
+- Active transformations were verified on `compute-node`'s local NVMe ext4 workspace rather than the NAS.
+- Section C's versioned manifest schema, fail-closed validator, and synthetic-fixture tests are implemented in issue #18 / PR #22. They define provenance, license, classification, checksum, path-safety, and transformation-history gates but do not authorize or move data.
+
+## Remaining controls
+
+- Full-file or full-repository recovery beyond the single disposable personal-content fixture
+- Recovery behavior when the NAS is deliberately unavailable during `compute-node` boot
+- Local second copy to `pi-server`, including monitoring and a checksum-verified disposable restore
+- Backup and tested recovery coverage for metaphase manifests, licenses, annotations, databases, and working derivatives
+- One bounded public/synthetic pilot through the complete quarantine-to-restore workflow
 
 The restore proof is intentionally narrow: it validates one encrypted backup version and one disposable file,
 not all selected personal content, future metaphase data, or a recovery-time objective. See

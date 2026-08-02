@@ -22,7 +22,7 @@ logical areas, each with a distinct role:
 
 | Area | Role |
 |---|---|
-| Governance / manifests | Provenance, license, and checksum records (Section C, not yet populated) |
+| Governance / manifests | Provenance, license, and checksum records. Section C's manifest schema and fail-closed validator now exist (`promotion-controls.md`, issue #18); no real manifest has been populated here yet. |
 | Quarantine | Landing zone for material pending review; nothing is promoted automatically |
 | Canonical raw sources | Immutable original material once promoted from quarantine |
 | Approved releases | Reviewed, checksum-verified material approved for workflow use |
@@ -130,7 +130,7 @@ This exercise proves that, for the tested configuration:
 It does **not** prove:
 
 - Recovery behavior if the NAS is offline at boot (not tested).
-- Provenance, license, or checksum controls (section C — separate, not yet done).
+- Real-dataset provenance, license, or checksum evidence. Section C's schema and validator are documented separately, but no real dataset has been acquired or run through them.
 - A local second copy to `pi-server` (separate planned work).
 - Anything about real dataset content, since no real dataset was used.
 

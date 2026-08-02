@@ -1,0 +1,223 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jaustinanderson/home-server-lab/blob/main/docs/promotion-manifest.schema.json",
+  "title": "Home Server Lab Promotion Manifest",
+  "description": "Public-safe provenance manifest contract for material considered for promotion from the metaphase archive quarantine area into the canonical archive (issue #18, section C of docs/nas-readiness-checklist.md). This schema describes the DATASET's own license and provenance. It is unrelated to, and does not change, this repository's own MIT LICENSE, which covers only the code and documentation in this Git repository.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_name",
+    "dataset_version",
+    "publisher",
+    "acquisition_date",
+    "license",
+    "license_review_state",
+    "redistribution",
+    "intended_use",
+    "source_classification",
+    "origin_review_state",
+    "identifier_safety_state",
+    "content_classification_flags",
+    "is_derivative",
+    "files",
+    "transformation_history",
+    "eligibility_state"
+  ],
+  "properties": {
+    "schema_version": {
+      "description": "Version of this manifest schema the document conforms to.",
+      "const": "1.0.0"
+    },
+    "dataset_name": {
+      "description": "Human-readable dataset name.",
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_version": {
+      "description": "Publisher- or curator-assigned dataset version or release identifier.",
+      "type": "string",
+      "minLength": 1
+    },
+    "publisher": {
+      "description": "Organization or individual that published the source material.",
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "description": "Structurally public HTTP(S) source locator. The validator rejects credentials, local hostnames, and non-global IP addresses; human origin review establishes actual public legitimacy. At least one of source_url or doi is required.",
+      "type": "string",
+      "pattern": "^https?://",
+      "format": "uri"
+    },
+    "doi": {
+      "description": "Digital Object Identifier for the source material. At least one of source_url or doi is required.",
+      "type": "string",
+      "pattern": "^10\\.\\d{4,9}/\\S+$"
+    },
+    "acquisition_date": {
+      "description": "Date the material was acquired, in unambiguous ISO 8601 calendar-date form (YYYY-MM-DD).",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "format": "date"
+    },
+    "license": {
+      "description": "Identifier for the DATASET's own license. This is independent of the repository's MIT LICENSE, which governs only this repository's code and documentation, never third-party dataset content.",
+      "type": "string",
+      "enum": ["CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0", "MIT", "Apache-2.0", "Public-Domain", "Synthetic-No-License-Required"]
+    },
+    "license_review_state": {
+      "description": "Human review state of the dataset license. Only 'approved' may satisfy the license-review control; every other value is fail-closed.",
+      "enum": ["not_reviewed", "pending", "approved", "rejected"]
+    },
+    "redistribution": {
+      "description": "Redistribution limits or conditions attached to the dataset license.",
+      "type": "object",
+      "required": ["allowed", "conditions"],
+      "properties": {
+        "allowed": {
+          "description": "Whether redistribution/reuse in this project's intended use is permitted. Must be true to satisfy the redistribution control.",
+          "type": "boolean"
+        },
+        "conditions": {
+          "description": "Public-safe free-text description of redistribution conditions or limits (attribution, share-alike, non-commercial, etc.). Use an empty string only when the license imposes no conditions.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "intended_use": {
+      "description": "Public-safe description of how this material will be used in this project.",
+      "type": "string",
+      "minLength": 1
+    },
+    "source_classification": {
+      "description": "Origin classification. Only 'synthetic' and 'public_licensed' are permitted; de-identification alone is never a permitted classification (D1/D21).",
+      "enum": ["synthetic", "public_licensed"]
+    },
+    "origin_review_state": {
+      "description": "Human review state of the material's origin/provenance. Only 'approved' may satisfy the origin-review control.",
+      "enum": ["unverified", "uncertain", "approved", "rejected"]
+    },
+    "identifier_safety_state": {
+      "description": "Reviewer's assessment of whether the material contains real, identifying information. Only 'no_real_identifiers' may satisfy the identifier-safety control; a positive or uncertain state is fail-closed.",
+      "enum": ["no_real_identifiers", "contains_real_identifiers", "uncertain"]
+    },
+    "content_classification_flags": {
+      "description": "Explicit disallowed-content flags. Every flag must be false to satisfy the content-safety control.",
+      "type": "object",
+      "required": [
+        "patient_derived",
+        "institutional",
+        "employer_confidential",
+        "clinical_study",
+        "restricted_other"
+      ],
+      "properties": {
+        "patient_derived": {"type": "boolean"},
+        "institutional": {"type": "boolean"},
+        "employer_confidential": {"type": "boolean"},
+        "clinical_study": {"type": "boolean"},
+        "restricted_other": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "is_derivative": {
+      "description": "Whether this material is a derivative produced by transforming source material. An original source with no transformation must set this to false.",
+      "type": "boolean"
+    },
+    "files": {
+      "description": "Governed files whose bytes are checked against a required SHA-256 checksum.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {
+            "description": "Path to the governed file, relative to the manifest's validation root. Absolute paths and parent-directory traversal are rejected.",
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "description": "Lowercase hexadecimal SHA-256 checksum of the file's bytes.",
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "transformation_history": {
+      "description": "Reproducible record connecting source material to any derivative. An original, untransformed source may use an explicit empty array. A declared derivative (is_derivative: true) must include at least one entry, and every entry must identify both its input (input_ref and/or input_sha256) and its output (output_ref and/or output_sha256) so source and derivative can be connected. For a multi-step history, each later step's input must share a common validated reference or checksum with the immediately preceding step's output, and the final step's output must match a governed files[] entry by path and/or sha256; the validator, not this schema, enforces the chain and final-output linkage.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["step", "action", "timestamp", "description"],
+        "properties": {
+          "step": {
+            "description": "Sequence identifier for this transformation, starting at 1.",
+            "type": "integer",
+            "minimum": 1
+          },
+          "input_ref": {
+            "description": "Public-safe reference to the transformation's input (file name or manifest reference). Structurally rejects empty/whitespace-only values, control characters, absolute POSIX or Windows/UNC paths, Windows drive-letter and drive-relative paths (with or without a following slash), parent-directory traversal, home-relative/environment-variable syntax, and file: URIs in any letter case or slash form. This is a structural check only; it does not confirm the reference genuinely identifies the claimed material.",
+            "type": "string",
+            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:)(?!~)(?!\\$)(?!%)(?![Ff][Ii][Ll][Ee]:)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
+          },
+          "input_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "output_ref": {
+            "description": "Public-safe reference to the transformation's output (file name or manifest reference). Same structural constraints as input_ref.",
+            "type": "string",
+            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:)(?!~)(?!\\$)(?!%)(?![Ff][Ii][Ll][Ee]:)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
+          },
+          "output_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "action": {
+            "description": "Short label for the transformation performed (for example 'convert', 'resize', 'anonymize', 'synthesize').",
+            "type": "string",
+            "minLength": 1
+          },
+          "tool": {
+            "description": "Tool or script used to perform the transformation.",
+            "type": "string"
+          },
+          "tool_version": {
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "Recorded date or date-time the transformation was performed, in ISO 8601 form.",
+            "type": "string",
+            "anyOf": [
+              {"format": "date"},
+              {"format": "date-time"}
+            ]
+          },
+          "description": {
+            "description": "Public-safe description of the transformation and its parameters. Must not contain secrets or private paths.",
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {"anyOf": [{"required": ["input_ref"]}, {"required": ["input_sha256"]}]},
+          {"anyOf": [{"required": ["output_ref"]}, {"required": ["output_sha256"]}]}
+        ]
+      }
+    },
+    "eligibility_state": {
+      "description": "Workflow status recorded by a human reviewer. Only 'eligible_for_promotion' can pass; pending_review, quarantine, and rejected fail closed. The validator also computes every other control and never lets a self-declared eligible state override another failure.",
+      "enum": ["pending_review", "quarantine", "eligible_for_promotion", "rejected"]
+    }
+  },
+  "anyOf": [
+    {"required": ["source_url"]},
+    {"required": ["doi"]}
+  ]
+}
