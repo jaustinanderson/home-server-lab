@@ -166,12 +166,68 @@ Optional fields `tool` and `tool_version` let a record additionally name the
 tool and version used; any `*_sha256` field present must still be a valid
 64-hex digest.
 
+### Reference safety (structural, not provenance)
+
+Whenever `input_ref` or `output_ref` is supplied, it must be a genuinely
+usable, public-safe reference, not merely a present string key. The
+validator (`is_public_safe_reference` in `validate-promotion-manifest.py`,
+mirrored portably in the schema's `pattern` for `input_ref`/`output_ref`)
+rejects a supplied reference (`[reference_safety]`) that is:
+
+- Empty or whitespace-only after stripping.
+- Contains a control character.
+- An absolute POSIX path, or a Windows drive-letter or UNC path.
+- Parent-directory traversal (`..` as a path segment, either slash style).
+- Home-relative (`~`), environment-variable (`$VAR`, `%VAR%`), or
+  `file://` URI syntax.
+
+This check runs independently per field: a malformed `input_ref` or
+`output_ref` is rejected even when a valid checksum alternative
+(`input_sha256`/`output_sha256`) is also present on the same record — an
+invalid field is never silently ignored just because its ref/checksum
+counterpart is valid.
+
+**This is a structural check only.** It confirms the string is
+*syntactically* a plausible, non-private, non-traversal reference. It does
+**not**, and cannot, confirm the reference genuinely identifies the claimed
+material, that the material is what it claims to be, or anything else about
+real-world provenance — that remains a human review responsibility, same as
+`origin_review_state` and the other human-attested fields above. The
+validator also never requires historical input files to exist locally and
+never makes a network request to resolve a reference.
+
+### Actual derivative connection (not just placeholder presence)
+
+Beyond per-field safety, the validator confirms the history record set
+actually forms a connected, reproducible chain rather than accepting
+arbitrary placeholder values as claimed linkage (`[transformation_chain]`):
+
+- **Final output must match a governed file.** The last step's
+  `output_ref` and/or `output_sha256` must match a `files[]` entry's `path`
+  and/or `sha256`. A final step whose output does not correspond to any
+  governed file is rejected.
+- **Multi-step chains must connect.** For a history with more than one
+  step, each later step's input must share at least one common validated
+  reference or checksum with the immediately preceding step's output
+  (`input_ref == earlier output_ref`, or `input_sha256 == earlier
+  output_sha256`). A step whose input does not connect to the previous
+  step's output is rejected, even if both steps are individually
+  well-formed.
+
+These checks are also structural: they confirm the manifest's own claimed
+references are internally consistent and terminate at a byte-checked
+governed file. They do not confirm the intermediate, non-governed steps of
+the chain (inputs to earlier steps that are not themselves governed files)
+actually happened as described — that remains a human review responsibility.
+
 - An **original source** with no transformation sets `is_derivative: false`
-  and may use an explicitly empty `transformation_history: []`.
+  and may use an explicitly empty `transformation_history: []`; the chain
+  and final-output checks above do not apply to an empty history.
 - A **declared derivative** (`is_derivative: true`) must have at least one
   transformation record, or it is rejected for missing required
   transformation history — and that record must satisfy the input/output
-  linkage requirements above, not merely exist.
+  linkage, reference-safety, and chain/final-output requirements above, not
+  merely exist.
 - Step values must be the exact sequence `1..N`, and every timestamp must be a valid ISO 8601 date or date-time.
 
 ## Validator usage
@@ -235,6 +291,12 @@ resolved by re-running the validator — if any of the following occurs:
 - A declared derivative has no transformation history, or a transformation
   record exists but does not identify both its input and its output
   (`input_ref`/`input_sha256` and `output_ref`/`output_sha256`).
+- A supplied `input_ref`/`output_ref` is empty, whitespace-only, contains a
+  control character, or uses an absolute, drive-letter, UNC, traversal,
+  home-relative, environment-variable, or `file://` reference syntax.
+- A multi-step transformation chain doesn't connect (a later step's input
+  shares no validated reference or checksum with the preceding step's
+  output), or the final step's output doesn't match any `files[]` entry.
 - `eligibility_state` is `pending_review`, `quarantine`, or `rejected`; only `eligible_for_promotion` may pass.
 - The manifest claims `eligible_for_promotion` while another control fails — the validator adds an `eligibility_consistency` failure rather than trusting the self-declared state.
 - A source locator, calendar date, transformation timestamp/sequence, or declared field is invalid or unknown.
@@ -304,7 +366,7 @@ designed against **synthetic data only**. It does **not** prove:
   (`validate-promotion-manifest.py`), and fixture suite
   (`promotion-manifest-fixtures/`) were exercised only with synthetic,
   obviously-fake fixtures using reserved/example identifiers.
-- Nineteen automated unit tests cover the shipped valid/rejection fixtures, symlink containment, non-destructive behavior, usage errors, schema alignment, rejected workflow states, malformed source locators, impossible dates, unknown fields, transformation sequence/timestamp enforcement, and derivative input/output linkage.
+- Twenty-seven automated unit tests cover the shipped valid/rejection fixtures, symlink containment, non-destructive behavior, usage errors, schema alignment, rejected workflow states, malformed source locators, impossible dates, unknown fields, transformation sequence/timestamp enforcement, derivative input/output linkage, structural reference-safety rejection (empty, whitespace-only, control-character, absolute/drive/UNC/traversal, and home/environment/file-URI reference syntax), and multi-step transformation-chain/final-output-linkage enforcement.
 - No real dataset was acquired, ingested, promoted, copied, or modified.
 - No NAS archive content was accessed or changed; this work is entirely
   repository-local (schema, script, fixtures, tests, documentation) on

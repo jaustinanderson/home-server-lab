@@ -52,6 +52,9 @@ CONTENT_FLAG_KEYS = (
 SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DOI_PATTERN = re.compile(r"^10\.\d{4,9}/\S+$")
+CONTROL_CHARACTER_PATTERN = re.compile(r"[\x00-\x1f\x7f]")
+WINDOWS_DRIVE_PATH_PATTERN = re.compile(r"^[A-Za-z]:[\\/]")
+PRIVATE_PATH_PREFIXES = ("~", "$", "%", "file://")
 ALLOWED_TOP_LEVEL_FIELDS = {
     "schema_version",
     "dataset_name",
@@ -134,6 +137,68 @@ def resolve_safe_path(root: Path, raw_path: str) -> tuple[Optional[Path], Option
     if not candidate.is_relative_to(root_resolved):
         return None, "resolved path escapes the validation root"
     return candidate, None
+
+
+def is_public_safe_reference(value: Any) -> tuple[bool, Optional[str]]:
+    """Structural check for a transformation input_ref/output_ref value.
+
+    Confirms the reference is a nonempty, printable, repository-relative-
+    looking name: not an absolute POSIX path, a Windows drive or UNC path,
+    parent-directory traversal, or home/environment-variable/file-URI syntax
+    that could point at a private local location. This is a structural check
+    only; it never touches the filesystem or network and cannot confirm the
+    reference genuinely identifies the claimed material -- that remains a
+    human provenance review responsibility (see docs/promotion-controls.md).
+    """
+    if not isinstance(value, str):
+        return False, "must be a string"
+    candidate = value.strip()
+    if not candidate:
+        return False, "must be a non-empty, non-whitespace-only string"
+    if CONTROL_CHARACTER_PATTERN.search(value):
+        return False, "must not contain control characters"
+    if candidate.startswith(("/", "\\")):
+        return False, "must not be an absolute POSIX path or a Windows/UNC path"
+    if WINDOWS_DRIVE_PATH_PATTERN.match(candidate):
+        return False, "must not be a Windows drive-letter path"
+    segments = re.split(r"[\\/]+", candidate)
+    if any(segment == ".." for segment in segments):
+        return False, "must not contain parent-directory traversal"
+    if candidate.startswith(PRIVATE_PATH_PREFIXES):
+        return False, "must not use home-relative, environment-variable, or file-URI syntax"
+    return True, None
+
+
+def governed_file_identifiers(files: Any) -> tuple[set[str], set[str]]:
+    """Collect the path and sha256 identifiers of well-formed `files` entries.
+
+    Used only to check that a transformation's final output matches a
+    governed file; malformed entries are skipped here because
+    validate_files() already reports them independently.
+    """
+    paths: set[str] = set()
+    checksums: set[str] = set()
+    if not isinstance(files, list):
+        return paths, checksums
+    for entry in files:
+        if not isinstance(entry, dict):
+            continue
+        path = entry.get("path")
+        if isinstance(path, str) and path.strip():
+            paths.add(path)
+        checksum = entry.get("sha256")
+        if isinstance(checksum, str) and SHA256_PATTERN.match(checksum):
+            checksums.add(checksum)
+    return paths, checksums
+
+
+def refs_connect(later: dict[str, Optional[str]], earlier: dict[str, Optional[str]]) -> bool:
+    """True if `later`'s input shares a validated reference or checksum with `earlier`'s output."""
+    if later["input_ref"] is not None and later["input_ref"] == earlier["output_ref"]:
+        return True
+    if later["input_sha256"] is not None and later["input_sha256"] == earlier["output_sha256"]:
+        return True
+    return False
 
 
 def sha256_of_file(path: Path) -> str:
@@ -452,11 +517,13 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
 
     steps: list[int] = []
     steps_are_valid = True
+    entry_refs: list[Optional[dict[str, Optional[str]]]] = []
     for index, entry in enumerate(history):
         label = f"transformation_history[{index}]"
         if not isinstance(entry, dict):
             failures.append(Failure("provenance", f"{label} must be an object"))
             steps_are_valid = False
+            entry_refs.append(None)
             continue
 
         reject_unknown_fields(entry, TRANSFORMATION_FIELDS, label, failures)
@@ -488,10 +555,17 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
         ):
             failures.append(Failure("provenance", f"{label} timestamp must be a valid ISO 8601 date or date-time"))
 
-        for optional_text_field in ("input_ref", "output_ref", "tool", "tool_version"):
+        for optional_text_field in ("tool", "tool_version"):
             value = entry.get(optional_text_field)
             if optional_text_field in entry and not isinstance(value, str):
                 failures.append(Failure("provenance", f"{label} {optional_text_field} must be a string"))
+
+        for ref_field in ("input_ref", "output_ref"):
+            if ref_field not in entry:
+                continue
+            ok, error = is_public_safe_reference(entry.get(ref_field))
+            if not ok:
+                failures.append(Failure("reference_safety", f"{label} {ref_field} {error}"))
 
         for hash_field in ("input_sha256", "output_sha256"):
             value = entry.get(hash_field)
@@ -510,6 +584,43 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
                 Failure(
                     "transformation_linkage",
                     f"{label} must include output_ref and/or output_sha256 to link to its output",
+                )
+            )
+
+        entry_refs.append(
+            {
+                "input_ref": entry.get("input_ref") if isinstance(entry.get("input_ref"), str) else None,
+                "input_sha256": entry.get("input_sha256") if isinstance(entry.get("input_sha256"), str) else None,
+                "output_ref": entry.get("output_ref") if isinstance(entry.get("output_ref"), str) else None,
+                "output_sha256": entry.get("output_sha256") if isinstance(entry.get("output_sha256"), str) else None,
+            }
+        )
+
+    if len(entry_refs) == len(history) and len(history) > 1:
+        for index in range(1, len(history)):
+            later, earlier = entry_refs[index], entry_refs[index - 1]
+            if later is None or earlier is None:
+                continue
+            if not refs_connect(later, earlier):
+                failures.append(
+                    Failure(
+                        "transformation_chain",
+                        f"transformation_history[{index}] input does not connect to the output of "
+                        f"transformation_history[{index - 1}] via a matching reference or checksum",
+                    )
+                )
+
+    if history and entry_refs and entry_refs[-1] is not None:
+        final = entry_refs[-1]
+        file_paths, file_checksums = governed_file_identifiers(manifest.get("files"))
+        matches_path = final["output_ref"] is not None and final["output_ref"] in file_paths
+        matches_checksum = final["output_sha256"] is not None and final["output_sha256"] in file_checksums
+        if not (matches_path or matches_checksum):
+            failures.append(
+                Failure(
+                    "transformation_chain",
+                    "the final transformation_history output does not match any files[] entry "
+                    "by path or sha256",
                 )
             )
 

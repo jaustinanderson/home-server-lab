@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -276,6 +277,176 @@ class FailClosedPolicyTests(unittest.TestCase):
         self.assert_rejected(result, "[transformation_linkage]")
         self.assertIn("output_ref and/or output_sha256", result.stdout)
 
+    def test_empty_input_ref_as_sole_input_linkage_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "",
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Exercises rejection of an empty input_ref used as the sole input linkage.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[reference_safety]")
+        self.assertIn("non-empty, non-whitespace-only string", result.stdout)
+
+    def test_whitespace_only_output_ref_as_sole_output_linkage_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "   ",
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Exercises rejection of a whitespace-only output_ref used as the sole output linkage.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[reference_safety]")
+        self.assertIn("non-empty, non-whitespace-only string", result.stdout)
+
+    def test_unsafe_reference_syntax_is_rejected(self) -> None:
+        unsafe_values = (
+            "/etc/passwd",
+            "../../etc/passwd",
+            r"C:\Users\example\secret.txt",
+            r"\\host\share\file.txt",
+            "~/private/file.txt",
+            "$HOME/file.txt",
+            "%APPDATA%\\file.txt",
+            "file:///etc/passwd",
+        )
+        for unsafe_ref in unsafe_values:
+            with self.subTest(input_ref=unsafe_ref):
+                def mutate(manifest: dict, value: str = unsafe_ref) -> None:
+                    manifest["is_derivative"] = True
+                    manifest["transformation_history"] = [
+                        {
+                            "step": 1,
+                            "input_ref": value,
+                            "output_ref": "fixture.txt",
+                            "output_sha256": manifest["files"][0]["sha256"],
+                            "action": "synthesize",
+                            "timestamp": "2026-08-01T00:00:00Z",
+                            "description": "Exercises rejection of an unsafe input_ref reference syntax.",
+                        }
+                    ]
+
+                self.assert_rejected(self.run_mutated_valid(mutate), "[reference_safety]")
+
+    def test_invalid_ref_with_valid_checksum_alternative_is_still_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": (
+                        "An invalid input_ref must fail even though input_sha256 is a "
+                        "validly formatted checksum."
+                    ),
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[reference_safety]")
+
+    def test_final_output_not_matching_governed_file_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "not-a-governed-file.txt",
+                    "output_sha256": "2" * 64,
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Final transformation output intentionally does not match any files[] entry.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[transformation_chain]")
+        self.assertIn("does not match any files[] entry", result.stdout)
+
+    def test_valid_two_step_transformation_chain_passes(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "intermediate.bin",
+                    "output_sha256": "1" * 64,
+                    "action": "convert",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "First step: synthetic raw source converted to an intermediate synthetic artifact.",
+                },
+                {
+                    "step": 2,
+                    "input_ref": "intermediate.bin",
+                    "input_sha256": "1" * 64,
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "finalize",
+                    "timestamp": "2026-08-01T01:00:00Z",
+                    "description": "Second step: intermediate synthetic artifact finalized into the governed fixture.",
+                },
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        self.assertIn("ELIGIBLE", result.stdout)
+
+    def test_broken_two_step_transformation_chain_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "intermediate.bin",
+                    "output_sha256": "1" * 64,
+                    "action": "convert",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "First step: synthetic raw source converted to an intermediate synthetic artifact.",
+                },
+                {
+                    "step": 2,
+                    "input_ref": "unrelated-artifact.bin",
+                    "input_sha256": "9" * 64,
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "finalize",
+                    "timestamp": "2026-08-01T01:00:00Z",
+                    "description": "Second step intentionally does not connect to the first step's output.",
+                },
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[transformation_chain]")
+        self.assertIn("does not connect to the output of transformation_history[0]", result.stdout)
+
+
 class NonDestructiveTests(unittest.TestCase):
     def test_validator_does_not_modify_fixtures_or_manifests(self) -> None:
         before = snapshot_fixture_tree()
@@ -398,6 +569,35 @@ class SchemaAlignmentTests(unittest.TestCase):
             set(properties["eligibility_state"]["enum"]),
             {"pending_review", "quarantine", "eligible_for_promotion", "rejected"},
         )
+
+    def test_schema_reference_pattern_matches_validator_reference_safety_rules(self) -> None:
+        transformation_item = self.schema["properties"]["transformation_history"]["items"]
+        input_pattern = transformation_item["properties"]["input_ref"]["pattern"]
+        output_pattern = transformation_item["properties"]["output_ref"]["pattern"]
+        self.assertEqual(input_pattern, output_pattern)
+
+        compiled = re.compile(input_pattern)
+        accepted = ("fixture.txt", "sub/dir/example-file.txt", "name-with-dots..txt", "intermediate.bin")
+        rejected = (
+            "",
+            "   ",
+            "/etc/passwd",
+            "../secret.txt",
+            "a/../b",
+            r"C:\Users\example\secret.txt",
+            r"\\host\share\file.txt",
+            "~/private.txt",
+            "$HOME/file.txt",
+            "%APPDATA%\\file.txt",
+            "file:///etc/passwd",
+            "a\tb",
+        )
+        for value in accepted:
+            with self.subTest(value=value, expect="accept"):
+                self.assertTrue(compiled.match(value), msg=value)
+        for value in rejected:
+            with self.subTest(value=value, expect="reject"):
+                self.assertFalse(compiled.match(value), msg=value)
 
 
 if __name__ == "__main__":
