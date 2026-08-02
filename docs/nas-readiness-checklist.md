@@ -6,7 +6,7 @@ work is not completion. Sections A–D must pass before one bounded pilot is
 authorized. Passing section E completes Phase 3.5 and authorizes planning for
 broader acquisition in the later roadmap phase.
 
-## Evidence state — 2026-08-01
+## Evidence state — 2026-08-02
 
 | Stage | State | Evidence boundary |
 |---|---|---|
@@ -61,7 +61,7 @@ filesystem. No real dataset was ingested; only disposable synthetic placeholders
 were used, and they were removed afterward. A reboot with the NAS deliberately
 offline was not tested.
 
-## C. Provenance and safety — staged in draft PR #22
+## C. Provenance and safety — complete on `main`
 
 - [x] Require dataset name, version, source URL/DOI, publisher, acquisition date,
   license, redistribution limits, and intended use.
@@ -74,23 +74,28 @@ offline was not tested.
   material, real identifiers, uncertain-origin collections, restricted data,
   and sources without an acceptable license.
 
-Evidence staged in `promotion-controls.md` (issue #18, D22): a strict versioned
-JSON Schema manifest contract (`promotion-manifest.schema.json`) and a dependency-free Python
-standard-library validator (`../scripts/validate-promotion-manifest.py`) implement every control above as
-a fail-closed check. Missing, ambiguous, malformed, or unknown values do not pass. The validator computes
-SHA-256 from referenced bytes; accepts only `synthetic` or `public_licensed`; requires explicit
-license/origin/identifier approval, false disallowed-content flags, contained relative paths, valid source
-locators and dates, sequential transformation steps with valid timestamps, and transformation history for
-derivatives; and requires `eligibility_state` to be exactly `eligible_for_promotion`. Nine synthetic
-fixture directories (`../scripts/promotion-manifest-fixtures/`; one valid and eight rejection fixtures)
-plus 16 automated tests (`../scripts/test_promotion_manifest_validator.py`) cover the shipped fixtures,
-noneligible workflow states, schema alignment, unknown fields, malformed values, path escape,
-non-destructive behavior, and usage errors. An exact-head GitHub Actions run passed all 16 tests and every repository
-check. No real dataset was acquired, ingested, promoted, or referenced, and no NAS content was accessed or
-changed. The checked boxes describe the implementation on draft PR #22; issue #18 remains open, and section
-C is not complete on `main`, until Austin reviews and merges the PR and the result is verified on `main`.
-Passing section C still does not authorize section E; issue #19's metaphase-specific protection and local
-second-copy work also remain blockers.
+Evidence recorded in `promotion-controls.md` (issue #18, D22): the strict versioned JSON Schema manifest
+contract (`promotion-manifest.schema.json`), the dependency-free Python standard-library validator
+(`../scripts/validate-promotion-manifest.py`), its documentation, nine synthetic fixture directories
+(`../scripts/promotion-manifest-fixtures/`; one valid and eight rejection fixtures), and the automated
+regression suite (`../scripts/test_promotion_manifest_validator.py`) are merged on `main` through PR #22
+(merge commit `a8e361d`, reviewed head `acc15e2`). The validator implements every control above as a
+fail-closed check: missing, ambiguous, malformed, or unknown values do not pass. It computes SHA-256 from
+referenced bytes; accepts only `synthetic` or `public_licensed`; requires explicit license/origin/identifier
+approval, false disallowed-content flags, contained relative paths, and valid source locators and dates; and
+requires `eligibility_state` to be exactly `eligible_for_promotion`. Every transformation record must carry
+validated input and output linkage, and a declared derivative must have transformation history connecting
+to a governed file: consecutive steps' input and output references or checksums must match, and the final
+step's output must correspond to a `files[]` entry — a chain that doesn't connect, or doesn't terminate at a
+governed file, is rejected. Empty, whitespace-only, control-character, absolute/drive-letter/UNC,
+parent-directory-traversal, home-relative, environment-variable, and `file://` URI transformation references
+all fail closed. Passing this validation confirms structural integrity only; it is not promotion
+authorization and does not itself approve a dataset for ingestion. The final suite contains 27 automated
+tests, and the exact-head Repository checks run #86 passed all 27 tests and every other repository check.
+Only synthetic fixtures were used; no real dataset was acquired, ingested, promoted, or referenced, and no
+NAS content was accessed or changed. Section C is complete on `main`. Passing section C still does not
+authorize section E; issue #19's local second-copy and metaphase-specific recovery work remain incomplete
+and unauthorized.
 
 ## D. Backup and recovery
 

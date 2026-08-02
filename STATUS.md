@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-08-01
+**Last updated:** 2026-08-02
 
 ---
 
@@ -76,16 +76,16 @@ baselines. `compute-node` now runs kernel `7.0.0-28-generic`; `pi-server` runs
 failed units, working Tailscale and SSH, and no reboot flag. The compute-node's disconnected secondary
 Ethernet port is retained but marked optional in Netplan, eliminating the prior boot wait-online timeout.
 
-**Phase 3.5 — NAS Storage Readiness** is now the current phase. Sections A and B of
-`docs/nas-readiness-checklist.md` are complete on `main`. Section C's implementation is staged and
-CI-verified in draft PR #22, but is not complete until that PR is reviewed, merged, and verified on
-`main`. Docker remains Phase 4.
+**Phase 3.5 — NAS Storage Readiness** is now the current phase. Sections A, B, and C of
+`docs/nas-readiness-checklist.md` are complete on `main`. Docker remains Phase 4.
 
 **Immediate next action:** issue #17 is complete on `main`. Issue #18's section C
-provenance/license/checksum manifest schema and fail-closed validator are staged in draft PR #22; An exact-head GitHub Actions run passed all checks, including 16 validator tests. Review PR #22, merge only with Austin's
-approval, and verify the result on `main` before closing issue #18. Then implement the planned
-NAS-to-`pi-server` local second copy in issue #19. Only after both gates pass should issue #15's one bounded
-public/synthetic pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
+provenance/license/checksum manifest schema and fail-closed validator merged into `main` via PR #22
+(`a8e361d`, reviewed head `acc15e2`); an exact-head Repository checks run #86 passed all repository
+checks, including all 27 promotion-validator tests. Issue #18 is closed. Next, implement the planned
+NAS-to-`pi-server` local second copy, monitoring/failure detection, and checksum-verified disposable
+restore in issue #19. Only after that gate passes should issue #15's one bounded public/synthetic pilot
+begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -102,10 +102,11 @@ follow the applicable D16/D17 pull-request workflow.
 - Patching cadence **established and exercised twice on both machines (D18)**. The July 31 window included
   deliberate reboots and complete recovery verification on both hosts.
 - **Metaphase-ingestion gate:** do not begin corpus acquisition. Second-drive protection, NAS health, one
-  disposable personal-content restore, the dedicated archive share/permissions, and verified `compute-node`
-  access pass on `main`. The provenance/license/checksum controls pass 16 tests on draft PR #22 but remain
-  staged until review, merge, and `main` verification. The bounded pilot remains blocked on both that step
-  and issue #19's local second copy and metaphase-specific protection design.
+  disposable personal-content restore, the dedicated archive share/permissions, verified `compute-node`
+  access, and the provenance/license/checksum/transformation-linkage/path-safety/fail-closed controls all
+  pass on `main` (issue #18, PR #22). The bounded pilot remains blocked on issue #19's local second copy,
+  monitoring/failure detection, and checksum-verified disposable restore. Bulk acquisition and general
+  metaphase ingestion remain prohibited.
 - **Backup boundary:** Backblaze currently protects NAS personal content off-site, but metaphase manifests,
   annotations, databases, and working derivatives do not yet have a completed, tested recovery design.
 - One public repo (sanitized) vs. a future private repo for sensitive operational detail — decide later.
@@ -230,3 +231,13 @@ follow the applicable D16/D17 pull-request workflow.
   dataset or NAS archive content was accessed or changed. Section C is implemented and CI-verified on the
   draft branch, but issue #18 remains open until PR #22 is reviewed, merged with Austin's approval, and
   verified on `main`. Issue #19 and the bounded pilot remain blocked until then.
+- **2026-08-02 — Austin + Claude** — Review on PR #22 added further fail-closed coverage beyond the
+  2026-08-01 checkpoint (derivative transformation linkage, transformation reference integrity, and
+  rejection of drive-relative and file URI references), bringing the suite to 27 automated tests before
+  merge. PR #22 merged into `main` as `a8e361d` (reviewed head `acc15e2`); the exact-head Repository checks
+  run #86 passed all 27 tests and every other repository check. Section C of
+  `docs/nas-readiness-checklist.md` is now complete on `main`, closing issue #18. This entry reconciles
+  STATUS.md and the readiness checklist to that verified `main` state. Issue #19 — the NAS-to-`pi-server`
+  local second copy, monitoring/failure detection, and checksum-verified disposable restore — is the next
+  implementation gate; the bounded issue #15 pilot remains unauthorized until it is complete. No real
+  dataset or NAS content was accessed during this reconciliation.
