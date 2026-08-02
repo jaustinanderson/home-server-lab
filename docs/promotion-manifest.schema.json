@@ -161,9 +161,9 @@
             "minimum": 1
           },
           "input_ref": {
-            "description": "Public-safe reference to the transformation's input (file name or manifest reference). Structurally rejects empty/whitespace-only values, control characters, absolute POSIX or Windows/UNC/drive-letter paths, parent-directory traversal, and home-relative/environment-variable/file-URI syntax. This is a structural check only; it does not confirm the reference genuinely identifies the claimed material.",
+            "description": "Public-safe reference to the transformation's input (file name or manifest reference). Structurally rejects empty/whitespace-only values, control characters, absolute POSIX or Windows/UNC paths, Windows drive-letter and drive-relative paths (with or without a following slash), parent-directory traversal, home-relative/environment-variable syntax, and file: URIs in any letter case or slash form. This is a structural check only; it does not confirm the reference genuinely identifies the claimed material.",
             "type": "string",
-            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:[\\\\/])(?!~)(?!\\$)(?!%)(?!file://)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
+            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:)(?!~)(?!\\$)(?!%)(?![Ff][Ii][Ll][Ee]:)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
           },
           "input_sha256": {
             "type": "string",
@@ -172,7 +172,7 @@
           "output_ref": {
             "description": "Public-safe reference to the transformation's output (file name or manifest reference). Same structural constraints as input_ref.",
             "type": "string",
-            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:[\\\\/])(?!~)(?!\\$)(?!%)(?!file://)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
+            "pattern": "^(?!\\s*$)(?![/\\\\])(?![A-Za-z]:)(?!~)(?!\\$)(?!%)(?![Ff][Ii][Ll][Ee]:)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$))[^\\x00-\\x1f\\x7f]*$"
           },
           "output_sha256": {
             "type": "string",

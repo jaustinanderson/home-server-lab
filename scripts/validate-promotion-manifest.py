@@ -53,8 +53,9 @@ SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 DOI_PATTERN = re.compile(r"^10\.\d{4,9}/\S+$")
 CONTROL_CHARACTER_PATTERN = re.compile(r"[\x00-\x1f\x7f]")
-WINDOWS_DRIVE_PATH_PATTERN = re.compile(r"^[A-Za-z]:[\\/]")
-PRIVATE_PATH_PREFIXES = ("~", "$", "%", "file://")
+WINDOWS_DRIVE_PATH_PATTERN = re.compile(r"^[A-Za-z]:")
+HOME_OR_ENV_PATH_PREFIXES = ("~", "$", "%")
+FILE_URI_PREFIX = "file:"
 ALLOWED_TOP_LEVEL_FIELDS = {
     "schema_version",
     "dataset_name",
@@ -143,12 +144,14 @@ def is_public_safe_reference(value: Any) -> tuple[bool, Optional[str]]:
     """Structural check for a transformation input_ref/output_ref value.
 
     Confirms the reference is a nonempty, printable, repository-relative-
-    looking name: not an absolute POSIX path, a Windows drive or UNC path,
-    parent-directory traversal, or home/environment-variable/file-URI syntax
-    that could point at a private local location. This is a structural check
-    only; it never touches the filesystem or network and cannot confirm the
-    reference genuinely identifies the claimed material -- that remains a
-    human provenance review responsibility (see docs/promotion-controls.md).
+    looking name: not an absolute POSIX path, a Windows drive-letter or
+    drive-relative path (with or without a following slash, e.g. "C:secret"
+    or "C:\\secret"), a UNC path, parent-directory traversal, a
+    home-relative/environment-variable reference, or a "file:" URI in any
+    slash form or letter case. This is a structural check only; it never
+    touches the filesystem or network and cannot confirm the reference
+    genuinely identifies the claimed material -- that remains a human
+    provenance review responsibility (see docs/promotion-controls.md).
     """
     if not isinstance(value, str):
         return False, "must be a string"
@@ -160,12 +163,14 @@ def is_public_safe_reference(value: Any) -> tuple[bool, Optional[str]]:
     if candidate.startswith(("/", "\\")):
         return False, "must not be an absolute POSIX path or a Windows/UNC path"
     if WINDOWS_DRIVE_PATH_PATTERN.match(candidate):
-        return False, "must not be a Windows drive-letter path"
+        return False, "must not be a Windows drive-letter or drive-relative path"
     segments = re.split(r"[\\/]+", candidate)
     if any(segment == ".." for segment in segments):
         return False, "must not contain parent-directory traversal"
-    if candidate.startswith(PRIVATE_PATH_PREFIXES):
-        return False, "must not use home-relative, environment-variable, or file-URI syntax"
+    if candidate.startswith(HOME_OR_ENV_PATH_PREFIXES):
+        return False, "must not use home-relative or environment-variable syntax"
+    if candidate.lower().startswith(FILE_URI_PREFIX):
+        return False, "must not use file-URI syntax"
     return True, None
 
 

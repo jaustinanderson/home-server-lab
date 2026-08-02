@@ -325,6 +325,10 @@ class FailClosedPolicyTests(unittest.TestCase):
             "$HOME/file.txt",
             "%APPDATA%\\file.txt",
             "file:///etc/passwd",
+            "C:relative-secret.txt",
+            "FILE:///etc/passwd",
+            "File:/etc/passwd",
+            r"fIlE:C:\secret.txt",
         )
         for unsafe_ref in unsafe_values:
             with self.subTest(input_ref=unsafe_ref):
@@ -577,7 +581,13 @@ class SchemaAlignmentTests(unittest.TestCase):
         self.assertEqual(input_pattern, output_pattern)
 
         compiled = re.compile(input_pattern)
-        accepted = ("fixture.txt", "sub/dir/example-file.txt", "name-with-dots..txt", "intermediate.bin")
+        accepted = (
+            "fixture.txt",
+            "sub/dir/example-file.txt",
+            "name-with-dots..txt",
+            "intermediate.bin",
+            "urn:example:synthetic-source",
+        )
         rejected = (
             "",
             "   ",
@@ -591,6 +601,10 @@ class SchemaAlignmentTests(unittest.TestCase):
             "%APPDATA%\\file.txt",
             "file:///etc/passwd",
             "a\tb",
+            "C:relative-secret.txt",
+            "FILE:///etc/passwd",
+            "File:/etc/passwd",
+            r"fIlE:C:\secret.txt",
         )
         for value in accepted:
             with self.subTest(value=value, expect="accept"):
