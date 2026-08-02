@@ -64,7 +64,7 @@ Schema draft 2020-12). Every field below is required unless noted.
 | `content_classification_flags` | `{patient_derived, institutional, employer_confidential, clinical_study, restricted_other}`, all booleans. Every flag must be `false`. |
 | `is_derivative` | `true` if this material was produced by transforming source material. |
 | `files` | Array of `{path, sha256}` governed files. `path` is relative to the validation root; `sha256` is the lowercase 64-hex digest of the file's bytes. |
-| `transformation_history` | Array of transformation records (empty array `[]` allowed only when `is_derivative` is `false`). |
+| `transformation_history` | Array of transformation records (empty array `[]` allowed only when `is_derivative` is `false`). Each record must identify both its input (`input_ref`/`input_sha256`) and its output (`output_ref`/`output_sha256`). |
 | `eligibility_state` | `pending_review` \| `quarantine` \| `eligible_for_promotion` \| `rejected`. Only `eligible_for_promotion` can pass, and that self-declared state never overrides another failure. |
 
 ### Strict contract and format checks
@@ -154,16 +154,24 @@ For every entry in `files`:
 
 `transformation_history` is an array of records, each requiring `step`
 (integer), `action`, `timestamp`, and a non-empty public-safe `description`.
-Optional fields (`input_ref`, `input_sha256`, `output_ref`, `output_sha256`,
-`tool`, `tool_version`) let a record connect a specific input to a specific
-output through a named tool and version; any `*_sha256` field present must
-still be a valid 64-hex digest.
+Every record must also identify **both** its input and its output — a
+nonempty record is not enough by itself:
+
+- **Input linkage**: `input_ref` and/or `input_sha256` (at least one).
+- **Output linkage**: `output_ref` and/or `output_sha256` (at least one).
+
+A record missing either side of this linkage is rejected
+(`[transformation_linkage]`), even if every other field on it is valid.
+Optional fields `tool` and `tool_version` let a record additionally name the
+tool and version used; any `*_sha256` field present must still be a valid
+64-hex digest.
 
 - An **original source** with no transformation sets `is_derivative: false`
   and may use an explicitly empty `transformation_history: []`.
 - A **declared derivative** (`is_derivative: true`) must have at least one
   transformation record, or it is rejected for missing required
-  transformation history.
+  transformation history — and that record must satisfy the input/output
+  linkage requirements above, not merely exist.
 - Step values must be the exact sequence `1..N`, and every timestamp must be a valid ISO 8601 date or date-time.
 
 ## Validator usage
@@ -224,7 +232,9 @@ resolved by re-running the validator — if any of the following occurs:
   `public_licensed`.
 - A referenced path is absolute, contains `..`, or resolves outside the
   supplied validation root.
-- A declared derivative has no transformation history.
+- A declared derivative has no transformation history, or a transformation
+  record exists but does not identify both its input and its output
+  (`input_ref`/`input_sha256` and `output_ref`/`output_sha256`).
 - `eligibility_state` is `pending_review`, `quarantine`, or `rejected`; only `eligible_for_promotion` may pass.
 - The manifest claims `eligible_for_promotion` while another control fails — the validator adds an `eligibility_consistency` failure rather than trusting the self-declared state.
 - A source locator, calendar date, transformation timestamp/sequence, or declared field is invalid or unknown.
@@ -294,7 +304,7 @@ designed against **synthetic data only**. It does **not** prove:
   (`validate-promotion-manifest.py`), and fixture suite
   (`promotion-manifest-fixtures/`) were exercised only with synthetic,
   obviously-fake fixtures using reserved/example identifiers.
-- Sixteen automated unit tests cover the shipped valid/rejection fixtures, symlink containment, non-destructive behavior, usage errors, schema alignment, rejected workflow states, malformed source locators, impossible dates, unknown fields, and transformation sequence/timestamp enforcement.
+- Nineteen automated unit tests cover the shipped valid/rejection fixtures, symlink containment, non-destructive behavior, usage errors, schema alignment, rejected workflow states, malformed source locators, impossible dates, unknown fields, transformation sequence/timestamp enforcement, and derivative input/output linkage.
 - No real dataset was acquired, ingested, promoted, copied, or modified.
 - No NAS archive content was accessed or changed; this work is entirely
   repository-local (schema, script, fixtures, tests, documentation) on

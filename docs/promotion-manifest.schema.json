@@ -149,7 +149,7 @@
       }
     },
     "transformation_history": {
-      "description": "Reproducible record connecting source material to any derivative. An original, untransformed source may use an explicit empty array. A declared derivative (is_derivative: true) must include at least one entry.",
+      "description": "Reproducible record connecting source material to any derivative. An original, untransformed source may use an explicit empty array. A declared derivative (is_derivative: true) must include at least one entry, and every entry must identify both its input (input_ref and/or input_sha256) and its output (output_ref and/or output_sha256) so source and derivative can be connected.",
       "type": "array",
       "items": {
         "type": "object",
@@ -202,7 +202,11 @@
             "minLength": 1
           }
         },
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {"anyOf": [{"required": ["input_ref"]}, {"required": ["input_sha256"]}]},
+          {"anyOf": [{"required": ["output_ref"]}, {"required": ["output_sha256"]}]}
+        ]
       }
     },
     "eligibility_state": {

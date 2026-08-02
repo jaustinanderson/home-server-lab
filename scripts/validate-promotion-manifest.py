@@ -498,6 +498,21 @@ def validate_transformation_history(manifest: dict[str, Any], failures: list[Fai
             if hash_field in entry and (not isinstance(value, str) or not SHA256_PATTERN.fullmatch(value)):
                 failures.append(Failure("checksum_format", f"{label} {hash_field} is not a valid 64-hex digest"))
 
+        if "input_ref" not in entry and "input_sha256" not in entry:
+            failures.append(
+                Failure(
+                    "transformation_linkage",
+                    f"{label} must include input_ref and/or input_sha256 to link to its source",
+                )
+            )
+        if "output_ref" not in entry and "output_sha256" not in entry:
+            failures.append(
+                Failure(
+                    "transformation_linkage",
+                    f"{label} must include output_ref and/or output_sha256 to link to its output",
+                )
+            )
+
     if steps_are_valid and len(steps) == len(history):
         expected_steps = list(range(1, len(history) + 1))
         if steps != expected_steps:

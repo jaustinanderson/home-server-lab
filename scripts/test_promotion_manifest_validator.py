@@ -220,6 +220,62 @@ class FailClosedPolicyTests(unittest.TestCase):
         self.assert_rejected(result, "step must be an integer of 1 or greater")
         self.assertIn("timestamp must be a valid ISO 8601", result.stdout)
 
+    def test_valid_derivative_linkage_passes(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Synthetic derivative generated from a synthetic input fixture for regression testing.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        self.assertIn("ELIGIBLE", result.stdout)
+
+    def test_derivative_missing_input_linkage_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "output_ref": "fixture.txt",
+                    "output_sha256": manifest["files"][0]["sha256"],
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Exercises the rejection path for a transformation record missing input linkage.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[transformation_linkage]")
+        self.assertIn("input_ref and/or input_sha256", result.stdout)
+
+    def test_derivative_missing_output_linkage_is_rejected(self) -> None:
+        def mutate(manifest: dict) -> None:
+            manifest["is_derivative"] = True
+            manifest["transformation_history"] = [
+                {
+                    "step": 1,
+                    "input_ref": "example-raw-source.txt",
+                    "input_sha256": "0" * 64,
+                    "action": "synthesize",
+                    "timestamp": "2026-08-01T00:00:00Z",
+                    "description": "Exercises the rejection path for a transformation record missing output linkage.",
+                }
+            ]
+
+        result = self.run_mutated_valid(mutate)
+        self.assert_rejected(result, "[transformation_linkage]")
+        self.assertIn("output_ref and/or output_sha256", result.stdout)
+
 class NonDestructiveTests(unittest.TestCase):
     def test_validator_does_not_modify_fixtures_or_manifests(self) -> None:
         before = snapshot_fixture_tree()
@@ -299,6 +355,15 @@ class SchemaAlignmentTests(unittest.TestCase):
         self.assertFalse(properties["files"]["items"]["additionalProperties"])
         self.assertFalse(properties["transformation_history"]["items"]["additionalProperties"])
         self.assertEqual(properties["source_url"]["pattern"], "^https?://")
+        transformation_item = properties["transformation_history"]["items"]
+        self.assertIn(
+            {"anyOf": [{"required": ["input_ref"]}, {"required": ["input_sha256"]}]},
+            transformation_item["allOf"],
+        )
+        self.assertIn(
+            {"anyOf": [{"required": ["output_ref"]}, {"required": ["output_sha256"]}]},
+            transformation_item["allOf"],
+        )
         self.assertEqual(
             set(properties["license"]["enum"]),
             {
