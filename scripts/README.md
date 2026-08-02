@@ -48,7 +48,7 @@ BACKUP_PATH=<your-backup-path-here>
 | [`test-system-info-safety.sh`](test-system-info-safety.sh) | Regression-test the network-output privacy contract with a mocked link-layer address | Fails if a MAC address escapes or expected sanitized fields disappear |
 | [`check-markdown-links.py`](check-markdown-links.py) | Check repository-relative Markdown links | Reads repository Markdown only and reports missing local targets |
 | [`validate-promotion-manifest.py`](validate-promotion-manifest.py) | Fail-closed pre-promotion control check for a `docs/promotion-manifest.schema.json` manifest and its referenced fixture bytes (issue #18) | Read-only: verifies strict schema fields/formats, eligible workflow state, SHA-256, license/origin/content-safety review state, and path safety; never moves, promotes, or rewrites anything; never prints file contents |
-| [`test_promotion_manifest_validator.py`](test_promotion_manifest_validator.py) | Sixteen automated tests for the promotion-manifest validator and schema | Synthetic data only; covers the nine shipped fixture directories plus generated workflow-state, malformed-value, unknown-field, schema-alignment, path-escape, usage-error, and non-destructive cases |
+| [`test_promotion_manifest_validator.py`](test_promotion_manifest_validator.py) | 27 automated tests for the promotion-manifest validator and schema | Synthetic data only; covers the nine shipped fixture directories plus generated workflow-state, malformed-value, unknown-field, schema-alignment, path-containment/path-escape, transformation input/output linkage, connected transformation chains with governed final outputs, unsafe transformation-reference rejection (including Windows drive-relative references and case-insensitive `file:` URI variants) while preserving legitimate relative/logical references, usage-error, and non-destructive cases |
 
 Run the current utility from the repository root:
 
@@ -59,12 +59,14 @@ chmod +x scripts/system-info.sh
 
 [`promotion-manifest-fixtures/`](promotion-manifest-fixtures/) holds nine synthetic,
 obviously-fake fixture directories — one valid and eight independent rejection
-fixtures. The 16-test suite supplements them with generated edge cases so every
+fixtures. The 27-test suite supplements them with generated edge cases so every
 noneligible workflow state, strict schema boundary, invalid locator/date/timestamp,
-transformation sequence, path escape, usage error, and non-destructive contract is
-checked. No real dataset content lives here.
+transformation sequence, transformation input/output linkage, connected
+transformation chain and governed final output, unsafe transformation-reference
+syntax, path escape, usage error, and non-destructive contract is checked. No real
+dataset content lives here.
 
-GitHub Actions runs ShellCheck, the system-output privacy regression, all 16
+GitHub Actions runs ShellCheck, the system-output privacy regression, all 27
 promotion-manifest tests, and the relative Markdown-link check on every push and
 pull request.
 
