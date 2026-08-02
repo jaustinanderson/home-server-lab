@@ -161,3 +161,77 @@ before the gate is described as fail-closed. This decision only formalizes the e
 does not loosen D1, D19, or D21's substantive data-boundary rules, and a passing validator result does not by
 itself authorize the bounded pilot (section E) or any real dataset; see `docs/promotion-controls.md`
 (issue #18).
+
+**D23 — pi-server pulls an encrypted Restic repository from a read-only NAS SMB source for the local
+second copy of irreplaceable project data; architecture selected, not yet implemented.** *(2026-08-02)*
+This is the issue #19 local-second-copy design, following a read-only architecture and capacity preflight on
+pi-server (no server or NAS configuration changed). The model: (1) `pi-server` initiates the backup pull —
+the NAS never authenticates outward to the Pi and never holds Pi backup-repository credentials or access;
+(2) the Synology NAS remains the canonical source; (3) a dedicated non-administrator NAS backup identity
+receives read-only access limited to the explicitly approved project scope defined below, exposed to the
+backup process as a read-only SMB mount; (4) NAS credentials for that identity stay root-only on
+`pi-server`, live outside Git, and are never printed in logs, commits, or documentation; (5) a dedicated
+non-login local backup identity runs the job on `pi-server`; (6) **Restic** is the selected snapshot tool
+because it provides repository encryption, deduplication, integrity checking, and versioned recovery
+points from a single small repository, without the operational overhead Borg's segmented-repository model
+would add here; (7) the Restic repository itself is inaccessible to ordinary interactive users on
+`pi-server`; (8) the initial proof uses synthetic data only; (9) no automatic `forget`/`prune`/deletion runs
+during the proof; (10) general metaphase ingestion and issue #15's pilot remain unauthorized regardless of
+this decision.
+
+**Why pull, not push:** a NAS-initiated push would require the independent backup target (`pi-server`) to
+accept inbound connections or hold credentials trusted by the NAS, expanding the blast radius of a NAS
+compromise to the very system meant to survive it. A pull model keeps that trust one-directional.
+
+**Why not a plain rsync mirror:** a mirror reproduces the source state exactly, including accidental
+deletion or corruption, and provides no independent versioned recovery point once the mirror has already
+propagated the mistake. Restic's snapshot model preserves prior states independently of what the source
+currently contains.
+
+**Why Restic over Borg:** both are credible dedicated backup tools with encryption and deduplication. Borg
+is technically viable but its repository-locking and archive model is built for larger, more actively
+multi-client repositories; Restic is the simpler fit for this small, single-client, encrypted,
+snapshot-oriented local repository, with less operational surface to configure correctly.
+
+**Why not simply re-download bulk data as the backup target:** re-downloadable public bulk datasets are
+explicitly excluded from this protection (see scope below) — backing them up would consume the limited
+repository ceiling without protecting the material that cannot be regenerated from a public source.
+
+**Encryption caveat — do not overstate:** Restic provides repository-level encryption, and root-only
+credential storage limits access from ordinary interactive accounts. However, `pi-server`'s SSD is not
+LUKS-encrypted (D13); an automatic unlock secret stored on that same unencrypted disk does not fully protect
+the repository against an attacker who physically extracts the drive, since the key and the encrypted data
+would travel together. LUKS, TPM-backed credential handling, or an off-device/manual unlock model remain
+future hardening options if the threat model requires them. Restic alone does not eliminate the physical-
+theft risk, and no document should claim otherwise.
+
+**Protected scope (initial):** provenance and promotion manifests; license-review records; curated
+annotations and metadata; database-consistent dumps once databases exist; and other irreplaceable
+experiment records or configuration not adequately protected by GitHub. Explicitly excluded: re-downloadable
+public bulk datasets; quarantine contents; caches and temporary files; rebuildable working derivatives;
+routine exports and logs without a documented recovery requirement; Git-tracked public documentation already
+protected by GitHub; secrets and credentials; personal NAS content (already covered by D20's Hyper Backup
+job); and patient, employer, institutional, restricted, or uncertain-origin material (prohibited on the lab
+entirely under D1/D21, backup policy notwithstanding). The exact private NAS source path and its measured
+size are implementation-time operational inputs and are deliberately not published here.
+
+**Capacity and retention policy:** repository ceiling 256 GiB (~14% of `pi-server`'s filesystem); warning
+threshold 192 GiB; minimum free-space reserve 512 GiB. The backup must refuse to start or continue if the
+256 GiB ceiling would be exceeded or available filesystem capacity falls below the 512 GiB reserve. Proposed
+schedule: daily near 03:30 UTC (outside the identified 06:00–07:00 UTC maintenance window), optionally with
+a small randomized delay. Target retention after the proof phase: 7 daily, 4 weekly, 6 monthly snapshots.
+Automatic `forget`/`prune` stays disabled until all of the following hold: the synthetic restore succeeds;
+checksum equality is proven; source immutability (the NAS backup identity cannot alter the source) is
+proven; monitoring and stale-state detection work; several consecutive scheduled backups succeed; and Austin
+explicitly approves enabling pruning.
+
+**Planned monitoring design:** a hardened oneshot systemd backup service, a daily timer near 03:30 UTC, a
+success timestamp updated only after the snapshot and required verification complete successfully, a
+separate stale-state checker with a 36-hour stale threshold, nonzero exit status on backup, capacity,
+integrity, mount, or stale-state failure, and visibility through systemd until Phase 5 monitoring exists.
+Testing this design uses a disposable synthetic method for exercising both failure and stale-state behavior
+— never real repository corruption or manipulation of the canonical NAS source.
+
+This decision selects and records the architecture only. No NAS or `pi-server` account, package, mount,
+credential, service, timer, or snapshot has been created. See `docs/backup-plan.md`,
+`docs/backup-restore-test.md`, and `docs/nas-readiness-checklist.md` (issue #19).
