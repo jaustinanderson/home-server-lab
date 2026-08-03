@@ -1,0 +1,56 @@
+[Unit]
+Description=Home Lab local second-copy snapshot (%i)
+Documentation=https://github.com/jaustinanderson/home-server-lab/blob/main/systemd/README.md
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=%i
+Group=%i
+UMask=0077
+
+# This file supplies only private runtime paths and optional numeric limits.
+# It must not contain the Restic password or NAS credentials.
+EnvironmentFile=/etc/home-server-lab/local-second-copy.conf
+LoadCredential=restic-password:/etc/home-server-lab/restic-password
+Environment=RESTIC_PASSWORD_FILE=%d/restic-password
+Environment=RESTIC_REPOSITORY=/var/lib/home-lab-local-backup/repository
+Environment=HOME_LAB_BACKUP_SUCCESS_STAMP=/var/lib/home-lab-local-backup/last-success
+Environment=HOME_LAB_BACKUP_LOCK_FILE=/run/home-lab-local-backup/backup.lock
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+ExecStart=/usr/local/libexec/home-lab-local-second-copy backup
+TimeoutStartSec=12h
+
+StateDirectory=home-lab-local-backup
+StateDirectoryMode=0700
+RuntimeDirectory=home-lab-local-backup
+RuntimeDirectoryMode=0700
+
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectKernelLogs=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectProc=invisible
+ProcSubset=pid
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/var/lib/home-lab-local-backup /run/home-lab-local-backup
+
+Nice=10
+IOSchedulingClass=idle

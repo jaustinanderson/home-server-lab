@@ -63,8 +63,10 @@ exercises.
 ## Planned pi-server Restic synthetic proof (not yet performed)
 
 This section records the intended proof sequence for the D23 local NAS-to-`pi-server` second copy (issue
-#19). **None of the following steps have been executed.** No account, package, mount, credential, service,
-timer, or snapshot exists yet; this is a design record, not evidence of completion.
+#19). The repository now contains the fail-closed controller, hardened unit/timer templates, and a synthetic
+mock-based regression suite, but **none of the operational proof steps below have been executed**. No
+account, package, mount, credential, installed service, enabled timer, initialized repository, or snapshot
+exists yet; repository tests are not recovery evidence.
 
 1. Create one deterministic synthetic fixture in an approved disposable NAS source location.
 2. Record its SHA-256 checksum.

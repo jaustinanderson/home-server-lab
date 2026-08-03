@@ -49,6 +49,8 @@ BACKUP_PATH=<your-backup-path-here>
 | [`check-markdown-links.py`](check-markdown-links.py) | Check repository-relative Markdown links | Reads repository Markdown only and reports missing local targets |
 | [`validate-promotion-manifest.py`](validate-promotion-manifest.py) | Fail-closed pre-promotion control check for a `docs/promotion-manifest.schema.json` manifest and its referenced fixture bytes (issue #18) | Read-only: verifies strict schema fields/formats, eligible workflow state, SHA-256, license/origin/content-safety review state, and path safety; never moves, promotes, or rewrites anything; never prints file contents |
 | [`test_promotion_manifest_validator.py`](test_promotion_manifest_validator.py) | 27 automated tests for the promotion-manifest validator and schema | Synthetic data only; covers the nine shipped fixture directories plus generated workflow-state, malformed-value, unknown-field, schema-alignment, path-containment/path-escape, transformation input/output linkage, connected transformation chains with governed final outputs, unsafe transformation-reference rejection (including Windows drive-relative references and case-insensitive `file:` URI variants) while preserving legitimate relative/logical references, usage-error, and non-destructive cases |
+| [`local_second_copy.py`](local_second_copy.py) | Fail-closed controller for D23's planned local Restic second copy (issue #19) | Requires an existing read-only CIFS source and initialized local repository; enforces capacity/reserve gates, suppresses private Restic output, rechecks the mount, runs `restic check`, atomically records verified success, and separately checks 36-hour staleness; never mounts, initializes, prunes, deletes, or manages credentials/accounts |
+| [`test_local_second_copy.py`](test_local_second_copy.py) | 20 automated tests for the local second-copy controller and systemd templates | Temporary synthetic directories and mocked command results only; exercises success, warning, mount/permission/capacity/overlap/concurrency failures, failed snapshot/check and post-run ceiling/reserve timestamp preservation, disappearing-mount detection, stale-state behavior, unit hardening, schedule, credential loading, and the no-pruning boundary without contacting a NAS or creating a Restic repository |
 
 Run the current utility from the repository root:
 
@@ -67,8 +69,8 @@ syntax, path escape, usage error, and non-destructive contract is checked. No re
 dataset content lives here.
 
 GitHub Actions runs ShellCheck, the system-output privacy regression, all 27
-promotion-manifest tests, and the relative Markdown-link check on every push and
-pull request.
+promotion-manifest tests, all 20 synthetic local-second-copy tests, and the
+relative Markdown-link check on every push and pull request.
 
 ## Planned Scripts
 
@@ -76,7 +78,6 @@ Possible future scripts:
 
 ```text
 update-server.sh
-backup-check.sh
 docker-status.sh
 service-health-check.sh
 storage-check.sh

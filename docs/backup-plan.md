@@ -12,8 +12,10 @@ implemented controls from planned controls and unverified recovery claims.
 > fault tolerance; both extended drive tests passed; email alerts work; and quarterly scrubbing is set. One
 > encrypted Backblaze restore of a disposable fixture matched its source SHA-256 checksum. A read-only
 > architecture and capacity preflight on `pi-server` is complete, and D23 records the selected design for
-> the local NAS-to-pi second copy (pi-server-initiated pull, read-only NAS SMB source, Restic). No local
-> NAS-to-pi backup job has been implemented and no metaphase-data recovery workflow is claimed yet.
+> the local NAS-to-pi second copy (pi-server-initiated pull, read-only NAS SMB source, Restic). A fail-closed
+> controller, hardened systemd unit/timer templates, and 20 synthetic tests now implement the public-safe
+> repository-controlled layer. Nothing has been deployed on the NAS or `pi-server`; no operational snapshot
+> or metaphase-data recovery workflow is claimed yet.
 
 ## Backup principles
 
@@ -49,7 +51,8 @@ For irreplaceable project data, the target model is:
 1. **Canonical source/archive copy:** Synology NAS.
 2. **Working copy:** `compute-node`, separate from immutable raw sources.
 3. **Local second copy:** `pi-server`, created by a documented and monitored
-   backup job; architecture selected under D23 (see below), not implemented yet.
+   backup job; architecture and repository-controlled automation are prepared
+   under D23 (see below), but nothing is deployed yet.
 4. **Off-site copy:** Backblaze B2 through Synology Hyper Backup, with each
    protected workload explicitly added and verified.
 
@@ -150,11 +153,13 @@ check for:
 The repository `.gitignore` excludes common secret, backup, database, local
 data, and archive patterns. That is a safety net, not a content review.
 
-## Local second copy — pi-server (D23, architecture selected)
+## Local second copy — pi-server (D23, repository controls prepared)
 
 Following a read-only architecture and capacity preflight on `pi-server`, D23 records the selected design
-for the planned local NAS-to-pi second copy of irreplaceable project data. **Nothing below is implemented
-yet** — no account, package, mount, credential, service, timer, or snapshot exists.
+for the planned local NAS-to-pi second copy of irreplaceable project data. The public-safe controller,
+systemd templates, configuration example, and synthetic regression suite are now repository-controlled.
+**Nothing has been deployed** — no account, package, mount, credential, installed service, enabled timer,
+initialized repository, or snapshot exists.
 
 **Architecture:**
 
@@ -212,6 +217,18 @@ separate stale-state checker with a 36-hour stale threshold; nonzero exit status
 integrity, mount, or stale-state failure; visibility through systemd until Phase 5 monitoring exists; and a
 disposable synthetic method for testing both failure and stale-state behavior — never real repository
 corruption or manipulation of the canonical NAS source.
+
+**Repository-controlled implementation:** [`../scripts/local_second_copy.py`](../scripts/local_second_copy.py)
+implements the fail-closed preflight, local Restic snapshot, post-snapshot repository check, atomic
+last-success timestamp, and separate stale-state check. The templates in [`../systemd/`](../systemd/) define
+the hardened oneshot services and the daily/stale timers without publishing private paths or credentials.
+The controller refuses a non-CIFS or writable source, a network-hosted repository, overlapping source and
+repository paths, broad password-file permissions, concurrent execution, a projected hard-ceiling/reserve
+breach (including a fixed 1 GiB safety margin), a disappearing source mount, a failed snapshot, a failed
+repository check, or a post-run capacity breach. It has no mount, repository-initialization, credential,
+account, retention, `forget`, `prune`,
+source-write, or cleanup function. Its 20 automated tests use only temporary synthetic directories and
+mocked command results; passing them is code evidence, not operational backup or recovery evidence.
 
 See `docs/backup-restore-test.md` for the planned synthetic proof sequence and
 `docs/nas-readiness-checklist.md` section D for gate status.

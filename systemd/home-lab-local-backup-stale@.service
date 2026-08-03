@@ -1,0 +1,37 @@
+[Unit]
+Description=Home Lab local second-copy stale-state check (%i)
+Documentation=https://github.com/jaustinanderson/home-server-lab/blob/main/systemd/README.md
+
+[Service]
+Type=oneshot
+User=%i
+Group=%i
+Environment=HOME_LAB_BACKUP_SUCCESS_STAMP=/var/lib/home-lab-local-backup/last-success
+Environment=HOME_LAB_STALE_AFTER_SECONDS=129600
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+ExecStart=/usr/local/libexec/home-lab-local-second-copy stale-check
+
+StateDirectory=home-lab-local-backup
+StateDirectoryMode=0700
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectKernelLogs=yes
+ProtectHostname=yes
+ProtectClock=yes
+ProtectProc=invisible
+ProcSubset=pid
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX
