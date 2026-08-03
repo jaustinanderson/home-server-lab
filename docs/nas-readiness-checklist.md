@@ -19,7 +19,7 @@ broader acquisition in the later roadmap phase.
 | Redundant | Complete | SHR reports one-drive fault tolerance |
 | Backup current | Complete for selected personal scope | Latest scheduled run succeeded; daily versioned encrypted job inspected |
 | Restore verified | Complete for one fixture | Isolated restore matched the source SHA-256 checksum |
-| Second-copy architecture | Selected, not implemented | D23 records the pi-server-pull/Restic/read-only-SMB design after a read-only capacity preflight |
+| Second-copy architecture | Selected; repository controls prepared; not deployed | D23 records the pi-server-pull/Restic/read-only-SMB design; fail-closed controller/unit templates pass 20 synthetic tests |
 | Workload authorized | No | Pre-ingestion gates remain incomplete |
 
 ## A. Second-drive protection
@@ -128,8 +128,19 @@ schedule. D23 records the selected architecture — a pi-server-initiated pull o
 repository from a read-only NAS SMB source, scoped to explicitly approved irreplaceable project material,
 with capacity ceilings, a conservative retention model, and a planned monitoring design documented in
 `backup-plan.md`, and a planned synthetic proof sequence documented in `backup-restore-test.md`. No NAS or
-`pi-server` account, package, mount, credential, service, timer, or snapshot has been created. The two
-checklist items above remain open until that work is implemented and independently verified.
+`pi-server` account, package, mount, credential, installed service, enabled timer, initialized repository,
+or snapshot has been created.
+
+The repository-controlled layer now includes `../scripts/local_second_copy.py`, hardened systemd service
+and timer templates under `../systemd/`, a sanitized configuration example, and 20 synthetic tests. The
+controller fails closed on writable or missing CIFS source state, non-local repository state, overlapping
+paths, broad password-file permissions, concurrent execution, capacity/reserve violations, disappearing
+mounts, Restic snapshot/check failures, and missing/stale success state. It updates success state only after
+the snapshot, mount recheck, repository check, and post-run capacity gates all pass, and it contains no
+retention/pruning or source-write operation. Those tests use temporary directories and mocked command
+results only; they did not access either server or the NAS and do not satisfy the operational checklist.
+The two checklist items above remain open until private deployment, source-immutability proof, failure/stale
+test, checksum-verified isolated restore, duration/rollback/cleanup evidence, and review are complete.
 
 ## E. First bounded pilot
 

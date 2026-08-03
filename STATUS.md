@@ -85,10 +85,13 @@ provenance/license/checksum manifest schema and fail-closed validator merged int
 checks, including all 27 promotion-validator tests. Issue #18 is closed. For issue #19, a read-only
 architecture and capacity preflight on `pi-server` is complete, and D23 records the selected architecture
 (pi-server-initiated pull, encrypted Restic repository, read-only NAS SMB source, capacity/retention limits,
-and a planned monitoring design). No account, package, mount, credential, service, timer, or snapshot has
-been created — issue #19 remains open, and its implementation, monitoring/failure detection, and
-checksum-verified disposable restore are still pending. Only after that gate passes should issue #15's one
-bounded public/synthetic pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
+and a planned monitoring design). The repository now contains the fail-closed controller, hardened systemd
+service/timer templates, sanitized configuration example, and a 20-test synthetic suite for the public-safe
+automation layer. No account, package, mount, credential, installed service, enabled timer, initialized
+repository, or snapshot has been created — issue #19 remains open, and private deployment,
+monitoring/failure proof, source-immutability proof, and a checksum-verified disposable restore are still
+pending. Only after that gate passes should issue #15's one bounded public/synthetic pilot begin. Passing
+section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -263,3 +266,16 @@ follow the applicable D16/D17 pull-request workflow.
   proof sequence), and `docs/nas-readiness-checklist.md` (preflight evidence). This is architecture selection
   and read-only verification only — no NAS or pi-server account, package, mount, credential, service, timer,
   or snapshot was created, issue #19 remains open, and issue #15's pilot remains unauthorized.
+- **2026-08-03 — Austin + ChatGPT/Codex** — Implemented issue #19's public-safe repository-controlled
+  automation layer without changing either server or the NAS: added a dependency-free fail-closed Python
+  controller for read-only-CIFS/local-Restic preflight, conservative capacity/reserve enforcement, exclusive
+  execution, quiet Restic snapshot and repository check, post-run mount/capacity verification, atomic
+  success-state recording, and a separate 36-hour stale-state check; added hardened systemd oneshot and
+  timer templates for the daily ~03:30 UTC job and six-hour stale check; and added a sanitized private-config
+  example and deployment/rollback boundary. Twenty synthetic tests use temporary directories and mocked
+  command results to prove success behavior and fail-closed rejection of writable/missing mounts, network
+  repositories, path overlap, broad credential permissions, concurrent execution, capacity/reserve breach,
+  disappearing mounts, Restic failures, and missing/stale success state. No package, account, credential,
+  mount, repository, service, timer, snapshot, NAS access, server connection, or data copy occurred. Issue
+  #19 remains open; operational deployment and the checksum/source-immutability/failure proofs still gate
+  issue #15.

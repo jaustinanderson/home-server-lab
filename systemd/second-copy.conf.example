@@ -1,0 +1,12 @@
+# Public-safe example only. Copy this to the private runtime configuration
+# location named by the service, replace the placeholder locally, and keep the
+# resulting file outside Git with root-only ownership and mode 0600.
+
+HOME_LAB_BACKUP_SOURCE=/mnt/REPLACE_WITH_PRIVATE_READ_ONLY_SOURCE
+
+# D23 defaults are built into the controller. These explicit values make the
+# intended policy visible and may be omitted only if the defaults remain
+# unchanged.
+HOME_LAB_REPOSITORY_CEILING_BYTES=274877906944
+HOME_LAB_REPOSITORY_WARNING_BYTES=206158430208
+HOME_LAB_FREE_SPACE_RESERVE_BYTES=549755813888

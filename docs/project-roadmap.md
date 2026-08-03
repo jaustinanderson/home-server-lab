@@ -98,7 +98,9 @@ Current evidence:
   see `docs/metaphase-archive-boundary.md` (issue #17).
 - Section C's provenance/license/checksum manifest schema and fail-closed validator are now complete,
   exercised only with synthetic fixtures; see `docs/promotion-controls.md` (issue #18, D22).
-- No local second copy or metaphase-specific recovery design is claimed yet (issue #19).
+- D23 selects the local second-copy architecture, and the public-safe fail-closed controller, hardened
+  systemd templates, and synthetic regression tests are repository-controlled. Nothing is deployed and no
+  local snapshot or metaphase-specific recovery result is claimed yet (issue #19).
 
 Required gates:
 

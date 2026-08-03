@@ -28,5 +28,8 @@ jobs:
       - name: Test promotion manifest validator (synthetic fixtures only)
         run: python3 scripts/test_promotion_manifest_validator.py -v
 
+      - name: Test local second-copy controls (synthetic mocks only)
+        run: python3 scripts/test_local_second_copy.py -v
+
       - name: Check repository-relative Markdown links
         run: python3 scripts/check-markdown-links.py
