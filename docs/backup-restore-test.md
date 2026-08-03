@@ -59,3 +59,22 @@ version could be restored and matched byte-for-byte with its source. It does **n
 
 Those boundaries remain governed by `nas-readiness-checklist.md` and the later workload-specific restore
 exercises.
+
+## Planned pi-server Restic synthetic proof (not yet performed)
+
+This section records the intended proof sequence for the D23 local NAS-to-`pi-server` second copy (issue
+#19). **None of the following steps have been executed.** No account, package, mount, credential, service,
+timer, or snapshot exists yet; this is a design record, not evidence of completion.
+
+1. Create one deterministic synthetic fixture in an approved disposable NAS source location.
+2. Record its SHA-256 checksum.
+3. Back it up through the read-only source path (NAS backup identity, read-only SMB mount, Restic).
+4. Restore it into a separate disposable destination on `pi-server`.
+5. Calculate the restored checksum independently.
+6. Confirm byte-for-byte equality.
+7. Demonstrate that the NAS backup identity cannot create, modify, rename, or delete the source fixture.
+8. Record duration and expected failure behavior (capacity refusal, mount failure, stale-state detection).
+9. Remove only the explicitly created disposable test artifacts after verification.
+
+This proof must pass, along with the other D23 preconditions, before automatic `forget`/`prune` is enabled
+and before issue #19 or the bounded issue #15 pilot can be considered complete.

@@ -19,6 +19,7 @@ broader acquisition in the later roadmap phase.
 | Redundant | Complete | SHR reports one-drive fault tolerance |
 | Backup current | Complete for selected personal scope | Latest scheduled run succeeded; daily versioned encrypted job inspected |
 | Restore verified | Complete for one fixture | Isolated restore matched the source SHA-256 checksum |
+| Second-copy architecture | Selected, not implemented | D23 records the pi-server-pull/Restic/read-only-SMB design after a read-only capacity preflight |
 | Workload authorized | No | Pre-ingestion gates remain incomplete |
 
 ## A. Second-drive protection
@@ -117,6 +118,18 @@ integrity checks. A disposable file was backed up, restored into a separate dest
 identical SHA-256 checksum. The exact copy duration was not measured. An initial destination-selection error
 was corrected by creating a clearly separate destination and repeating the restore; disposable NAS folders
 were removed after verification.
+
+A read-only architecture and capacity preflight for the planned pi-server local second copy is complete
+(issue #19, D23): `pi-server`'s dedicated SSD reports approximately 1.79 TiB total root capacity at about 1%
+used, zero mounted CIFS/NFS filesystems, zero failed systemd units, NTP-synchronized time, and rsync,
+sha256sum, and Python already installed, while Restic, Borg, and SMB/CIFS client tooling are not yet
+installed; the 06:00–07:00 UTC daily maintenance window was identified as undesirable for a future backup
+schedule. D23 records the selected architecture — a pi-server-initiated pull of an encrypted Restic
+repository from a read-only NAS SMB source, scoped to explicitly approved irreplaceable project material,
+with capacity ceilings, a conservative retention model, and a planned monitoring design documented in
+`backup-plan.md`, and a planned synthetic proof sequence documented in `backup-restore-test.md`. No NAS or
+`pi-server` account, package, mount, credential, service, timer, or snapshot has been created. The two
+checklist items above remain open until that work is implemented and independently verified.
 
 ## E. First bounded pilot
 

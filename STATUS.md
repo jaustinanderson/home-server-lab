@@ -82,10 +82,13 @@ Ethernet port is retained but marked optional in Netplan, eliminating the prior 
 **Immediate next action:** issue #17 is complete on `main`. Issue #18's section C
 provenance/license/checksum manifest schema and fail-closed validator merged into `main` via PR #22
 (`a8e361d`, reviewed head `acc15e2`); an exact-head Repository checks run #86 passed all repository
-checks, including all 27 promotion-validator tests. Issue #18 is closed. Next, implement the planned
-NAS-to-`pi-server` local second copy, monitoring/failure detection, and checksum-verified disposable
-restore in issue #19. Only after that gate passes should issue #15's one bounded public/synthetic pilot
-begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
+checks, including all 27 promotion-validator tests. Issue #18 is closed. For issue #19, a read-only
+architecture and capacity preflight on `pi-server` is complete, and D23 records the selected architecture
+(pi-server-initiated pull, encrypted Restic repository, read-only NAS SMB source, capacity/retention limits,
+and a planned monitoring design). No account, package, mount, credential, service, timer, or snapshot has
+been created — issue #19 remains open, and its implementation, monitoring/failure detection, and
+checksum-verified disposable restore are still pending. Only after that gate passes should issue #15's one
+bounded public/synthetic pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -241,3 +244,22 @@ follow the applicable D16/D17 pull-request workflow.
   local second copy, monitoring/failure detection, and checksum-verified disposable restore — is the next
   implementation gate; the bounded issue #15 pilot remains unauthorized until it is complete. No real
   dataset or NAS content was accessed during this reconciliation.
+- **2026-08-02 — Austin + Claude** — Completed a read-only architecture and capacity preflight for issue
+  #19's local NAS-to-`pi-server` second copy, using only pi-server measurements gathered manually through
+  the existing trusted Chromebook SSH alias; neither server nor the NAS was reconfigured or accessed for
+  this checkpoint. Sanitized findings: `pi-server`'s dedicated SSD reports approximately 1.79 TiB total
+  root capacity at about 1% used (roughly 3.26 GiB used, 1.715 TiB available), zero mounted CIFS/NFS
+  filesystems, zero failed systemd units, NTP-synchronized time, and rsync/sha256sum/Python already
+  installed, while Restic, Borg, and SMB/CIFS client tooling remain uninstalled; the 06:00–07:00 UTC daily
+  maintenance window was identified as undesirable for a future backup schedule. Recorded **D23**: pi-server
+  will pull an encrypted Restic repository from a read-only NAS SMB source, scoped to a dedicated
+  non-administrator NAS backup identity and an explicitly approved irreplaceable-data-only scope, with a 256
+  GiB repository ceiling, 192 GiB warning threshold, 512 GiB minimum free-space reserve, a proposed
+  ~03:30 UTC daily schedule, and a 7-daily/4-weekly/6-monthly target retention with automatic pruning
+  withheld until the synthetic proof, monitoring, and Austin's approval are all in place. The plan documents
+  an explicit encryption caveat: Restic's repository encryption does not by itself protect against physical
+  disk extraction, since `pi-server`'s SSD is not LUKS-encrypted. Updated `docs/backup-plan.md` (architecture,
+  protected scope, capacity/retention, monitoring design), `docs/backup-restore-test.md` (planned synthetic
+  proof sequence), and `docs/nas-readiness-checklist.md` (preflight evidence). This is architecture selection
+  and read-only verification only — no NAS or pi-server account, package, mount, credential, service, timer,
+  or snapshot was created, issue #19 remains open, and issue #15's pilot remains unauthorized.
