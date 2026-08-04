@@ -300,3 +300,11 @@ follow the applicable D16/D17 pull-request workflow.
   pre-pause checkpoint cadence, an end-of-session template, and an `AGENTS.md` reminder loaded by compatible
   agents. Conversation memory is a recall layer; checked-in instructions and verified GitHub checkpoints
   carry the mandatory rule.
+- **2026-08-04 — Austin + ChatGPT/Codex** — Extended the continuity control from this repository to the
+  major-project portfolio boundary. D25 and `.continuity/project.yaml` declare Home Server Lab's dedicated
+  repository and technical source-of-truth direction; private portfolio/knowledge summaries are derived
+  projections for cross-project reasoning, not competing status authorities. Checkpoints now record affected
+  projects and whether a private knowledge refresh is current, not material, required, or unknown. Material
+  project changes require a derived-summary refresh within seven days and before dependent cross-project
+  planning, while repository checkpoint, project-summary refresh, and vault-backup times remain separate.
+  No private vault path, note content, backlink, or personal context was added to this public repository.

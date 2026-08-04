@@ -18,6 +18,9 @@ live_state:
 temporary_state:
 secret_metadata_only:
 worktree_exclusions:
+portfolio_impact: none | related-projects-affected
+affected_projects:
+knowledge_projection: current | not-material | required | unknown
 next_incomplete_gate:
 blockers_or_unknowns:
 ```
@@ -30,5 +33,8 @@ Rules:
   share names, operational addresses, raw logs, or screenshots.
 - If interrupted mid-step, record it as `unknown` or `in-progress`; the next session starts with read-only
   verification, not a rerun.
+- Mark `knowledge_projection: required` after a material status, milestone, decision, architecture, blocker,
+  or dependency change. Do not include private note paths, backlinks, or personal synthesis in this public
+  checkpoint.
 - If GitHub cannot be reached, use `REMOTE_BACKUP_PENDING`, stop further persistent work at the next safe
   boundary, and upload/verify this checkpoint before resuming.

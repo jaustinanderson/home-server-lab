@@ -95,6 +95,32 @@ If any source conflicts or remains unknown, stop and reconcile. Do not repeat th
 
 Do not answer a current-state question or begin work based solely on remembered state.
 
+### Portfolio continuity boundary
+
+Home Server Lab is a **major project** with one dedicated primary repository. This repository is
+authoritative for its code, public-safe technical documentation, decisions, issues, pull requests, and
+sanitized checkpoints. The read-only live environment remains authoritative for actual operational state.
+
+Private portfolio and knowledge-system records are derived summaries, not competing sources of truth:
+
+- Project status flows from verified live state to this repository, then from this repository to the
+  private project summary used for cross-project links and synthesis.
+- Personal interpretation, ideas, and cross-project connections may originate in the private knowledge
+  system, but an actionable technical decision is not authoritative here until it is deliberately promoted
+  into a repository issue, decision, or pull request.
+- A private vault backup proves only that the vault was backed up. It does not prove that its Home Server
+  Lab summary reflects the latest repository checkpoint.
+- Never edit or restore the private vault by changing its GitHub mirror from this repository workflow.
+
+After a material merge, milestone, decision, architecture change, blocker, or dependency change, set
+`knowledge_projection` to `required` in the checkpoint. Reconcile the derived project summary within seven
+days for an active project and before cross-project planning that depends on the change. Ordinary code-only
+commits may be marked `not-material`. A stale derived summary does not authorize changing correct repository
+state; record the drift and refresh the summary from the verified repository.
+
+Keep three clocks separate: the repository checkpoint time, the private project-summary refresh time, and
+the private vault-backup verification time. Never use one as evidence for another.
+
 ## Public-Safety Rules
 
 Do not add:

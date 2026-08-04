@@ -16,5 +16,11 @@ These instructions apply to every AI collaborator working in this repository.
    checkpoint before continuing.
 6. Preserve unrelated user changes and all public-safety boundaries. Never commit secrets, private paths,
    operational addresses, raw logs, or sensitive screenshots.
+7. Treat this dedicated repository as the technical source of truth for Home Server Lab. Portfolio and
+   knowledge-system summaries are derived views; they may never override a verified repository checkpoint
+   or read-only live-state observation.
+8. After a material status, milestone, decision, architecture, blocker, or dependency change, record the
+   portfolio impact and whether the private knowledge projection requires refresh. Keep private note paths,
+   backlinks, personal synthesis, and other private context outside this public repository.
 
 Use `docs/session-checkpoint-template.md` for every interruption or end-of-session handoff.

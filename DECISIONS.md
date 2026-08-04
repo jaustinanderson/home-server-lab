@@ -257,3 +257,21 @@ state-changing work, and before a planned pause of one hour or more. The checkpo
 temporary/live state, remote SHA or issue/PR record, exact next incomplete gate, exclusions, and unknowns.
 Credentials, private paths, operational addresses, raw logs, and sensitive screenshots remain outside Git.
 `CONTRIBUTING.md`, `AGENTS.md`, and `docs/session-checkpoint-template.md` implement this decision.
+
+**D25 — Home Server Lab is a major repository-backed project; private portfolio and knowledge records are
+derived projections.** *(2026-08-04)*
+This dedicated repository is authoritative for Home Server Lab code, public-safe technical documentation,
+decisions, issues, pull requests, and sanitized checkpoints. Read-only inspection of the live environment
+remains authoritative for deployed operational facts. Private portfolio and knowledge-system summaries
+derive their technical status from this repository and must never override it.
+
+Material repository changes — status, milestone, decision, architecture, blocker, or dependency changes —
+set a private knowledge-projection refresh requirement. Active-project summaries should be reconciled within
+seven days and before cross-project planning that relies on them; ordinary code-only changes do not require
+a narrative rewrite. Repository checkpoint time, private project-summary refresh time, and private vault-
+backup verification time are separate evidence clocks.
+
+Personal synthesis and cross-project ideas remain private-authoritative until deliberately promoted into a
+repository issue or decision. The public repository never stores private note paths, backlinks, personal
+context, or vault content. `.continuity/project.yaml`, `CONTRIBUTING.md`, `AGENTS.md`, and the checkpoint
+template implement this boundary.

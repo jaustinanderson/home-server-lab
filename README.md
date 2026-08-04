@@ -63,6 +63,8 @@ Neither track will use patient data, employer-confidential material, internal pr
 
 ```text
 home-server-lab/
+├── .continuity/
+│   └── project.yaml          # public-safe portfolio authority contract
 ├── README.md
 ├── STATUS.md                 # canonical current state
 ├── DECISIONS.md              # architectural decision log
@@ -121,6 +123,7 @@ home-server-lab/
 - [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md) — dated, sanitized operational findings and lessons
 - [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
 - [`docs/session-checkpoint-template.md`](docs/session-checkpoint-template.md) — public-safe continuity and interruption handoff record
+- [`.continuity/project.yaml`](.continuity/project.yaml) — stable major-project identity, source-of-truth direction, and derived-knowledge boundary
 - [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and implemented/planned protection flows
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — change workflow, validation expectations, and scope control
 - [`SECURITY.md`](SECURITY.md) — reporting and response guidance for security or data-safety problems
