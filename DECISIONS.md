@@ -232,6 +232,28 @@ integrity, mount, or stale-state failure, and visibility through systemd until P
 Testing this design uses a disposable synthetic method for exercising both failure and stale-state behavior
 — never real repository corruption or manipulation of the canonical NAS source.
 
-This decision selects and records the architecture only. No NAS or `pi-server` account, package, mount,
-credential, service, timer, or snapshot has been created. See `docs/backup-plan.md`,
-`docs/backup-restore-test.md`, and `docs/nas-readiness-checklist.md` (issue #19).
+At the time this decision was recorded, it selected and documented the architecture only; no NAS or
+`pi-server` account, package, mount, credential, service, timer, or snapshot had been created. Current
+implementation progress belongs in `STATUS.md`, `docs/backup-plan.md`, `docs/backup-restore-test.md`, and
+`docs/nas-readiness-checklist.md` (issue #19), not in this dated decision.
+
+**D24 — Continuity requires verified remote checkpoints and three-source reconciliation before
+non-idempotent work.** *(2026-08-04)*
+GitHub is authoritative for repository content, intended state, and sanitized progress records; read-only
+inspection of the live target is authoritative for operational state; conversation history and memory are
+evidence, not the sole checkpoint. A remote checkpoint exists only when a pushed SHA is confirmed or a
+sanitized checkpoint is recorded on the canonical GitHub issue or pull request. A local commit, screenshot,
+or conversation-only summary is insufficient.
+
+A four-hour gap, calendar-date change, device/terminal/session restart, interrupted connection or command,
+explicit resume, or unknown checkpoint triggers backward reconstruction from the last verified remote
+checkpoint before any mutation. Before any account, package, credential, mount, repository initialization,
+service, timer, or persistent-configuration step, GitHub, the post-checkpoint history, and a read-only target
+check must all agree that the step is incomplete. Conflict or unknown state is a stop condition, never
+permission to rerun.
+
+Sanitized GitHub checkpoints are required after each persistent major gate, at least every 60 minutes of
+state-changing work, and before a planned pause of one hour or more. The checkpoint records completed steps,
+temporary/live state, remote SHA or issue/PR record, exact next incomplete gate, exclusions, and unknowns.
+Credentials, private paths, operational addresses, raw logs, and sensitive screenshots remain outside Git.
+`CONTRIBUTING.md`, `AGENTS.md`, and `docs/session-checkpoint-template.md` implement this decision.

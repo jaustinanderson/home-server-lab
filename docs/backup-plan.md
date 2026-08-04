@@ -4,7 +4,7 @@ This document defines the backup and restore model for the Home Server Lab's
 Linux hosts, Synology source archive, and off-site protection. It distinguishes
 implemented controls from planned controls and unverified recovery claims.
 
-> **Current status (2026-08-02):** the DS925+ is the canonical source archive,
+> **Current status (2026-08-04):** the DS925+ is the canonical source archive,
 > `compute-node` is the hot working tier, and `pi-server` is the planned local
 > secondary-protection tier (D19). Synology Hyper Backup to Backblaze B2 is
 > owner-confirmed operational for selected current personal NAS content on a daily schedule
@@ -14,8 +14,9 @@ implemented controls from planned controls and unverified recovery claims.
 > architecture and capacity preflight on `pi-server` is complete, and D23 records the selected design for
 > the local NAS-to-pi second copy (pi-server-initiated pull, read-only NAS SMB source, Restic). A fail-closed
 > controller, hardened systemd unit/timer templates, and 20 synthetic tests now implement the public-safe
-> repository-controlled layer. Nothing has been deployed on the NAS or `pi-server`; no operational snapshot
-> or metaphase-data recovery workflow is claimed yet.
+> repository-controlled layer. Private, synthetic-only deployment has completed the prerequisite path through
+> an initialized and checked local Restic repository, but no operational snapshot, installed/enabled service
+> or timer, isolated Restic restore, or metaphase-data recovery workflow is claimed yet.
 
 ## Backup principles
 
@@ -52,7 +53,8 @@ For irreplaceable project data, the target model is:
 2. **Working copy:** `compute-node`, separate from immutable raw sources.
 3. **Local second copy:** `pi-server`, created by a documented and monitored
    backup job; architecture and repository-controlled automation are prepared
-   under D23 (see below), but nothing is deployed yet.
+   under D23, and the synthetic-only prerequisite path is deployed through repository initialization, but no
+   snapshot or recovery proof exists yet.
 4. **Off-site copy:** Backblaze B2 through Synology Hyper Backup, with each
    protected workload explicitly added and verified.
 
@@ -153,13 +155,29 @@ check for:
 The repository `.gitignore` excludes common secret, backup, database, local
 data, and archive patterns. That is a safety net, not a content review.
 
-## Local second copy — pi-server (D23, repository controls prepared)
+## Local second copy — pi-server (D23, prerequisite deployment in progress)
 
 Following a read-only architecture and capacity preflight on `pi-server`, D23 records the selected design
 for the planned local NAS-to-pi second copy of irreplaceable project data. The public-safe controller,
 systemd templates, configuration example, and synthetic regression suite are now repository-controlled.
-**Nothing has been deployed** — no account, package, mount, credential, installed service, enabled timer,
-initialized repository, or snapshot exists.
+
+The private, synthetic-only prerequisite checkpoint has verified:
+
+- Direct Pi-to-NAS SMB reachability and byte-for-byte reading of a deterministic 151-byte fixture with the
+  expected SHA-256 checksum.
+- Denial of create, overwrite, rename, and delete through the dedicated least-privilege NAS identity, with
+  the original fixture unchanged and no unexpected file present.
+- Installed SMB/CIFS and Restic tooling and a dedicated locked, non-login local service identity.
+- Root-only SMB and Restic credential-file ownership/mode and nonempty-value metadata, without printing or
+  publishing either credential.
+- A temporary CIFS source mounted read-only with `nosuid`, `nodev`, and `noexec`, readable by the service
+  identity and unreadable/unwritable by the ordinary interactive user.
+- An initialized encrypted local Restic repository whose integrity check passed with one key and zero
+  snapshots.
+
+The temporary mount's current state is unknown after the session boundary and must be rechecked read-only.
+No operational snapshot, installed/enabled service or timer, stale/failure proof, isolated Restic restore,
+retention, pruning, or real-data operation has occurred.
 
 **Architecture:**
 
@@ -230,14 +248,14 @@ account, retention, `forget`, `prune`,
 source-write, or cleanup function. Its 20 automated tests use only temporary synthetic directories and
 mocked command results; passing them is code evidence, not operational backup or recovery evidence.
 
-See `docs/backup-restore-test.md` for the planned synthetic proof sequence and
+See `docs/backup-restore-test.md` for the in-progress synthetic proof sequence and
 `docs/nas-readiness-checklist.md` section D for gate status.
 
 ## Implementation order
 
 1. Define the metaphase manifest/annotation/database backup scope with the template above.
 2. Add only that approved scope to off-site protection and verify it.
-3. Implement the local NAS-to-`pi-server` second-copy flow for irreplaceable project data per the D23
-   architecture above.
+3. Continue the local NAS-to-`pi-server` second-copy flow from the verified initialized-repository
+   checkpoint, beginning with read-only live-state reconciliation before the first synthetic snapshot.
 4. Complete and document a restore from each required failure domain.
 5. Review scope, retention, encryption, credentials, and recovery timing after each new service.

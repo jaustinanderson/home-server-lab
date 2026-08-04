@@ -60,23 +60,39 @@ version could be restored and matched byte-for-byte with its source. It does **n
 Those boundaries remain governed by `nas-readiness-checklist.md` and the later workload-specific restore
 exercises.
 
-## Planned pi-server Restic synthetic proof (not yet performed)
+## pi-server Restic synthetic proof (prerequisites verified; no snapshot yet)
 
-This section records the intended proof sequence for the D23 local NAS-to-`pi-server` second copy (issue
-#19). The repository now contains the fail-closed controller, hardened unit/timer templates, and a synthetic
-mock-based regression suite, but **none of the operational proof steps below have been executed**. No
-account, package, mount, credential, installed service, enabled timer, initialized repository, or snapshot
-exists yet; repository tests are not recovery evidence.
+This section records the D23 local NAS-to-`pi-server` second-copy proof (issue #19). The public repository
+contains the fail-closed controller, hardened unit/timer templates, and a synthetic mock-based regression
+suite. A later private, synthetic-only session completed these sanitized prerequisite checks:
 
-1. Create one deterministic synthetic fixture in an approved disposable NAS source location.
-2. Record its SHA-256 checksum.
-3. Back it up through the read-only source path (NAS backup identity, read-only SMB mount, Restic).
-4. Restore it into a separate disposable destination on `pi-server`.
-5. Calculate the restored checksum independently.
-6. Confirm byte-for-byte equality.
-7. Demonstrate that the NAS backup identity cannot create, modify, rename, or delete the source fixture.
-8. Record duration and expected failure behavior (capacity refusal, mount failure, stale-state detection).
-9. Remove only the explicitly created disposable test artifacts after verification.
+1. A deterministic 151-byte fixture was read from the NAS and matched its expected SHA-256 checksum.
+2. Direct create, overwrite, rename, and delete attempts through the dedicated least-privilege NAS identity
+   were denied; the original fixture remained unchanged, and no unexpected file remained.
+3. SMB/CIFS and Restic tooling was installed on `pi-server`.
+4. A dedicated locked, non-login local service identity was created and verified.
+5. Root-only SMB and Restic credential-file metadata was verified without printing or publishing values.
+6. The synthetic source was mounted temporarily as read-only with `nosuid`, `nodev`, and `noexec`; the
+   service identity could read but not write, and the ordinary interactive user could not read or write.
+7. The encrypted local Restic repository was initialized and checked successfully with one key and zero
+   snapshots.
+
+The temporary mount's current state is unknown across the session boundary. No backup snapshot, installed or
+enabled systemd service/timer, failure/stale-state proof, isolated Restic restore, duration result, retention,
+or pruning has occurred. Repository tests and prerequisite checks are not recovery evidence.
+
+Remaining proof sequence:
+
+1. Complete the continuity gate and reverify the live mount, repository, and private configuration state
+   read-only before any mutation.
+2. Exercise the fail-closed controller to create the first synthetic snapshot without exposing private
+   paths or Restic output.
+3. Restore the fixture into a separate disposable destination on `pi-server`.
+4. Calculate the restored checksum independently and confirm byte-for-byte equality.
+5. Record duration and safely prove expected failure behavior (capacity refusal, mount failure, and
+   stale-state detection).
+6. Verify rollback and remove only the explicitly created disposable test artifacts after validation.
+7. Record several consecutive scheduled successes before considering retention automation.
 
 This proof must pass, along with the other D23 preconditions, before automatic `forget`/`prune` is enabled
 and before issue #19 or the bounded issue #15 pilot can be considered complete.
