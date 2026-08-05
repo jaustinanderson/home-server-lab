@@ -5,7 +5,7 @@
 > **Public-safe** (public repo): no real IPs, MACs, passwords, PHI, or employer-internal details. Live
 > addresses are derivable per box with `ip -br a` (DHCP) and `tailscale status` (tailnet).
 
-**Last updated:** 2026-08-02
+**Last updated:** 2026-08-04
 
 ---
 
@@ -82,16 +82,18 @@ Ethernet port is retained but marked optional in Netplan, eliminating the prior 
 **Immediate next action:** issue #17 is complete on `main`. Issue #18's section C
 provenance/license/checksum manifest schema and fail-closed validator merged into `main` via PR #22
 (`a8e361d`, reviewed head `acc15e2`); an exact-head Repository checks run #86 passed all repository
-checks, including all 27 promotion-validator tests. Issue #18 is closed. For issue #19, a read-only
-architecture and capacity preflight on `pi-server` is complete, and D23 records the selected architecture
-(pi-server-initiated pull, encrypted Restic repository, read-only NAS SMB source, capacity/retention limits,
-and a planned monitoring design). The repository now contains the fail-closed controller, hardened systemd
-service/timer templates, sanitized configuration example, and a 20-test synthetic suite for the public-safe
-automation layer. No account, package, mount, credential, installed service, enabled timer, initialized
-repository, or snapshot has been created — issue #19 remains open, and private deployment,
-monitoring/failure proof, source-immutability proof, and a checksum-verified disposable restore are still
-pending. Only after that gate passes should issue #15's one bounded public/synthetic pilot begin. Passing
-section E completes Phase 3.5 and unlocks Phase 4.
+checks, including all 27 promotion-validator tests. Issue #18 is closed. For issue #19, D23's architecture
+and the repository-controlled automation layer merged through PRs #25–#26 (`5acb63f`). A later private,
+synthetic-only prerequisite checkpoint verified the Pi-to-NAS SMB path; byte-for-byte fixture reading;
+denial of create, overwrite, rename, and delete; installed SMB/CIFS and Restic tooling; a dedicated locked
+service identity; root-only credential metadata; a temporary hardened read-only CIFS source; and an
+initialized encrypted local Restic repository whose integrity check passed with one key and zero snapshots.
+No operational snapshot, installed/enabled service or timer, stale/failure proof, isolated Restic restore,
+retention, or pruning has occurred. The temporary mount's current state is unknown across the session
+boundary and must be checked read-only. The exact next action is to complete the continuity gate and verify
+the live mount, repository, and private configuration state before authorizing the first synthetic snapshot.
+Issue #19 remains open; only after its remaining gates pass should issue #15's bounded public/synthetic
+pilot begin. Passing section E completes Phase 3.5 and unlocks Phase 4.
 
 The users/groups/ownership/permissions inventory and its least-privilege exercise are complete on both Linux
 machines. One item remains open and deliberately deferred: pi-server's passwordless-sudo (`NOPASSWD`)
@@ -279,3 +281,30 @@ follow the applicable D16/D17 pull-request workflow.
   mount, repository, service, timer, snapshot, NAS access, server connection, or data copy occurred. Issue
   #19 remains open; operational deployment and the checksum/source-immutability/failure proofs still gate
   issue #15.
+- **2026-08-04 — Austin + ChatGPT/Codex** — Completed a private, synthetic-only issue #19 prerequisite
+  checkpoint on `pi-server`: verified direct SMB reachability to the NAS; read a deterministic 151-byte
+  fixture with the expected SHA-256; proved the least-privilege NAS identity cannot create, overwrite,
+  rename, or delete while the original remained unchanged; installed SMB/CIFS and Restic tooling; created a
+  locked non-login service identity; verified root-only SMB and Restic credential-file metadata without
+  printing values; mounted the synthetic source temporarily as read-only with `nosuid`, `nodev`, and
+  `noexec`; and initialized and checked the encrypted local Restic repository with one key and zero
+  snapshots. No snapshot, installed/enabled service or timer, restore, retention, pruning, or real-data
+  operation occurred. Private identifiers, paths, addresses, and credentials remain outside Git.
+- **2026-08-04 — Austin + ChatGPT/Codex** — Logged and corrected a continuity-control failure: a recent
+  partial conversation checkpoint incorrectly outranked an older verified checkpoint and produced a
+  duplicate instruction to create an existing Restic credential/repository. Austin caught the conflict
+  before the duplicate operation ran. GitHub was also stale because the material operational progress had
+  not been checkpointed remotely. D24 and the Session Start Gate now include explicit four-hour/date/restart/
+  interruption triggers, backward reconstruction from the last verified remote checkpoint, a three-source
+  duplication-prevention gate (GitHub, post-checkpoint history, and read-only live state), a 60-minute and
+  pre-pause checkpoint cadence, an end-of-session template, and an `AGENTS.md` reminder loaded by compatible
+  agents. Conversation memory is a recall layer; checked-in instructions and verified GitHub checkpoints
+  carry the mandatory rule.
+- **2026-08-04 — Austin + ChatGPT/Codex** — Extended the continuity control from this repository to the
+  major-project portfolio boundary. D25 and `.continuity/project.yaml` declare Home Server Lab's dedicated
+  repository and technical source-of-truth direction; private portfolio/knowledge summaries are derived
+  projections for cross-project reasoning, not competing status authorities. Checkpoints now record affected
+  projects and whether a private knowledge refresh is current, not material, required, or unknown. Material
+  project changes require a derived-summary refresh within seven days and before dependent cross-project
+  planning, while repository checkpoint, project-summary refresh, and vault-backup times remain separate.
+  No private vault path, note content, backlink, or personal context was added to this public repository.

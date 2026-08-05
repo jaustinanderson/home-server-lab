@@ -13,7 +13,7 @@ This repository documents the real architecture, decisions, validation steps, an
 | Machine | Hardware | Role | Operating system |
 |---|---|---|---|
 | **compute-node** | GMKtec M8, Ryzen 5 PRO 6650H, 16 GB RAM, 1 TB NVMe | Hot working storage, data services, and future AI compute | Ubuntu Server 26.04 |
-| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Planned local secondary protection and lightweight services | Ubuntu Server 26.04 |
+| **pi-server** | Raspberry Pi 5, 8 GB RAM, 2 TB external SSD | Local secondary protection (deployment in progress) and lightweight services | Ubuntu Server 26.04 |
 | **Synology NAS** | DS925+, Btrfs on SHR, two matching 16 TB drives, one-drive fault tolerance | Canonical source archive and current personal-content store | Synology DSM |
 | **Chromebook** | Acer Chromebook Plus 514 | SSH control surface through the Linux terminal | ChromeOS |
 
@@ -63,6 +63,8 @@ Neither track will use patient data, employer-confidential material, internal pr
 
 ```text
 home-server-lab/
+├── .continuity/
+│   └── project.yaml          # public-safe portfolio authority contract
 ├── README.md
 ├── STATUS.md                 # canonical current state
 ├── DECISIONS.md              # architectural decision log
@@ -120,6 +122,8 @@ home-server-lab/
 - [`docs/patching-cadence.md`](docs/patching-cadence.md) — update policy (D18): daily automatic security patching plus the monthly manual maintenance runbook
 - [`docs/troubleshooting-log.md`](docs/troubleshooting-log.md) — dated, sanitized operational findings and lessons
 - [`docs/project-roadmap.md`](docs/project-roadmap.md) — phased path from foundation to data and AI projects
+- [`docs/session-checkpoint-template.md`](docs/session-checkpoint-template.md) — public-safe continuity and interruption handoff record
+- [`.continuity/project.yaml`](.continuity/project.yaml) — stable major-project identity, source-of-truth direction, and derived-knowledge boundary
 - [`diagrams/home-lab-architecture.md`](diagrams/home-lab-architecture.md) — current public-safe topology and implemented/planned protection flows
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — change workflow, validation expectations, and scope control
 - [`SECURITY.md`](SECURITY.md) — reporting and response guidance for security or data-safety problems
@@ -187,8 +191,9 @@ This design avoids depending on DHCP stability and does not require opening inbo
 6. Hyper Backup recovery proof **completed** for one disposable fixture
 7. Dedicated metaphase archive share, least-privilege access model, and verified `compute-node` access
    **completed** (issue #17). Provenance/license/checksum promotion-control schema, fail-closed validator,
-   and synthetic-fixture tests **completed** (issue #18); next implement the local-second-copy control
-   (issue #19) before the one bounded public/synthetic pilot
+   and synthetic-fixture tests **completed** (issue #18); local-second-copy prerequisites are verified through
+   initialized-repository state, but snapshot, monitoring, and restore gates remain (issue #19) before the one
+   bounded public/synthetic pilot
 
 The first small public-metaphase pilot may begin only after the Phase 3.5 protection, access, provenance,
 checksum, backup, and restore prerequisites pass. Passing that bounded pilot completes Phase 3.5; bulk

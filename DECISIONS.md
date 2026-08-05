@@ -232,6 +232,46 @@ integrity, mount, or stale-state failure, and visibility through systemd until P
 Testing this design uses a disposable synthetic method for exercising both failure and stale-state behavior
 — never real repository corruption or manipulation of the canonical NAS source.
 
-This decision selects and records the architecture only. No NAS or `pi-server` account, package, mount,
-credential, service, timer, or snapshot has been created. See `docs/backup-plan.md`,
-`docs/backup-restore-test.md`, and `docs/nas-readiness-checklist.md` (issue #19).
+At the time this decision was recorded, it selected and documented the architecture only; no NAS or
+`pi-server` account, package, mount, credential, service, timer, or snapshot had been created. Current
+implementation progress belongs in `STATUS.md`, `docs/backup-plan.md`, `docs/backup-restore-test.md`, and
+`docs/nas-readiness-checklist.md` (issue #19), not in this dated decision.
+
+**D24 — Continuity requires verified remote checkpoints and three-source reconciliation before
+non-idempotent work.** *(2026-08-04)*
+GitHub is authoritative for repository content, intended state, and sanitized progress records; read-only
+inspection of the live target is authoritative for operational state; conversation history and memory are
+evidence, not the sole checkpoint. A remote checkpoint exists only when a pushed SHA is confirmed or a
+sanitized checkpoint is recorded on the canonical GitHub issue or pull request. A local commit, screenshot,
+or conversation-only summary is insufficient.
+
+A four-hour gap, calendar-date change, device/terminal/session restart, interrupted connection or command,
+explicit resume, or unknown checkpoint triggers backward reconstruction from the last verified remote
+checkpoint before any mutation. Before any account, package, credential, mount, repository initialization,
+service, timer, or persistent-configuration step, GitHub, the post-checkpoint history, and a read-only target
+check must all agree that the step is incomplete. Conflict or unknown state is a stop condition, never
+permission to rerun.
+
+Sanitized GitHub checkpoints are required after each persistent major gate, at least every 60 minutes of
+state-changing work, and before a planned pause of one hour or more. The checkpoint records completed steps,
+temporary/live state, remote SHA or issue/PR record, exact next incomplete gate, exclusions, and unknowns.
+Credentials, private paths, operational addresses, raw logs, and sensitive screenshots remain outside Git.
+`CONTRIBUTING.md`, `AGENTS.md`, and `docs/session-checkpoint-template.md` implement this decision.
+
+**D25 — Home Server Lab is a major repository-backed project; private portfolio and knowledge records are
+derived projections.** *(2026-08-04)*
+This dedicated repository is authoritative for Home Server Lab code, public-safe technical documentation,
+decisions, issues, pull requests, and sanitized checkpoints. Read-only inspection of the live environment
+remains authoritative for deployed operational facts. Private portfolio and knowledge-system summaries
+derive their technical status from this repository and must never override it.
+
+Material repository changes — status, milestone, decision, architecture, blocker, or dependency changes —
+set a private knowledge-projection refresh requirement. Active-project summaries should be reconciled within
+seven days and before cross-project planning that relies on them; ordinary code-only changes do not require
+a narrative rewrite. Repository checkpoint time, private project-summary refresh time, and private vault-
+backup verification time are separate evidence clocks.
+
+Personal synthesis and cross-project ideas remain private-authoritative until deliberately promoted into a
+repository issue or decision. The public repository never stores private note paths, backlinks, personal
+context, or vault content. `.continuity/project.yaml`, `CONTRIBUTING.md`, `AGENTS.md`, and the checkpoint
+template implement this boundary.

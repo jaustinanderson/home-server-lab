@@ -1,0 +1,30 @@
+schema_version: 1
+project_id: home-server-lab
+classification: major
+lifecycle: maintenance
+visibility: public
+
+repository:
+  url: https://github.com/jaustinanderson/home-server-lab
+  default_branch: main
+  canonical_state_file: STATUS.md
+  checkpoint_channel: github-issue-or-pull-request
+
+authority:
+  technical_state: github
+  operational_state: read-only-live-verification
+  conversation_memory: evidence-only
+
+knowledge_projection:
+  direction: github-to-private-knowledge-system
+  material_change_refresh_days: 7
+  before_dependent_cross_project_planning: required
+  private_content_allowed_in_public_repository: false
+
+material_changes:
+  - status
+  - milestone
+  - decision
+  - architecture
+  - blocker
+  - dependency

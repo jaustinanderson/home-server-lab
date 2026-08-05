@@ -90,3 +90,19 @@ The correction preserved the secondary port for future use and marked only that 
 a controlled reboot returned with wait-online active and no failed units. Prevention: when wait-online fails,
 compare actual interfaces, effective Netplan, and generated service arguments; never edit generated files under
 `/run`, and do not remove a port until its hardware identity and intended future role are understood.
+
+## 2026-08-04 — Partial conversational checkpoint caused a duplicate credential instruction
+
+After several verified issue #19 operational gates, GitHub still described deployment as not started. A later
+partial conversational checkpoint then said the Restic credential and repository were still pending, even
+though an older verified checkpoint showed both were complete. The partial checkpoint was treated as current
+without first reconstructing all work after the last remote checkpoint. This produced an instruction to create
+an existing credential and repository; Austin identified the conflict before the duplicate operation ran.
+
+The failure had two causes: material operational progress was not backed up to GitHub, and the existing Session
+Start Gate did not define long-gap recovery, session-end checkpointing, or a pre-mutation duplication test.
+Prevention now requires a remote checkpoint after every major persistent gate and at least every 60 minutes;
+a checkpoint before pauses of one hour or more; backward reconstruction after a four-hour/date/restart/
+interruption boundary; and agreement among GitHub, post-checkpoint history, and read-only live state before any
+account, package, credential, mount, repository-initialization, service, timer, or persistent-configuration
+step. Unknown or conflicting state is a stop condition, never permission to rerun.
